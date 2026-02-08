@@ -1,0 +1,36 @@
+1. WEBAPP (Interfaz de Usuario)
+----------------------------------
+Es la aplicación frontend que permite la interacción directa con el usuario.
+
+- Funcionamiento: Proporciona formularios y vistas para interactuar con el sistema (como el registro de usuarios).
+- Detalles del código:
+  * Basada en React con TypeScript: El componente principal de registro se encuentra en `RegisterForm.tsx`.
+  * Gestión de estado: Utiliza el hook `useState` de React para controlar en tiempo real lo que el usuario escribe, el estado de carga y los mensajes de respuesta del servidor.
+  * Comunicación: Emplea la función nativa `fetch` para enviar peticiones HTTP POST al servicio de usuarios, manejando respuestas exitosas y errores de red de forma asíncrona (async/await).
+
+2. USERS (Servicio de Gestión de Usuarios)
+------------------------------------------
+Es un microservicio backend encargado de la lógica relacionada con los perfiles de usuario.
+
+- Funcionamiento: Recibe datos de la Webapp, los procesa y gestiona la disponibilidad del servicio.
+- Detalles del código:
+  * Servidor Express: Implementado en `users-service.js`. Utiliza rutas sencillas (como `/createuser`) para manejar las peticiones.
+  * Monitoreo y Documentación: Integra `express-prom-bundle` para generar métricas automáticamente y `swagger-ui-express` para servir la documentación de la API definida en el archivo `openapi.yaml`.
+  * Middleware: Configura cabeceras de CORS manualmente para permitir que la Webapp (que corre en otro puerto) pueda comunicarse con él sin bloqueos de seguridad.
+
+3. GAMEY (Motor del Juego)
+--------------------------
+Es el núcleo lógico donde se ejecutan las reglas del juego de estrategia "Y".
+
+- Funcionamiento: Gestiona un tablero triangular donde el objetivo es conectar los tres lados con piezas de un mismo jugador.
+- Detalles del código:
+  * Implementación en Rust: El estado del juego se define en la estructura `GameY` (en `game.rs`), que utiliza un `HashMap` para representar el tablero y las posiciones de las fichas.
+  * Lógica de Conexión: Emplea una estructura de datos tipo "Union-Find" (llamada `PlayerSet`) para calcular eficientemente si un jugador ha logrado conectar los bordes del tablero.
+  * Versatilidad: El archivo `main.rs` utiliza la librería `clap` para procesar argumentos de consola, permitiendo que el mismo código funcione como un programa de terminal (CLI) o como un servidor web (usando el framework `Axum` en modo servidor).
+
+-----------------------------------------------------------
+RESUMEN DE INTEGRACIÓN:
+- La Webapp envía datos mediante peticiones HTTP.
+- El servicio de Usuarios procesa el registro y ofrece métricas de salud.
+- Gamey ejecuta la lógica matemática del juego con alta eficiencia.
+===========================================================

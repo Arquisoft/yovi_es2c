@@ -45,6 +45,24 @@ See https://docs.arc42.org/section-1/[Introduction and Goals] in the arc42 docum
 ****
 endif::arc42help[]
 
+El proyecto YOVI tiene como objetivo desarrollar una plataforma web que permita jugar al juego de tablero Y tanto a personas como a bots. El sistema busca mejorar la accesibilidad al juego, permitir la interacción automatizada mediante una API pública y ofrecer estadísticas e histórico de partidas a los usuarios registrados.
+
+La solución estará compuesta por dos subsistemas principales:
+
+* Una aplicación web implementada en TypeScript que proporciona la interfaz de usuario, la gestión de usuarios y una API pública.
+* Un motor de juego implementado en Rust encargado de validar si una partida ha sido ganada y de sugerir el siguiente movimiento mediante distintas estrategias.
+
+Ambos subsistemas se comunicarán mediante mensajes JSON utilizando la notación YEN para representar el estado del tablero.
+
+Requisitos funcionales principales:
+
+* Los usuarios podrán registrarse y autenticarse en la plataforma.
+* Los jugadores podrán jugar al juego Y clásico contra la máquina.
+* La aplicación ofrecerá varias estrategias y niveles de dificultad.
+* El sistema almacenará estadísticas e histórico de partidas.
+* Se expondrá una API pública que permitirá a bots jugar partidas y gestionar información.
+* La aplicación estará desplegada y accesible a través de Internet.
+
 === Quality Goals
 
 ifdef::arc42help[]
@@ -68,6 +86,31 @@ If you as an architect do not know how the quality of your work will be judged..
 A table with quality goals and concrete scenarios, ordered by priorities
 ****
 endif::arc42help[]
+
+[options="header",cols="1,2,2"]
+|===
+|Prioridad | Objetivo de calidad | Escenario
+
+|1
+|Usabilidad
+|Un usuario nuevo puede registrarse e iniciar una partida en menos de 2 minutos sin necesidad de documentación.
+
+|2
+|Rendimiento
+|El motor del juego devuelve la validación de una partida o el siguiente movimiento en menos de 1 segundo en condiciones normales.
+
+|3
+|Escalabilidad
+|La arquitectura permite soportar un incremento significativo de usuarios y llamadas a la API sin rediseños importantes.
+
+|4
+|Mantenibilidad
+|Se pueden añadir nuevas estrategias de juego sin modificar módulos existentes.
+
+|5
+|Fiabilidad
+|La validación de partidas produce resultados correctos y consistentes en todo momento.
+|===
 
 === Stakeholders
 
@@ -96,6 +139,7 @@ endif::arc42help[]
 [options="header",cols="1,2,2"]
 |===
 |Role/Name|Contact|Expectations
-| _<Role-1>_ | _<Contact-1>_ | _<Expectation-1>_
-| _<Role-2>_ | _<Contact-2>_ | _<Expectation-2>_
+| _Estudiantes_ | _Richard Robin Roque del Rio, Luis Jose Remuñan Ovies, Enol Ruiz Barcala, Ikram El Mabrouk Morhnane, Omayma El Imami Gaada_ | _Equipo responsable del análisis, diseño, implementación y documentación del sistema._
+| _Usuarios_ | _Personas que usen la aplicación_ | _Experiencia de juego sencilla, rápida y acceso a estadísticas._
+| _Profesores_ | _José Emilio Labra, Pablo González, Celia Melendi Lavandera, Diego Martín Fernández_ | _Supervisión del proyecto y evaluación de la calidad técnica y documental._
 |===

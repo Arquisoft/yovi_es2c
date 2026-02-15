@@ -2,11 +2,16 @@
   "name": "docs",
   "version": "1.0.0",
   "scripts": {
-    "build": "shx rm -rf build && asciidoctor -D build -a imagesdir=./images -r asciidoctor-diagram index.adoc && shx cp -R images build",
+    "build": "shx rm -rf build && asciidoctor -D build -a imagesdir=./images -r asciidoctor-kroki index.adoc && shx cp -R images build",
     "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "gh-pages": "^6.3.0",
     "shx": "^0.4.0"
+  },
+  "devDependencies": {
+    "@asciidoctor/cli": "^4.0.0",
+    "@asciidoctor/core": "^3.0.4",
+    "asciidoctor-kroki": "^0.18.1"
   }
 }

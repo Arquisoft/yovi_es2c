@@ -32,3 +32,29 @@ See https://docs.arc42.org/section-4/[Solution Strategy] in the arc42 documentat
 
 ****
 endif::arc42help[]
+
+La estrategia de solucion de YOVI se basa en una arquitectura modular por servicios, con comunicacion HTTP/REST y mensajes JSON, y un motor de juego separado para garantizar rendimiento y mantenibilidad.
+
+=== Decisiones tecnologicas clave
+* Webapp: React + Vite + TypeScript para una UI rapida y facil de evolucionar.
+* Servicio de usuarios: Node.js + Express para exponer una API REST sencilla.
+* Motor de juego: Rust para validar partidas y calcular movimientos con buen rendimiento.
+* Intercambio de datos: JSON y notacion YEN para el estado del tablero.
+* Despliegue local: Docker Compose para ejecutar los servicios de forma consistente.
+* Observabilidad basica: Prometheus/Grafana para metricas del backend.
+
+=== Descomposicion y patron arquitectonico
+* Separacion en tres subsistemas: webapp (UI), users (gestion de usuarios) y gamey (logica del juego).
+* Cada subsistema es desplegable de forma independiente y se comunica mediante REST.
+* Persistencia de resultados y datos de usuarios delegada al servicio de usuarios/BD.
+
+=== Estrategias para objetivos de calidad
+* Usabilidad: interfaz web minimalista con flujo de registro y juego directo.
+* Rendimiento: calculo del motor en Rust y endpoints ligeros.
+* Escalabilidad: servicios independientes y contenedorizados para escalar por separado.
+* Mantenibilidad: responsabilidades claras y contratos REST estables.
+* Fiabilidad: validacion de reglas centralizada en gamey.
+
+=== Decisiones organizativas
+* Repositorio mono-repo con carpetas por subsistema y documentacion arc42.
+* Integracion continua para build/test y despliegue mediante contenedores.

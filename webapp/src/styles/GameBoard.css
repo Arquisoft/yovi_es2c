@@ -1,0 +1,285 @@
+﻿.game-layout {
+  --ink: #e8eef7;
+  --panel: #0b1625;
+  --panel-hi: #11233a;
+  --line: #27425f;
+  --soft: #8ea5be;
+  --accent-blue: #37a1ff;
+  --accent-red: #ff5666;
+  position: relative;
+  background: radial-gradient(circle at 12% 10%, #173359 0%, #0f223a 28%, #0a1524 100%);
+  border: 1px solid #1f3853;
+  border-radius: 18px;
+  padding: 24px;
+  color: var(--ink);
+  box-shadow: 0 30px 60px rgba(7, 13, 22, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.game-layout::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(120deg, transparent 0%, rgba(255, 255, 255, 0.03) 45%, transparent 100%);
+  pointer-events: none;
+}
+
+.game-header {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  z-index: 1;
+}
+
+.title-block h2 {
+  margin: 0;
+  letter-spacing: 0.02em;
+  text-align: left;
+}
+
+.title-block {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.game-status {
+  margin: 10px auto 0;
+  color: #d9e8f8;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  width: fit-content;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(8, 20, 35, 0.72);
+  border: 1px solid #3a5f85;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 20px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+
+.game-status--turn {
+  animation: turnPulse 1s ease-in-out infinite alternate;
+}
+
+.game-status--win {
+  animation: winPulse 900ms ease-in-out infinite alternate;
+}
+
+.game-status--blue {
+  color: #d3f0ff;
+  border-color: #2f95ff;
+  box-shadow: 0 0 0 1px rgba(118, 194, 255, 0.35), 0 0 18px rgba(27, 145, 255, 0.35);
+}
+
+.game-status--red {
+  color: #ffd9de;
+  border-color: #ff4861;
+  box-shadow: 0 0 0 1px rgba(255, 123, 137, 0.35), 0 0 18px rgba(255, 63, 95, 0.33);
+}
+
+.player-pills {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 4px 10px;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.pill-blue {
+  color: #bfe5ff;
+  background: rgba(43, 129, 208, 0.2);
+  border-color: rgba(60, 165, 255, 0.35);
+}
+
+.pill-red {
+  color: #ffd2d8;
+  background: rgba(212, 59, 76, 0.2);
+  border-color: rgba(255, 98, 116, 0.35);
+}
+
+.pill.active {
+  opacity: 1;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.game-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.game-controls button {
+  border: 1px solid #2c4b69;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--ink);
+  background: linear-gradient(180deg, #1a334f 0%, #13283f 100%);
+}
+
+.game-controls button {
+  cursor: pointer;
+  transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.game-controls button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #4f7aa3;
+}
+
+.game-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.exit-button {
+  border-color: #6b3440;
+  background: linear-gradient(180deg, #572430 0%, #461c27 100%);
+}
+
+.y-board-wrap {
+  position: relative;
+  margin-top: 18px;
+  padding: 26px 24px 24px;
+  border: 1px solid #294666;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(11, 22, 37, 0.82) 0%, rgba(8, 17, 29, 0.92) 100%);
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+}
+
+
+.side-label {
+  position: absolute;
+  font-size: 0.72rem;
+  color: #8da3b9;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.side-a {
+  left: 14px;
+  top: 5px;
+}
+
+.side-b {
+  right: 14px;
+  top: 5px;
+}
+
+.side-c {
+  left: 50%;
+  bottom: 5px;
+  transform: translateX(-50%);
+}
+
+.y-board {
+  position: relative;
+  min-width: fit-content;
+  margin: 0 auto;
+}
+
+.y-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.y-cell {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid #3d5f82;
+  background: radial-gradient(circle at 30% 30%, #edf3fb 0%, #cbd7e4 65%, #a5b8cc 100%);
+  box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.45), 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.y-cell.empty:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow: 0 0 0 3px rgba(70, 168, 255, 0.22);
+}
+
+.y-cell.blue {
+  border-color: #006dc9;
+  background: radial-gradient(circle at 30% 30%, #7ee7ff 0%, #00a6ff 58%, #005dff 100%);
+  box-shadow: inset 0 1px 3px rgba(196, 241, 255, 0.5), 0 0 0 1px rgba(0, 173, 255, 0.2);
+}
+
+.y-cell.red {
+  border-color: #cf1d35;
+  background: radial-gradient(circle at 30% 30%, #ffb0b8 0%, #ff2a48 58%, #c4001d 100%);
+  box-shadow: inset 0 1px 3px rgba(255, 199, 208, 0.45), 0 0 0 1px rgba(255, 58, 91, 0.2);
+}
+
+.state-turn-blue .game-status {
+  color: #d3f0ff;
+  border-color: #2f95ff;
+  box-shadow: 0 0 0 1px rgba(118, 194, 255, 0.35), 0 0 18px rgba(27, 145, 255, 0.35);
+}
+
+.state-turn-red .game-status {
+  color: #ffd9de;
+  border-color: #ff4861;
+  box-shadow: 0 0 0 1px rgba(255, 123, 137, 0.35), 0 0 18px rgba(255, 63, 95, 0.33);
+}
+
+.state-win-blue .game-status,
+.state-win-red .game-status {
+  font-size: 1.02rem;
+}
+
+.state-win-blue {
+  box-shadow: 0 0 0 1px rgba(55, 161, 255, 0.5), 0 30px 60px rgba(7, 13, 22, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.state-win-red {
+  box-shadow: 0 0 0 1px rgba(255, 86, 102, 0.55), 0 30px 60px rgba(7, 13, 22, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+@keyframes turnPulse {
+  from {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  to {
+    transform: scale(1.03);
+    filter: brightness(1.15);
+  }
+}
+
+@keyframes winPulse {
+  from {
+    transform: scale(1);
+    letter-spacing: 0.06em;
+  }
+  to {
+    transform: scale(1.05);
+    letter-spacing: 0.09em;
+  }
+}
+
+@media (max-width: 768px) {
+  .game-layout {
+    padding: 14px;
+  }
+
+  .y-cell {
+    width: 38px;
+    height: 38px;
+  }
+
+}

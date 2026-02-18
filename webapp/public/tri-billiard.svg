@@ -1,0 +1,54 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(600 420) rotate(90) scale(420 620)">
+      <stop stop-color="#13254A"/>
+      <stop offset="1" stop-color="#070D1B"/>
+    </radialGradient>
+    <linearGradient id="triStroke" x1="300" y1="190" x2="900" y2="710" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38A2FF"/>
+      <stop offset="1" stop-color="#FF4C63"/>
+    </linearGradient>
+    <radialGradient id="ballBlue" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0.35 0.25) scale(1)">
+      <stop stop-color="#A5D8FF"/>
+      <stop offset="1" stop-color="#1A78FF"/>
+    </radialGradient>
+    <radialGradient id="ballRed" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0.35 0.25) scale(1)">
+      <stop stop-color="#FFC2CB"/>
+      <stop offset="1" stop-color="#FF4159"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="900" fill="url(#bg)"/>
+
+  <g opacity="0.35">
+    <circle cx="210" cy="220" r="130" fill="#1A78FF"/>
+    <circle cx="980" cy="260" r="145" fill="#FF4159"/>
+  </g>
+
+  <polygon points="600,185 295,710 905,710" fill="#0D1832" stroke="url(#triStroke)" stroke-width="16"/>
+  <polygon points="600,250 350,680 850,680" fill="#101F3E" stroke="#365A9C" stroke-opacity="0.7" stroke-width="5"/>
+
+  <g transform="translate(600 460)">
+    <circle cx="0" cy="-110" r="24" fill="url(#ballBlue)"/>
+    <circle cx="-28" cy="-62" r="24" fill="url(#ballRed)"/>
+    <circle cx="28" cy="-62" r="24" fill="url(#ballBlue)"/>
+    <circle cx="-56" cy="-14" r="24" fill="url(#ballBlue)"/>
+    <circle cx="0" cy="-14" r="24" fill="url(#ballRed)"/>
+    <circle cx="56" cy="-14" r="24" fill="url(#ballBlue)"/>
+    <circle cx="-84" cy="34" r="24" fill="url(#ballRed)"/>
+    <circle cx="-28" cy="34" r="24" fill="url(#ballBlue)"/>
+    <circle cx="28" cy="34" r="24" fill="url(#ballRed)"/>
+    <circle cx="84" cy="34" r="24" fill="url(#ballBlue)"/>
+  </g>
+
+  <g stroke-linecap="round">
+    <line x1="195" y1="120" x2="430" y2="350" stroke="#D2A77A" stroke-width="16"/>
+    <line x1="1005" y1="120" x2="770" y2="350" stroke="#D2A77A" stroke-width="16"/>
+    <line x1="170" y1="770" x2="455" y2="565" stroke="#D2A77A" stroke-width="16"/>
+    <line x1="1030" y1="770" x2="745" y2="565" stroke="#D2A77A" stroke-width="16"/>
+    <line x1="195" y1="120" x2="230" y2="154" stroke="#3A2A1A" stroke-width="8"/>
+    <line x1="1005" y1="120" x2="970" y2="154" stroke="#3A2A1A" stroke-width="8"/>
+    <line x1="170" y1="770" x2="205" y2="745" stroke="#3A2A1A" stroke-width="8"/>
+    <line x1="1030" y1="770" x2="995" y2="745" stroke="#3A2A1A" stroke-width="8"/>
+  </g>
+</svg>

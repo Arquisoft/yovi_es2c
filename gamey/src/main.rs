@@ -38,6 +38,6 @@ async fn main() {
             std::process::exit(1);
         }
     } else {
-        run_cli_game().expect("End CLI game");
+        run_cli_game().await.expect("End CLI game");
     }
 }

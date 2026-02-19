@@ -7,7 +7,7 @@
 //! - Server: Run as an HTTP server for bot API
 
 use crate::{
-    Coordinates, GameAction, Movement, RandomBot, RenderOptions, YBot, YBotRegistry, game,
+    Coordinates, GameAction, Movement, RandomBot, RenderOptions, YBot, YBotRegistry, game, db,
 };
 use crate::{GameStatus, GameY, PlayerId};
 use anyhow::Result;
@@ -16,6 +16,7 @@ use rustyline::DefaultEditor;
 use rustyline::error::ReadlineError;
 use std::fmt::Display;
 use std::sync::Arc;
+use std::time::{SystemTime, Instant, UNIX_EPOCH};
 
 /// Command-line arguments for the GameY application.
 #[derive(Parser, Debug)]
@@ -65,7 +66,8 @@ impl Display for Mode {
 ///
 /// This function parses command-line arguments, initializes the game,
 /// and runs the main game loop where players enter moves via the terminal.
-pub fn run_cli_game() -> Result<()> {
+pub async fn run_cli_game() -> Result<()> {
+    dotenvy::from_filename("env").ok(); // Load env file if it exists
     let args = CliArgs::parse();
     let mut render_options = crate::RenderOptions::default();
     let mut rl = DefaultEditor::new()?;
@@ -82,12 +84,37 @@ pub fn run_cli_game() -> Result<()> {
         }
     };
     let mut game = game::GameY::new(args.size);
+    let start_time = Instant::now();
+
     loop {
         println!("{}", game.render(&render_options));
         let status = game.status();
         match status {
             GameStatus::Finished { winner } => {
                 println!("Game over! Winner: {}", winner);
+
+                let duration = start_time.elapsed().as_secs();
+                let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64;
+
+                println!("Connecting to database...");
+                match db::connect().await {
+                    Ok(database) => {
+                        let record = db::GameRecord {
+                            winner: Some(winner.to_string()),
+                            board_size: args.size,
+                            moves_count: 0, // TODO: track moves count if needed
+                            timestamp,
+                            duration_seconds: duration,
+                        };
+                        if let Err(e) = db::save_game_result(&database, record).await {
+                            eprintln!("Failed to save game result: {}", e);
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("Failed to connect to database: {}", e);
+                    }
+                }
+
                 break;
             }
             GameStatus::Ongoing { next_player } => {

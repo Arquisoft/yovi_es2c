@@ -3,65 +3,72 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-runtime-view]]
 == Runtime View
 
+=== Inicialización de la Partida (Juego Y)
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Contents
-The runtime view describes concrete behavior and interactions of the system’s building blocks in form of scenarios from the following areas:
+* _En este escenario, dos jugadores se emparejan y el sistema inicializa el tablero triangular de hexágonos para comenzar la partida por turnos._
+* _Aspectos notables de la interacción: El servidor debe crear la estructura de datos que represente la cuadrícula hexagonal con forma de triángulo, asegurar que todas las celdas estén vacías, asignar los colores (Rojo y Azul) a los jugadores y notificar a ambos quién tiene el primer turno._
 
-* important use cases or features: how do building blocks execute them?
-* interactions at critical external interfaces: how do building blocks cooperate with users and neighboring systems?
-* operation and administration: launch, start-up, stop
-* error and exception scenarios
-
-Remark: The main criterion for the choice of possible scenarios (sequences, workflows) is their *architectural relevance*. It is *not* important to describe a large number of scenarios. You should rather document a representative selection.
-
-.Motivation
-You should understand how (instances of) building blocks of your system perform their job and communicate at runtime.
-You will mainly capture scenarios in your documentation to communicate your architecture to stakeholders that are less willing or able to read and understand the static models (building block view, deployment view).
-
-.Form
-There are many notations for describing scenarios, e.g.
-
-* numbered list of steps (in natural language)
-* activity diagrams or flow charts
-* sequence diagrams
-* BPMN or EPCs (event process chains)
-* state machines
-* ...
-
-
-.Further Information
-
-See https://docs.arc42.org/section-6/[Runtime View] in the arc42 documentation.
-
-****
-endif::arc42help[]
-
-=== <Runtime Scenario 1>
-
-
-* _<insert runtime diagram or textual description of the scenario>_
-* _<insert description of the notable aspects of the interactions between the
-building block instances depicted in this diagram.>_
-
-It is possible to use a sequence diagram:
-
-[plantuml,"Sequence diagram",png]
+[plantuml,"Sequence-Init-Game-Y",png]
 ----
-actor Alice
-actor Bob
-database Pod as "Bob's Pod"
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
-Alice  --> Pod: Store route
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+actor "Jugador 1" as J1
+actor "Jugador 2" as J2
+participant "Servicio de Partidas" as Match
+participant "Motor del Juego Y" as Engine
+database "Base de Datos" as DB
+
+J1 -> Match: Solicitar partida
+J2 -> Match: Solicitar partida
+Match -> Engine: Crear nueva partida (J1, J2)
+Engine -> Engine: Generar tablero triangular (Hexágonos)
+Engine -> DB: Guardar estado inicial (Vacío)
+Engine -> Engine: Asignar colores (J1: Rojo, J2: Azul)
+Engine --> Match: Partida Lista (ID_Partida)
+Match --> J1: Inicio Partida (Tu color: Rojo, Tu turno)
+Match --> J2: Inicio Partida (Tu color: Azul, Esperando)
 ----
 
-=== <Runtime Scenario 2>
+=== Colocación de Ficha (Validación de Turno)
 
-=== ...
+* _Este escenario describe el flujo de comunicación cuando un jugador intenta colocar una de sus fichas en el tablero._
+* _Aspectos notables de la interacción: El sistema (Building Block: Motor del Juego) actúa como árbitro. Debe validar que la petición proviene del jugador que tiene el turno activo, que las coordenadas del hexágono solicitado existen dentro de los límites del triángulo, y que el hexágono no está previamente ocupado por una ficha roja o azul._
 
-=== <Runtime Scenario n>
+[plantuml,"Sequence-Place-Piece-Y",png]
+----
+actor "Jugador (Turno Activo)" as Jugador
+participant "API / WebSockets" as API
+participant "Motor del Juego Y" as Engine
+database "Base de Datos" as DB
+
+Jugador -> API: Colocar Ficha (Coordenada Hex: X, Y)
+API -> Engine: Procesar movimiento (ID_Jugador, X, Y)
+Engine -> DB: Obtener estado del tablero
+DB --> Engine: Retorna estado actual
+Engine -> Engine: Validar Turno == ID_Jugador
+Engine -> Engine: Validar Celda (X, Y) == Vacía
+Engine -> DB: Actualizar Celda (X, Y) al Color del Jugador
+DB --> Engine: Confirmación de guardado
+Engine --> API: Movimiento Aceptado
+API --> Jugador: Actualizar Interfaz (Ficha colocada)
+----
+
+=== Detección de Condición de Victoria (Conexión de Paredes)
+
+* _Después de cada turno válido, el sistema evalúa si la ficha recién colocada completa un camino que conecta una pared del triángulo con otra._
+* _Aspectos notables de la interacción: Esta es la lógica de negocio más pesada. El motor delega en un servicio de búsqueda (Pathfinding) que, usando algoritmos de grafos (como DFS o BFS adaptados a la adyacencia hexagonal), comprueba la conectividad del grupo de fichas del color del jugador actual. Si hay conexión de bordes, se emite el evento de fin de partida._
+
+[plantuml,"Sequence-Win-Condition",png]
+----
+participant "Motor del Juego Y" as Engine
+participant "Lógica de Grafos (Pathfinding)" as Logic
+database "Base de Datos" as DB
+actor "Jugadores (1 y 2)" as Jugadores
+
+Engine -> Logic: Evaluar victoria tras movimiento (X, Y, Color)
+Logic -> DB: Obtener matriz hexagonal del tablero
+DB --> Logic: Tablero actualizado
+Logic -> Logic: Ejecutar BFS desde nodos de los bordes
+Logic --> Engine: Resultado: ¡Conexión encontrada entre 2 paredes!
+Engine -> DB: Actualizar Estado Partida a "Finalizada"
+Engine -> Engine: Asignar Ganador
+Engine -> Jugadores: Evento de Broadcast: Fin de Partida (Ganador: Color)
+----

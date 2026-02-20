@@ -6,3 +6,10 @@ docs/build
 .env
 webapp/.env
 .vscode/
+/.idea/.gitignore
+/.idea/misc.xml
+/.idea/modules.xml
+/gamey/src/package-lock.json
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/vcs.xml
+/.idea/yovi_es2c.iml

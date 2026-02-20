@@ -1,218 +1,235 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import './styles/GameBoard.css';
+import {
+  type Coords,
+  type YEN,
+  applyMove,
+  chooseBotMove,
+  gridToCoords,
+  newGameYEN,
+  parseLayout,
+} from './GameyApi';
 
-type Player = 0 | 1;
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type GameMode = 'local' | 'bot';
+
+interface GameBoardProps {
+  username: string;
+  mode: GameMode;
+  boardSize?: number;
+  onExit: () => void;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const PLAYER_COLOR: Record<number, 'blue' | 'red'> = { 0: 'blue', 1: 'red' };
+const PLAYER_NAME: Record<number, string> = { 0: 'Azul', 1: 'Rojo' };
 
 type Cell = {
   index: number;
   row: number;
-  x: number;
-  y: number;
-  z: number;
+  col: number;
+  coords: Coords;
 };
 
-interface GameBoardProps {
-  username: string;
-  onExit: () => void;
-}
-
-const PLAYER_NAME: Record<Player, string> = {
-  0: 'Azul',
-  1: 'Rojo',
-};
-
-function otherPlayer(player: Player): Player {
-  return player === 0 ? 1 : 0;
-}
-
-function createCells(size: number): Cell[] {
+function buildCells(size: number): Cell[] {
   const cells: Cell[] = [];
   let index = 0;
-
-  for (let row = 0; row < size; row += 1) {
-    const x = size - 1 - row;
-    for (let y = 0; y <= row; y += 1) {
-      const z = row - y;
-      cells.push({ index, row, x, y, z });
-      index += 1;
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col <= row; col++) {
+      cells.push({ index, row, col, coords: gridToCoords(row, col, size) });
+      index++;
     }
   }
-
   return cells;
 }
 
-function keyOf(cell: Cell): string {
-  return `${cell.x},${cell.y},${cell.z}`;
-}
-
-function findNeighbors(cell: Cell, byKey: Map<string, Cell>): Cell[] {
-  const neighbors: Cell[] = [];
-  const { x, y, z } = cell;
-
-  const candidates: Array<[number, number, number]> = [
-    [x - 1, y + 1, z],
-    [x - 1, y, z + 1],
-    [x + 1, y - 1, z],
-    [x, y - 1, z + 1],
-    [x + 1, y, z - 1],
-    [x, y + 1, z - 1],
-  ];
-
-  candidates.forEach(([nx, ny, nz]) => {
-    if (nx < 0 || ny < 0 || nz < 0) {
-      return;
-    }
-
-    const neighbor = byKey.get(`${nx},${ny},${nz}`);
-    if (neighbor) {
-      neighbors.push(neighbor);
-    }
-  });
-
-  return neighbors;
-}
-
-function hasWinningConnection(cells: Cell[], occupiedByPlayer: Set<number>): boolean {
-  const byKey = new Map<string, Cell>();
-  cells.forEach((cell) => {
-    byKey.set(keyOf(cell), cell);
-  });
-
-  const visited = new Set<number>();
-
-  for (const cell of cells) {
-    if (!occupiedByPlayer.has(cell.index) || visited.has(cell.index)) {
-      continue;
-    }
-
-    const stack = [cell];
-    let touchesA = false;
-    let touchesB = false;
-    let touchesC = false;
-
-    while (stack.length > 0) {
-      const current = stack.pop() as Cell;
-      if (visited.has(current.index)) {
-        continue;
-      }
-
-      visited.add(current.index);
-
-      if (current.x === 0) touchesA = true;
-      if (current.y === 0) touchesB = true;
-      if (current.z === 0) touchesC = true;
-
-      const neighbors = findNeighbors(current, byKey);
-      neighbors.forEach((neighbor) => {
-        if (occupiedByPlayer.has(neighbor.index) && !visited.has(neighbor.index)) {
-          stack.push(neighbor);
-        }
-      });
-    }
-
-    if (touchesA && touchesB && touchesC) {
-      return true;
+/** Convert YEN layout to a flat Map of index → 'B'|'R'|'.' */
+function layoutToIndexMap(yen: YEN): Map<number, string> {
+  const map = new Map<number, string>();
+  const rows = parseLayout(yen);
+  let index = 0;
+  for (let row = 0; row < rows.length; row++) {
+    for (let col = 0; col < rows[row].length; col++) {
+      map.set(index++, rows[row][col]);
     }
   }
-
-  return false;
+  return map;
 }
 
-const GameBoard = ({ username, onExit }: GameBoardProps) => {
-  const boardSize = 8;
-  const [occupied, setOccupied] = useState<Record<number, Player>>({});
-  const [nextPlayer, setNextPlayer] = useState<Player>(0);
-  const [winner, setWinner] = useState<Player | null>(null);
+// ─── Component ────────────────────────────────────────────────────────────────
 
-  const cells = useMemo(() => createCells(boardSize), [boardSize]);
+export default function GameBoard({
+                                    username,
+                                    mode,
+                                    boardSize = 8,
+                                    onExit,
+                                  }: GameBoardProps) {
+  const [yen, setYen] = useState<YEN>(() => newGameYEN(boardSize));
+  const [winner, setWinner] = useState<number | null>(null);
+  const nextPlayer = yen.turn;
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const botTurnRef = useRef(false);
 
-  const playAt = (index: number) => {
-    if (winner !== null || occupied[index] !== undefined) {
-      return;
+  const cells = useMemo(() => buildCells(boardSize), [boardSize]);
+  const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
+
+  // ── Bot turn ────────────────────────────────────────────────────────────────
+  const runBotTurn = useCallback(
+      async (currentYen: YEN) => {
+        if (botTurnRef.current) return;
+        botTurnRef.current = true;
+        setLoading(true);
+        setError(null);
+        try {
+          const botCoords = await chooseBotMove(currentYen);
+          const result = await applyMove(currentYen, botCoords);
+          setYen(result.yen);
+          if (result.status === 'finished') {
+            setWinner(result.winner);
+          }
+        } catch (e) {
+          setError(`Movimiento inválido: ${e instanceof Error ? e.message : String(e)}`);
+        } finally {
+          setLoading(false);
+          botTurnRef.current = false;
+        }
+      },
+      [],
+  );
+
+  // Trigger bot automatically when it's player 1's turn in bot mode
+  useEffect(() => {
+    if (mode === 'bot' && nextPlayer === 1 && winner === null && !loading) {
+      runBotTurn(yen);
     }
+  }, [mode, nextPlayer, winner, loading, yen, runBotTurn]);
 
-    const player = nextPlayer;
-    const nextOccupied: Record<number, Player> = { ...occupied, [index]: player };
-    setOccupied(nextOccupied);
+  // ── Human turn ──────────────────────────────────────────────────────────────
+  const playAt = useCallback(
+      async (cell: Cell) => {
+        if (winner !== null || loading) return;
+        if (mode === 'bot' && nextPlayer === 1) return; // bot's turn
 
-    const occupiedByPlayer = new Set<number>(
-      Object.entries(nextOccupied)
-        .filter(([, cellPlayer]) => cellPlayer === player)
-        .map(([cellIndex]) => Number(cellIndex)),
-    );
+        const owned = indexMap.get(cell.index);
+        if (owned && owned !== '.') return; // cell occupied
 
-    const didWin = hasWinningConnection(cells, occupiedByPlayer);
-    if (didWin) {
-      setWinner(player);
-      return;
-    }
+        setLoading(true);
+        setError(null);
+        try {
+          const result = await applyMove(yen, cell.coords);
+          setYen(result.yen);
+          if (result.status === 'finished') {
+            setWinner(result.winner);
+          }
+        } catch (e) {
+          setError(`Movimiento inválido: ${e instanceof Error ? e.message : String(e)}`);
+        } finally {
+          setLoading(false);
+        }
+      },
+      [winner, loading, mode, nextPlayer, indexMap, yen],
+  );
 
-    setNextPlayer(otherPlayer(player));
+  // ── Reset ───────────────────────────────────────────────────────────────────
+  const reset = () => {
+    setYen(newGameYEN(boardSize));
+    setWinner(null);
+    setError(null);
   };
 
-  const statusText =
-    winner === null
-      ? `ES TU TURNO, JUGADOR ${PLAYER_NAME[nextPlayer].toUpperCase()}`
-      : `GANO JUGADOR ${PLAYER_NAME[winner].toUpperCase()}`;
-  const layoutStateClass = winner !== null ? `state-win-${winner === 0 ? 'blue' : 'red'}` : `state-turn-${nextPlayer === 0 ? 'blue' : 'red'}`;
-  const statusClass =
-    winner !== null
-      ? `game-status game-status--win game-status--${winner === 0 ? 'blue' : 'red'}`
-      : `game-status game-status--turn game-status--${nextPlayer === 0 ? 'blue' : 'red'}`;
+  // ── Derived UI state ────────────────────────────────────────────────────────
+  const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
+
+  const statusText = (() => {
+    if (isBotThinking) return 'LA IA ESTÁ PENSANDO…';
+    if (winner !== null) return `¡GANÓ JUGADOR ${PLAYER_NAME[winner].toUpperCase()}!`;
+    const whose = mode === 'bot' && nextPlayer === 0 ? username.toUpperCase() : PLAYER_NAME[nextPlayer].toUpperCase();
+    return `ES TU TURNO, ${whose}`;
+  })();
+
+  const colorKey = winner !== null ? PLAYER_COLOR[winner] : PLAYER_COLOR[nextPlayer];
+  const layoutStateClass = winner !== null ? `state-win-${colorKey}` : `state-turn-${colorKey}`;
+  const statusClass = [
+    'game-status',
+    winner !== null ? 'game-status--win' : 'game-status--turn',
+    `game-status--${colorKey}`,
+  ].join(' ');
 
   return (
-    <section className={`game-layout ${layoutStateClass}`} aria-label="Tablero de juego Y">
-      <header className="game-header">
-        <div className="title-block">
-          <h2>Tablero Y de {username}</h2>
-          <div className="game-controls">
-            <button type="button" className="exit-button" onClick={onExit}>
-              Salir
-            </button>
+      <section className={`game-layout ${layoutStateClass}`} aria-label="Tablero de juego Y">
+        <header className="game-header">
+          <div className="title-block">
+            <h2>Tablero Y · {username}</h2>
+            <div className="game-controls">
+              <button type="button" className="exit-button" onClick={reset}>
+                Nueva partida
+              </button>
+              <button type="button" className="exit-button" onClick={onExit}>
+                Salir
+              </button>
+            </div>
+          </div>
+
+          <p className={statusClass}>{statusText}</p>
+
+          {error && (
+              <p className="game-error">{error}</p>
+          )}
+
+          <div className="player-pills">
+          <span className={`pill pill-blue ${nextPlayer === 0 || winner === 0 ? 'active' : ''}`}>
+            {mode === 'bot' ? username : 'Azul'}
+          </span>
+            <span className={`pill pill-red ${nextPlayer === 1 || winner === 1 ? 'active' : ''}`}>
+            {mode === 'bot' ? 'IA Bot' : 'Rojo'}
+          </span>
+          </div>
+        </header>
+
+        <div className="y-board-wrap">
+          <div className="side-label side-a">Lado A</div>
+          <div className="side-label side-b">Lado B</div>
+          <div className="side-label side-c">Lado C</div>
+
+          <div className="y-board">
+            {Array.from({ length: boardSize }, (_, row) => {
+              const rowCells = cells.filter((c) => c.row === row);
+              return (
+                  <div
+                      key={row}
+                      className="y-row"
+                      style={{ marginLeft: `${(boardSize - 1 - row) * 32}px` }}
+                  >
+                    {rowCells.map((cell) => {
+                      const symbol = indexMap.get(cell.index) ?? '.';
+                      const playerClass =
+                          symbol === 'B' ? 'blue' : symbol === 'R' ? 'red' : 'empty';
+                      const isDisabled =
+                          winner !== null ||
+                          symbol !== '.' ||
+                          loading ||
+                          (mode === 'bot' && nextPlayer === 1);
+
+                      return (
+                          <button
+                              type="button"
+                              key={cell.index}
+                              className={`y-cell ${playerClass}`}
+                              onClick={() => playAt(cell)}
+                              disabled={isDisabled}
+                              title={`(${cell.coords.x},${cell.coords.y},${cell.coords.z})`}
+                              aria-label={`celda ${cell.index}`}
+                          />
+                      );
+                    })}
+                  </div>
+              );
+            })}
           </div>
         </div>
-
-        <p className={statusClass}>{statusText}</p>
-
-        <div className="player-pills">
-          <span className={`pill pill-blue ${winner === 0 || (winner === null && nextPlayer === 0) ? 'active' : ''}`}>Azul</span>
-          <span className={`pill pill-red ${winner === 1 || (winner === null && nextPlayer === 1) ? 'active' : ''}`}>Rojo</span>
-        </div>
-      </header>
-
-      <div className="y-board-wrap">
-        <div className="side-label side-a">Lado A</div>
-        <div className="side-label side-b">Lado B</div>
-        <div className="side-label side-c">Lado C</div>
-
-        <div className="y-board">
-          {Array.from({ length: boardSize }, (_, row) => {
-            const rowCells = cells.filter((cell) => cell.row === row);
-            return (
-              <div key={row} className="y-row" style={{ marginLeft: `${(boardSize - 1 - row) * 32}px` }}>
-                {rowCells.map((cell) => {
-                  const owner = occupied[cell.index];
-                  const playerClass = owner === undefined ? 'empty' : owner === 0 ? 'blue' : 'red';
-
-                  return (
-                    <button
-                      type="button"
-                      key={cell.index}
-                      className={`y-cell ${playerClass}`}
-                      onClick={() => playAt(cell.index)}
-                      disabled={winner !== null || owner !== undefined}
-                      title={`idx ${cell.index} - (${cell.x},${cell.y},${cell.z})`}
-                      aria-label={`celda ${cell.index}`}
-                    />
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
+      </section>
   );
-};
-
-export default GameBoard;
+}

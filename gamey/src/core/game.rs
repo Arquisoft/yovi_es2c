@@ -780,4 +780,5 @@ mod tests {
             _ => panic!("Game should be ongoing"),
         }
     }
+
 }

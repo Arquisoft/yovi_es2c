@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 
-const RegisterForm: React.FC = () => {
+type RegisterFormProps = {
+  onRegisterSuccess: () => void;
+};
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
   const [username, setUsername] = useState('');
   const [responseMessage, setResponseMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -17,20 +21,25 @@ const RegisterForm: React.FC = () => {
     }
 
     setLoading(true);
+
     try {
-      const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
+      const API_URL =
+          import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+
       const res = await fetch(`${API_URL}/createuser`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username })
+        body: JSON.stringify({ username }),
       });
 
       const data = await res.json();
+
       if (res.ok) {
-        setResponseMessage(data.message);
         setUsername('');
+
+        onRegisterSuccess();
       } else {
         setError(data.error || 'Server error');
       }
@@ -42,33 +51,35 @@ const RegisterForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="register-form">
-      <div className="form-group">
-        <label htmlFor="username">Whats your name?</label>
-        <input
-          type="text"
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="form-input"
-        />
-      </div>
-      <button type="submit" className="submit-button" disabled={loading}>
-        {loading ? 'Entering...' : 'Lets go!'}
-      </button>
-
-      {responseMessage && (
-        <div className="success-message" style={{ marginTop: 12, color: 'green' }}>
-          {responseMessage}
+      <form onSubmit={handleSubmit} className="register-form">
+        <div className="form-group">
+          <label htmlFor="username">Whats your name?</label>
+          <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="form-input"
+          />
         </div>
-      )}
 
-      {error && (
-        <div className="error-message" style={{ marginTop: 12, color: 'red' }}>
-          {error}
-        </div>
-      )}
-    </form>
+        <button
+            type="submit"
+            className="submit-button"
+            disabled={loading}
+        >
+          {loading ? 'Entering...' : 'Lets go!'}
+        </button>
+
+        {error && (
+            <div
+                className="error-message"
+                style={{ marginTop: 12, color: 'red' }}
+            >
+              {error}
+            </div>
+        )}
+      </form>
   );
 };
 

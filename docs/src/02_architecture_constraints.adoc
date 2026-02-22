@@ -27,3 +27,36 @@ See https://docs.arc42.org/section-2/[Architecture Constraints] in the arc42 doc
 
 ****
 endif::arc42help[]
+
+
+=== Restricciones técnicas
+
+[options="header",cols="1,3"]
+|===
+|Restricción | Descripción
+|Tecnologías obligatorias | La aplicación web debe desarrollarse en TypeScript y el motor del juego en Rust.
+|Comunicación entre subsistemas | La comunicación entre la web y el motor se realizará mediante mensajes JSON.
+|Notación del juego | El estado de la partida se representará con la notación YEN.
+|API pública | Debe existir una API para que bots puedan interactuar y jugar.
+|===
+
+
+=== Restricciones organizativas
+
+[options="header",cols="1,3"]
+|===
+|Restricción | Descripción
+|Trabajo en equipo | El desarrollo se realiza en grupo y requiere coordinación y reparto de tareas.
+|Repositorio | El código y la documentación se gestionarán en un repositorio compartido.
+|Documentación | La documentación de arquitectura debe seguir el modelo arc42.
+|===
+
+
+=== Restricciones de despliegue
+
+[options="header",cols="1,3"]
+|===
+|Restricción | Descripción
+|Accesibilidad | La aplicación debe estar desplegada y accesible a través de Internet.
+|Evaluación | Se valorará funcionalidad, calidad de implementación y calidad de documentación.
+|===

@@ -1,0 +1,55 @@
+/* ─── Additions to App.css ────────────────────────────────────────────────── */
+
+/* Menu: username row */
+.menu__username-row {
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu__username-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #9fd1ff;
+}
+
+.menu__username-input {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 9px;
+    padding: 10px 14px;
+    font-size: 1rem;
+    font-family: inherit;
+    color: #f6f8ff;
+    outline: none;
+    transition: border-color 0.18s;
+    width: 100%;
+}
+
+.menu__username-input:focus {
+    border-color: var(--blue);
+}
+
+.menu__username-input::placeholder {
+    color: #5a6a8a;
+}
+
+.menu__name-error {
+    margin: 0;
+    font-size: 0.84rem;
+    color: var(--red);
+}
+
+/* Game: inline error */
+.game-error {
+    margin: 4px 0 0;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: rgba(255, 65, 89, 0.15);
+    border: 1px solid rgba(255, 65, 89, 0.4);
+    color: #ff8fa0;
+    font-size: 0.88rem;
+}

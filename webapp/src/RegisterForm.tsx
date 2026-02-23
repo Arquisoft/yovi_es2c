@@ -6,13 +6,11 @@ type RegisterFormProps = {
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
   const [username, setUsername] = useState('');
-  const [responseMessage, setResponseMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setResponseMessage(null);
     setError(null);
 
     if (!username.trim()) {
@@ -38,13 +36,16 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
 
       if (res.ok) {
         setUsername('');
-
         onRegisterSuccess();
       } else {
         setError(data.error || 'Server error');
       }
-    } catch (err: any) {
-      setError(err.message || 'Network error');
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Network error');
+      }
     } finally {
       setLoading(false);
     }

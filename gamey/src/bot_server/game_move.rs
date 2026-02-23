@@ -85,6 +85,8 @@ pub async fn make_move(
     check_api_version(&api_version)?;
 
     // Reconstruct the game from the provided YEN state
+    let turn = req.yen.turn();  // leer ANTES de consumir el YEN
+
     let mut game = GameY::try_from(req.yen).map_err(|e| {
         Json(ErrorResponse::error(
             &format!("Invalid YEN format: {}", e),
@@ -93,14 +95,15 @@ pub async fn make_move(
         ))
     })?;
 
-    // The current player is derived from the game status (YEN turn field)
-    let player = game.next_player().ok_or_else(|| {
-        Json(ErrorResponse::error(
+    if game.check_game_over() {
+        return Err(Json(ErrorResponse::error(
             "Game is already finished — no more moves allowed",
             Some(api_version.clone()),
             None,
-        ))
-    })?;
+        )));
+    }
+
+    let player = PlayerId::new(turn);
 
     let coords = Coordinates::new(req.x, req.y, req.z);
     let movement = Movement::Placement { player, coords };
@@ -150,7 +153,10 @@ mod tests {
     #[test]
     fn test_request_deserialization() {
         let json = r#"{
-            "yen": {"size": 3, "turn": 0, "players": ["B","R"], "layout": "../..."},
+            "yen": {"size": 3,
+            "turn": 0,
+            "players": ["B","R"],
+            "layout": "../..."},
             "x": 1, "y": 1, "z": 0
         }"#;
         let req: GameMoveRequest = serde_json::from_str(json).unwrap();

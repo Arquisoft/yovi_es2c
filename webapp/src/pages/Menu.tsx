@@ -1,22 +1,15 @@
-import { useState } from 'react';
 import type { GameMode } from '../GameBoard';
 
 type MenuProps = {
     onVolver: () => void;
+    initialUsername: string;
     onJugar: (username: string, mode: GameMode) => void;
 };
 
-export default function Menu({ onVolver, onJugar }: MenuProps) {
-    const [username, setUsername] = useState('');
-    const [nameError, setNameError] = useState('');
-
+export default function Menu({ onVolver, onJugar, initialUsername }: MenuProps) {
     const launch = (mode: GameMode) => {
-        if (!username.trim()) {
-            setNameError('Introduce tu nombre para jugar');
-            return;
-        }
-        setNameError('');
-        onJugar(username.trim(), mode);
+        const chosenUsername = initialUsername || 'Jugador';
+        onJugar(chosenUsername, mode);
     };
 
     return (
@@ -31,28 +24,8 @@ export default function Menu({ onVolver, onJugar }: MenuProps) {
                 </button>
             </header>
 
-            {/* Username field */}
-            <div className="menu__username-row panel">
-                <label className="menu__username-label" htmlFor="username-input">
-                    Tu nombre de jugador
-                </label>
-                <input
-                    id="username-input"
-                    className="menu__username-input"
-                    type="text"
-                    placeholder="Ej. AlphaGamer"
-                    value={username}
-                    onChange={(e) => {
-                        setUsername(e.target.value);
-                        if (nameError) setNameError('');
-                    }}
-                    maxLength={24}
-                />
-                {nameError && <p className="menu__name-error">{nameError}</p>}
-            </div>
-
             {/* Mode cards */}
-            <div className="menu__grid" style={{ marginTop: 14 }}>
+            <div className="menu__grid">
                 <button
                     className="menu__card panel tone-blue"
                     onClick={() => launch('local')}

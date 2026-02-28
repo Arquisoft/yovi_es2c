@@ -1,7 +1,7 @@
 import RegisterForm from '../RegisterForm';
 
 type InicioProps = {
-    onEntrar: () => void;
+    onEntrar: (username: string) => void;
 };
 
 export default function Inicio({ onEntrar }: InicioProps) {

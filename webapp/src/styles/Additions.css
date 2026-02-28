@@ -43,6 +43,86 @@
     color: var(--red);
 }
 
+/* Inicio: register form */
+.register-form {
+    width: min(520px, 100%);
+    margin: 0 auto;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(165deg, rgba(17, 28, 58, 0.78), rgba(9, 14, 31, 0.9));
+    box-shadow: 0 14px 30px rgba(2, 6, 18, 0.55);
+    display: grid;
+    gap: 10px;
+}
+
+.form-group {
+    display: grid;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #9fd1ff;
+    font-weight: 700;
+}
+
+.form-input {
+    width: 100%;
+    border-radius: 11px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(5, 10, 24, 0.7);
+    color: #f6f8ff;
+    padding: 12px 14px;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.form-input:focus {
+    border-color: rgba(42, 140, 255, 0.95);
+    box-shadow: 0 0 0 3px rgba(42, 140, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.submit-button {
+    border: 0;
+    border-radius: 11px;
+    padding: 11px 16px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #f7fbff;
+    background: linear-gradient(90deg, #2a8cff, #3261ff 35%, #ff4159 72%, #ffcb75);
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease, opacity 0.15s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}
+
+.submit-button:disabled {
+    opacity: 0.72;
+    cursor: not-allowed;
+}
+
+.error-message {
+    margin: 2px 0 0;
+    padding: 8px 10px;
+    border-radius: 9px;
+    border: 1px solid rgba(255, 65, 89, 0.5);
+    background: rgba(255, 65, 89, 0.12);
+    color: #ff9bab;
+    font-size: 0.86rem;
+}
+
 /* Game: inline error */
 .game-error {
     margin: 4px 0 0;

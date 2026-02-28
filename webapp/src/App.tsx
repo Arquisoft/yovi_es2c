@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import './App.css';
+import './styles/Additions.css';
 import Inicio from './pages/Inicio';
 import Menu from './pages/Menu';
 import GameBoard, { type GameMode } from './GameBoard';
@@ -11,6 +12,11 @@ export default function App() {
   const [username, setUsername] = useState('Jugador');
   const [gameMode, setGameMode] = useState<GameMode>('local');
 
+  const enterFromInicio = (name: string) => {
+    setUsername(name || 'Jugador');
+    setView('menu');
+  };
+
   const startGame = (name: string, mode: GameMode) => {
     setUsername(name || 'Jugador');
     setGameMode(mode);
@@ -20,11 +26,12 @@ export default function App() {
   return (
       <main className="app">
         {view === 'inicio' && (
-            <Inicio onEntrar={() => setView('menu')} />
+            <Inicio onEntrar={enterFromInicio} />
         )}
         {view === 'menu' && (
             <Menu
                 onVolver={() => setView('inicio')}
+                initialUsername={username}
                 onJugar={startGame}
             />
         )}

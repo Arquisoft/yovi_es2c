@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 type RegisterFormProps = {
-  onRegisterSuccess: () => void;
+  onRegisterSuccess: (username: string) => void;
 };
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
@@ -35,8 +35,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
       const data = await res.json();
 
       if (res.ok) {
+        const cleanUsername = username.trim();
         setUsername('');
-        onRegisterSuccess();
+        onRegisterSuccess(cleanUsername);
       } else {
         setError(data.error || 'Server error');
       }
@@ -75,7 +76,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onRegisterSuccess }) => {
         {error && (
             <div
                 className="error-message"
-                style={{ marginTop: 12, color: 'red' }}
             >
               {error}
             </div>

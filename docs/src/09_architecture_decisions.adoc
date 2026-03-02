@@ -15,7 +15,7 @@ Please use your judgement to decide whether an architectural decision should be 
 here in this central section or whether you better document it locally
 (e.g. within the white box template of one building block).
 
-Avoid redundancy. 
+Avoid redundancy.
 Refer to section 4, where you already captured the most important decisions of your architecture.
 
 .Motivation
@@ -35,3 +35,472 @@ There you will find links and examples about ADR.
 
 ****
 endif::arc42help[]
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-design-decisions]]
+== Architecture Decisions
+
+En esta sección se documentan las decisiones arquitectónicas más relevantes
+tomadas en el proyecto YOVI. Cada decisión incluye su contexto, las alternativas
+consideradas, la decisión adoptada y sus consecuencias.
+
+Las decisiones aquí recogidas afectan a la estructura global del sistema,
+su mantenibilidad, rendimiento y escalabilidad.
+
+'''
+
+=== ADR-01: Separación en dos subsistemas (Web + Motor en Rust)
+
+==== Estado
+Aceptada
+
+==== Contexto
+El sistema YOVI debe ofrecer:
+
+- Interfaz web para usuarios.
+- API pública para bots.
+- Validación eficiente de partidas.
+- Cálculo del siguiente movimiento con distintas estrategias.
+
+El motor requiere alto rendimiento y eficiencia computacional.
+
+==== Decisión
+Dividir el sistema en dos subsistemas principales:
+
+- Aplicación web en TypeScript (interfaz, gestión de usuarios y API).
+- Motor de juego independiente implementado en Rust.
+
+Ambos subsistemas se comunicarán mediante mensajes JSON utilizando la notación YEN.
+
+==== Alternativas consideradas
+1. Implementar todo el sistema en TypeScript.
+2. Implementar todo el sistema en Rust.
+3. Arquitectura separada (TypeScript + Rust).
+
+==== Justificación
+- Rust ofrece mayor rendimiento y seguridad para el motor.
+- TypeScript facilita el desarrollo web y la integración frontend.
+- Separación clara de responsabilidades.
+
+==== Consecuencias
+Positivas:
+- Mejor rendimiento del motor.
+- Alta modularidad.
+- Posibilidad de reutilizar el motor en otros entornos.
+
+Negativas:
+- Mayor complejidad de integración.
+- Necesidad de mantener un contrato estable de comunicación.
+
+'''
+
+=== ADR-02: Comunicación mediante JSON usando notación YEN
+
+==== Estado
+Aceptada
+
+==== Contexto
+Se necesita un formato estándar para representar:
+
+- Estado del tablero.
+- Movimientos.
+- Resultados de validación.
+- Interacción con la API pública.
+
+==== Decisión
+Usar mensajes JSON para la comunicación entre subsistemas,
+empleando la notación YEN para representar el tablero.
+
+==== Alternativas consideradas
+1. Comunicación binaria personalizada.
+2. Uso de XML o Protobuf.
+3. JSON + YEN.
+
+==== Justificación
+- JSON es ampliamente soportado.
+- Facil integración con la API pública.
+- YEN representa el tablero de forma compacta y estándar.
+
+==== Consecuencias
+Positivas:
+- Interoperabilidad.
+- Facilidad para bots externos.
+- Bajo acoplamiento tecnológico.
+
+Negativas:
+- Ligero overhead respecto a formatos binarios.
+- Necesidad de validar los mensajes.
+
+'''
+
+=== ADR-03: Exposición de una API pública para bots
+
+==== Estado
+Aceptada
+
+==== Contexto
+Uno de los objetivos del proyecto es permitir la interacción automatizada
+mediante bots externos.
+
+==== Decisión
+Diseñar una API REST pública que permita:
+
+- Iniciar partidas.
+- Realizar movimientos.
+- Consultar estado.
+- Acceder a estadísticas.
+
+==== Alternativas consideradas
+1. No exponer API pública.
+2. API privada solo interna.
+3. API REST pública documentada.
+
+==== Justificación
+- Cumple un objetivo principal del proyecto.
+- Permite integraciones futuras.
+- Facilita pruebas automatizadas.
+
+==== Consecuencias
+Positivas:
+- Extensibilidad funcional.
+- Integración con terceros.
+
+Negativas:
+- Necesidad de autenticación y control de uso.
+- Mayor superficie de ataque.
+
+'''
+
+=== ADR-04: Persistencia de estadísticas e histórico de partidas
+
+==== Estado
+Aceptada
+
+==== Contexto
+El sistema debe almacenar:
+
+- Usuarios registrados.
+- Historial de partidas.
+- Estadísticas acumuladas.
+
+==== Decisión
+Incorporar un sistema de persistencia para almacenar la información.
+
+==== Alternativas consideradas
+1. No almacenar histórico.
+2. Ficheros planos.
+3. Base de datos.
+
+==== Justificación
+- Necesidad de consultas estructuradas.
+- Mejora de experiencia de usuario.
+- Soporte para escalabilidad futura.
+
+==== Consecuencias
+Positivas:
+- Acceso rápido a información histórica.
+- Posibilidad de análisis estadístico.
+
+Negativas:
+- Mayor complejidad operativa.
+- Necesidad de copias de seguridad.
+
+'''
+
+=== ADR-05: Diseño modular para permitir nuevas estrategias
+
+==== Estado
+Aceptada
+
+==== Contexto
+El sistema debe permitir añadir nuevas estrategias sin modificar
+los módulos existentes.
+
+==== Decisión
+Diseñar el motor siguiendo el principio:
+
+- Abierto para extensión.
+- Cerrado para modificación.
+
+Las estrategias se implementarán como módulos intercambiables.
+
+==== Alternativas consideradas
+1. Estrategias dentro de un único módulo.
+2. Patrón estrategia / módulos intercambiables.
+3. Motor configurable por scripts externos.
+
+==== Justificación
+- Cumple el objetivo de mantenibilidad.
+- Reduce riesgo de errores al añadir nuevas estrategias.
+
+==== Consecuencias
+Positivas:
+- Extensibilidad sencilla.
+- Código más organizado.
+
+Negativas:
+- Mayor esfuerzo inicial de diseño.
+- Ligera complejidad estructural.
+
+'''
+
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-design-decisions]]
+== Architecture Decisions
+
+En esta sección se documentan las decisiones arquitectónicas más relevantes
+tomadas en el proyecto YOVI. Cada decisión incluye su contexto, las alternativas
+consideradas, la decisión adoptada y sus consecuencias.
+
+Las decisiones aquí recogidas afectan a la estructura global del sistema,
+su mantenibilidad, rendimiento y escalabilidad.
+
+'''
+
+=== ADR-01: Separación en dos subsistemas (Web + Motor en Rust)
+
+==== Estado
+Aceptada
+
+==== Contexto
+El sistema YOVI debe ofrecer:
+
+- Interfaz web para usuarios.
+- API pública para bots.
+- Validación eficiente de partidas.
+- Cálculo del siguiente movimiento con distintas estrategias.
+
+El motor requiere alto rendimiento y eficiencia computacional.
+
+==== Decisión
+Dividir el sistema en dos subsistemas principales:
+
+- Aplicación web en TypeScript (interfaz, gestión de usuarios y API).
+- Motor de juego independiente implementado en Rust.
+
+Ambos subsistemas se comunicarán mediante mensajes JSON utilizando la notación YEN.
+
+==== Alternativas consideradas
+1. Implementar todo el sistema en TypeScript.
+2. Implementar todo el sistema en Rust.
+3. Arquitectura separada (TypeScript + Rust).
+
+==== Justificación
+- Rust ofrece mayor rendimiento y seguridad para el motor.
+- TypeScript facilita el desarrollo web y la integración frontend.
+- Separación clara de responsabilidades.
+
+==== Consecuencias
+Positivas:
+- Mejor rendimiento del motor.
+- Alta modularidad.
+- Posibilidad de reutilizar el motor en otros entornos.
+
+Negativas:
+- Mayor complejidad de integración.
+- Necesidad de mantener un contrato estable de comunicación.
+
+'''
+
+=== ADR-02: Comunicación mediante JSON usando notación YEN
+
+==== Estado
+Aceptada
+
+==== Contexto
+Se necesita un formato estándar para representar:
+
+- Estado del tablero.
+- Movimientos.
+- Resultados de validación.
+- Interacción con la API pública.
+
+==== Decisión
+Usar mensajes JSON para la comunicación entre subsistemas,
+empleando la notación YEN para representar el tablero.
+
+==== Alternativas consideradas
+1. Comunicación binaria personalizada.
+2. Uso de XML o Protobuf.
+3. JSON + YEN.
+
+==== Justificación
+- JSON es ampliamente soportado.
+- Facil integración con la API pública.
+- YEN representa el tablero de forma compacta y estándar.
+
+==== Consecuencias
+Positivas:
+- Interoperabilidad.
+- Facilidad para bots externos.
+- Bajo acoplamiento tecnológico.
+
+Negativas:
+- Ligero overhead respecto a formatos binarios.
+- Necesidad de validar los mensajes.
+
+'''
+
+=== ADR-03: Exposición de una API pública para bots
+
+==== Estado
+Aceptada
+
+==== Contexto
+Uno de los objetivos del proyecto es permitir la interacción automatizada
+mediante bots externos.
+
+==== Decisión
+Diseñar una API REST pública que permita:
+
+- Iniciar partidas.
+- Realizar movimientos.
+- Consultar estado.
+- Acceder a estadísticas.
+
+==== Alternativas consideradas
+1. No exponer API pública.
+2. API privada solo interna.
+3. API REST pública documentada.
+
+==== Justificación
+- Cumple un objetivo principal del proyecto.
+- Permite integraciones futuras.
+- Facilita pruebas automatizadas.
+
+==== Consecuencias
+Positivas:
+- Extensibilidad funcional.
+- Integración con terceros.
+
+Negativas:
+- Necesidad de autenticación y control de uso.
+- Mayor superficie de ataque.
+
+'''
+
+=== ADR-04: Persistencia de estadísticas e histórico de partidas
+
+==== Estado
+Aceptada
+
+==== Contexto
+El sistema debe almacenar:
+
+- Usuarios registrados.
+- Historial de partidas.
+- Estadísticas acumuladas.
+
+==== Decisión
+Incorporar un sistema de persistencia para almacenar la información.
+
+==== Alternativas consideradas
+1. No almacenar histórico.
+2. Ficheros planos.
+3. Base de datos.
+
+==== Justificación
+- Necesidad de consultas estructuradas.
+- Mejora de experiencia de usuario.
+- Soporte para escalabilidad futura.
+
+==== Consecuencias
+Positivas:
+- Acceso rápido a información histórica.
+- Posibilidad de análisis estadístico.
+
+Negativas:
+- Mayor complejidad operativa.
+- Necesidad de copias de seguridad.
+
+'''
+
+=== ADR-05: Diseño modular para permitir nuevas estrategias
+
+==== Estado
+Aceptada
+
+==== Contexto
+El sistema debe permitir añadir nuevas estrategias sin modificar
+los módulos existentes.
+
+==== Decisión
+Diseñar el motor siguiendo el principio:
+
+- Abierto para extensión.
+- Cerrado para modificación.
+
+Las estrategias se implementarán como módulos intercambiables.
+
+==== Alternativas consideradas
+1. Estrategias dentro de un único módulo.
+2. Patrón estrategia / módulos intercambiables.
+3. Motor configurable por scripts externos.
+
+==== Justificación
+- Cumple el objetivo de mantenibilidad.
+- Reduce riesgo de errores al añadir nuevas estrategias.
+
+==== Consecuencias
+Positivas:
+- Extensibilidad sencilla.
+- Código más organizado.
+
+Negativas:
+- Mayor esfuerzo inicial de diseño.
+- Ligera complejidad estructural.
+
+'''
+
+=== ADR-06: Uso de MongoDB Atlas como sistema de persistencia
+
+==== Estado
+Aceptada
+
+==== Contexto
+El sistema YOVI necesita almacenar:
+
+- Usuarios registrados.
+- Historial de partidas.
+- Estadísticas.
+- Estados de tablero representados en formato JSON/YEN.
+
+Se requiere además:
+
+- Accceso seguro desde Internet.
+- Alta disponibilidad del servicio.
+- Copias de seguridad automáticas.
+- Escalabilidad sin administrar infraestructura propia.
+
+==== Decisión
+Utilizar MongoDB Atlas como servicio gestionado en la nube
+para la persistencia de datos del sistema.
+
+==== Alternativas consideradas
+1. Base de datos relacional autogestionada (PostgreSQL/MySQL).
+2. MongoDB autogestionado en un servidor propio.
+3. MongoDB Atlas (servicio cloud gestionado).
+
+==== Justificación
+- El estado del tablero y las partidas se representan naturalmente como documentos JSON.
+- Permite estructuras flexibles sin migraciones complejas.
+- Atlas elimina la necesidad de administrar servidores y mantenimiento.
+- Proporciona copias de seguridad automáticas y alta disponibilidad.
+- Permite escalar recursos fácilmente según la demanda.
+- Ofrece acceso seguro mediante autenticación y control de red.
+- Integración sencilla con aplicaciones web.
+
+==== Consecuencias
+Positivas:
+- Alta disponibilidad y fiabilidad.
+- Escalabilidad sencilla.
+- Backups automáticos.
+- Reducción de carga operativa del equipo.
+- Acceso remoto seguro.
+
+Negativas:
+- Dependencia de un servicio externo.
+- Posibles costes al aumentar el uso.
+- Requiere correcta configuración de seguridad y accesos.
+

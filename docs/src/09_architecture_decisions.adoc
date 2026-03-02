@@ -258,3 +258,65 @@ Negativas:
 - Posibles costes al aumentar el uso.
 - Requiere correcta configuración de seguridad y accesos.
 
+
+
+=== ADR-07: Uso de AWS como infraestructura de despliegue
+
+==== Estado
+Aceptada
+
+==== Contexto
+El sistema YOVI necesita:
+
+- Hospedar la aplicación web.
+- Ejecutar el motor en Rust.
+- Exponer la API pública a Internet.
+- Garantizar disponibilidad y escalabilidad.
+- Permitir despliegues reproducibles.
+- Separar entornos (desarrollo, pruebas, producción).
+
+Se requiere además:
+
+- Infraestructura fiable y ampliamente soportada.
+- Posibilidad de escalar horizontalmente.
+- Integración con servicios gestionados.
+
+==== Decisión
+Utilizar Amazon Web Services (AWS) como proveedor de infraestructura
+para desplegar los componentes del sistema.
+
+La arquitectura se desplegará sobre servicios cloud gestionados,
+permitiendo:
+
+- Servidores virtuales (EC2) o contenedores.
+- Balanceo de carga.
+- Configuración de red segura.
+- Escalado automático.
+- Integración con MongoDB Atlas y otros servicios externos.
+
+==== Alternativas consideradas
+1. Otros proveedores cloud (Azure).
+2. Otros proveedores cloud (Google Cloud).
+
+==== Justificación
+- AWS ofrece alta disponibilidad global.
+- Amplio ecosistema de servicios.
+- Escalabilidad bajo demanda.
+- Buen soporte para arquitecturas distribuidas.
+- Integración sencilla con despliegues modernos (CI/CD, contenedores).
+- El equipo ya ha trabajado previamente con Azure en otros proyectos,
+  por lo que adoptar AWS amplía la experiencia en entornos multi-cloud.
+
+==== Consecuencias
+Positivas:
+- Alta disponibilidad.
+- Escalabilidad horizontal.
+- Infraestructura flexible.
+- Separación clara de entornos.
+- Soporte para automatización de despliegues.
+
+Negativas:
+- Dependencia de proveedor externo.
+- Costes variables según uso.
+- Necesidad de configurar correctamente seguridad (IAM, redes, firewall).
+

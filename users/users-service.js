@@ -11,22 +11,22 @@ const { MongoClient } = require('mongodb');
 const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017';
 const client = new MongoClient(mongoUri);
 
-let usersCollection;
-
 async function connectToMongo() {
   try {
     await client.connect();
     console.log('Connected to MongoDB');
     const db = client.db('yovi2c_db');
-    usersCollection = db.collection('users');
+    app.locals.usersCollection = db.collection('users');
   } catch (err) {
     console.error('Failed to connect to MongoDB', err);
   }
 }
 
-connectToMongo();
+if (process.env.NODE_ENV !== 'test') {
+  connectToMongo();
+}
 
-const metricsMiddleware = promBundle({includeMethod: true});
+const metricsMiddleware = promBundle({ includeMethod: true });
 app.use(metricsMiddleware);
 
 try {
@@ -46,12 +46,15 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// ------------------- Rutas -------------------
 app.post('/createuser', async (req, res) => {
-  const username = req.body && req.body.username;
+  const username = req.body?.username;
 
   if (!username || !username.trim()) {
     return res.status(400).json({ error: 'Username is required' });
   }
+
+  const usersCollection = req.app.locals.usersCollection;
 
   if (!usersCollection) {
     return res.status(500).json({ error: 'Database not initialized' });
@@ -64,17 +67,16 @@ app.post('/createuser', async (req, res) => {
     }
 
     await usersCollection.insertOne({ username, createdAt: new Date() });
-    res.json({ message: `User ${username} created successfully!` });
+    res.status(200).json({ message: `Hello ${username}! Welcome to the app` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-
 if (require.main === module) {
   app.listen(port, () => {
-    console.log(`User Service listening at http://localhost:${port}`)
-  })
+    console.log(`User Service listening at http://localhost:${port}`);
+  });
 }
 
-module.exports = app
+module.exports = app;

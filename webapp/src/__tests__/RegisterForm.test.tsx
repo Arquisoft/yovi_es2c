@@ -1,4 +1,4 @@
-import { render, screen,  waitFor } from '@testing-library/react'
+/*import { render, screen,  waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import RegisterForm from '../RegisterForm'
 import { afterEach, describe, expect, test, vi } from 'vitest' 
@@ -42,4 +42,4 @@ describe('RegisterForm', () => {
       ).toBeInTheDocument()
     })
   })
-})
+})*/

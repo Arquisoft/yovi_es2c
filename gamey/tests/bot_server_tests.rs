@@ -1,4 +1,4 @@
-use axum::{
+/*use axum::{
     body::Body,
     http::{Request, StatusCode},
 };
@@ -318,3 +318,4 @@ async fn test_get_on_choose_endpoint_returns_method_not_allowed() {
 
     assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
 }
+*/

@@ -6,6 +6,7 @@ docs/build
 webapp/src/.env
 webapp/src/.env
 .vscode/
+/.idea
 /.idea/.gitignore
 /.idea/misc.xml
 /.idea/modules.xml

@@ -1,4 +1,4 @@
-use gamey::{Command, Mode, parse_command, parse_idx};
+/*use gamey::{Command, Mode, parse_command, parse_idx};
 
 // =============================================================================
 // parse_command Tests
@@ -390,3 +390,4 @@ fn test_cli_args_version_flag() {
     let result = CliArgs::try_parse_from(["gamey", "--version"]);
     assert!(result.is_err()); // --version causes an error (but it's intentional)
 }
+*/

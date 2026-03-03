@@ -34,7 +34,7 @@ export default function Inicio({ onEntrar }: InicioProps) {
                 </div>
 
                 <div className="inicio__actions">
-                    <RegisterForm onRegisterSuccess={onEntrar} />
+                    <RegisterForm onAuthSuccess={onEntrar} />
                 </div>
             </div>
         </section>

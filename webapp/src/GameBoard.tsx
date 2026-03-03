@@ -168,7 +168,7 @@ export default function GameBoard({
                             Nueva partida
                         </button>
                         <button type="button" className="exit-button" onClick={onExit}>
-                            Salir
+                            Salir de la partida
                         </button>
                     </div>
                 </div>

@@ -56,6 +56,32 @@
     gap: 10px;
 }
 
+.auth-mode-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.auth-mode-button {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: #cfe4ff;
+    background: rgba(5, 10, 24, 0.65);
+    cursor: pointer;
+}
+
+.auth-mode-button--active {
+    border-color: rgba(42, 140, 255, 0.95);
+    background: rgba(42, 140, 255, 0.2);
+    color: #f6f8ff;
+}
+
 .form-group {
     display: grid;
     gap: 8px;

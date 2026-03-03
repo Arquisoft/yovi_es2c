@@ -12,6 +12,11 @@ export default function App() {
   const [username, setUsername] = useState('Jugador');
   const [gameMode, setGameMode] = useState<GameMode>('local');
 
+  const logout = () => {
+    setUsername('Jugador');
+    setView('inicio');
+  };
+
   const enterFromInicio = (name: string) => {
     setUsername(name || 'Jugador');
     setView('menu');
@@ -30,7 +35,7 @@ export default function App() {
         )}
         {view === 'menu' && (
             <Menu
-                onVolver={() => setView('inicio')}
+                onLogout={logout}
                 initialUsername={username}
                 onJugar={startGame}
             />

@@ -1,12 +1,12 @@
 import type { GameMode } from '../GameBoard';
 
 type MenuProps = {
-    onVolver: () => void;
+    onLogout: () => void;
     initialUsername: string;
     onJugar: (username: string, mode: GameMode) => void;
 };
 
-export default function Menu({ onVolver, onJugar, initialUsername }: MenuProps) {
+export default function Menu({ onLogout, onJugar, initialUsername }: MenuProps) {
     const launch = (mode: GameMode) => {
         const chosenUsername = initialUsername || 'Jugador';
         onJugar(chosenUsername, mode);
@@ -19,9 +19,11 @@ export default function Menu({ onVolver, onJugar, initialUsername }: MenuProps) 
                     <p className="menu__eyebrow">GAME LOBBY</p>
                     <h2 className="menu__title">Elige Tu Modo</h2>
                 </div>
-                <button className="menu__back" onClick={onVolver}>
-                    Volver al inicio
-                </button>
+                <div className="menu__actions">
+                    <button className="menu__back" onClick={onLogout}>
+                        Desconectar
+                    </button>
+                </div>
             </header>
 
             {/* Mode cards */}

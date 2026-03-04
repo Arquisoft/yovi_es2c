@@ -2,12 +2,12 @@ openapi: 3.0.0
 info:
   title: User Service API
   version: 1.0.0
-  description: API for managing users
+  description: API for authentication and user creation
 paths:
-  /createuser:
+  /register:
     post:
-      summary: Creates a new user
-      description: Creates a new user with the given username.
+      summary: Register a new user
+      description: Creates a new user with username and hashed password.
       requestBody:
         required: true
         content:
@@ -16,13 +16,18 @@ paths:
               type: object
               required:
                 - username
+                - password
               properties:
                 username:
                   type: string
-                  example: "testuser"
+                  example: testuser
+                password:
+                  type: string
+                  format: password
+                  example: mySecret123
       responses:
-        '200':
-          description: User created successfully
+        '201':
+          description: User registered successfully
           content:
             application/json:
               schema:
@@ -30,6 +35,71 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Hello testuser! welcome to the course!"
+                    example: User registered successfully
+                  username:
+                    type: string
+                    example: testuser
         '400':
-          description: Error creating user
+          description: Invalid input
+        '409':
+          description: Username already exists
+  /login:
+    post:
+      summary: Login with existing credentials
+      description: Authenticates a user by username and password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: testuser
+                password:
+                  type: string
+                  format: password
+                  example: mySecret123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login successful
+                  username:
+                    type: string
+                    example: testuser
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid credentials
+  /createuser:
+    post:
+      summary: Backward compatible register alias
+      description: Same behavior as /register.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '201':
+          description: User registered successfully

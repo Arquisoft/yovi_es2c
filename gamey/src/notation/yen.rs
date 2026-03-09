@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 /// - `players`: Character symbols for each player (e.g., ['B', 'R'] for Blue/Red)
 /// - `layout`: A compact string where rows are separated by '/', and cells are
 ///   represented by player symbols or '.' for empty cells
+/// - `variant`: Game variant (`"standard"` or `"why_not"`)
 ///
 /// # Example
 /// ```json
@@ -18,7 +19,8 @@ use serde::{Deserialize, Serialize};
 ///   "size": 3,
 ///   "turn": 0,
 ///   "players": ["B", "R"],
-///   "layout": "B/BR/.R."
+///   "layout": "B/BR/.R.",
+///   "variant": "standard"
 /// }
 /// ```
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -34,6 +36,8 @@ pub struct YEN {
     /// Rows are separated by '/', with cells represented by player symbols
     /// or '.' for empty cells. Example: "B/..R/.B.R"
     layout: String,
+    /// Game variant.
+    variant: String,
 }
 
 impl YEN {
@@ -44,12 +48,20 @@ impl YEN {
     /// * `turn` - Index of the player to move (0 or 1)
     /// * `players` - Character symbols for each player
     /// * `layout` - The board layout string
-    pub fn new(size: u32, turn: u32, players: Vec<char>, layout: String) -> Self {
+    /// * `variant` - Game variant ("standard" or "why_not")
+    pub fn new(
+        size: u32,
+        turn: u32,
+        players: Vec<char>,
+        layout: String,
+        variant: String,
+    ) -> Self {
         YEN {
             size,
             turn,
             players,
             layout,
+            variant,
         }
     }
 
@@ -72,6 +84,11 @@ impl YEN {
     pub fn players(&self) -> &[char] {
         &self.players
     }
+
+    /// Returns the game variant.
+    pub fn variant(&self) -> &str {
+        &self.variant
+    }
 }
 
 #[cfg(test)]
@@ -80,20 +97,34 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let yen = YEN::new(3, 0, vec!['B', 'R'], "B/BR/.R.".to_string());
+        let yen = YEN::new(
+            3,
+            0,
+            vec!['B', 'R'],
+            "B/BR/.R.".to_string(),
+            "standard".to_string(),
+        );
         assert_eq!(yen.size(), 3);
         assert_eq!(yen.turn(), 0);
         assert_eq!(yen.layout(), "B/BR/.R.");
         assert_eq!(yen.players(), &['B', 'R']);
+        assert_eq!(yen.variant(), "standard");
     }
 
     #[test]
     fn test_serialize() {
-        let yen = YEN::new(3, 0, vec!['B', 'R'], "B/BR/.R.".to_string());
+        let yen = YEN::new(
+            3,
+            0,
+            vec!['B', 'R'],
+            "B/BR/.R.".to_string(),
+            "standard".to_string(),
+        );
         let json = serde_json::to_string(&yen).unwrap();
         assert!(json.contains("\"size\":3"));
         assert!(json.contains("\"turn\":0"));
         assert!(json.contains("\"layout\":\"B/BR/.R.\""));
+        assert!(json.contains("\"variant\":\"standard\""));
     }
 
     #[test]
@@ -102,46 +133,76 @@ mod tests {
             "size": 3,
             "turn": 1,
             "players": ["B", "R"],
-            "layout": "B/BR/.R."
+            "layout": "B/BR/.R.",
+            "variant": "why_not"
         }"#;
         let yen: YEN = serde_json::from_str(json).unwrap();
         assert_eq!(yen.size(), 3);
         assert_eq!(yen.turn(), 1);
         assert_eq!(yen.layout(), "B/BR/.R.");
         assert_eq!(yen.players(), &['B', 'R']);
+        assert_eq!(yen.variant(), "why_not");
     }
 
     #[test]
     fn test_clone() {
-        let yen = YEN::new(5, 0, vec!['B', 'R'], "./.././.../.....".to_string());
+        let yen = YEN::new(
+            5,
+            0,
+            vec!['B', 'R'],
+            "./.././.../.....".to_string(),
+            "standard".to_string(),
+        );
         let cloned = yen.clone();
         assert_eq!(yen.size(), cloned.size());
         assert_eq!(yen.turn(), cloned.turn());
         assert_eq!(yen.layout(), cloned.layout());
+        assert_eq!(yen.variant(), cloned.variant());
     }
 
     #[test]
     fn test_empty_board() {
-        let yen = YEN::new(2, 0, vec!['B', 'R'], "./../..".to_string());
+        let yen = YEN::new(
+            2,
+            0,
+            vec!['B', 'R'],
+            "./../..".to_string(),
+            "standard".to_string(),
+        );
         assert_eq!(yen.size(), 2);
         assert_eq!(yen.layout(), "./../..");
+        assert_eq!(yen.variant(), "standard");
     }
 
     #[test]
     fn test_single_cell_board() {
-        let yen = YEN::new(1, 0, vec!['B', 'R'], ".".to_string());
+        let yen = YEN::new(
+            1,
+            0,
+            vec!['B', 'R'],
+            ".".to_string(),
+            "why_not".to_string(),
+        );
         assert_eq!(yen.size(), 1);
         assert_eq!(yen.layout(), ".");
+        assert_eq!(yen.variant(), "why_not");
     }
 
     #[test]
     fn test_roundtrip_serialization() {
-        let original = YEN::new(4, 1, vec!['B', 'R'], "B/.R/BBR/....".to_string());
+        let original = YEN::new(
+            4,
+            1,
+            vec!['B', 'R'],
+            "B/.R/BBR/....".to_string(),
+            "why_not".to_string(),
+        );
         let json = serde_json::to_string(&original).unwrap();
         let restored: YEN = serde_json::from_str(&json).unwrap();
         assert_eq!(original.size(), restored.size());
         assert_eq!(original.turn(), restored.turn());
         assert_eq!(original.layout(), restored.layout());
         assert_eq!(original.players(), restored.players());
+        assert_eq!(original.variant(), restored.variant());
     }
 }

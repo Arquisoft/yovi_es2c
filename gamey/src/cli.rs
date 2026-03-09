@@ -83,7 +83,7 @@ pub async fn run_cli_game() -> Result<()> {
             return Ok(());
         }
     };
-    let mut game = game::GameY::new(args.size);
+    let mut game = game::GameY::new(args.size , crate::game::Variant::Standard);
     let start_time = Instant::now();
     loop {
         println!("{}", game.render(&render_options));

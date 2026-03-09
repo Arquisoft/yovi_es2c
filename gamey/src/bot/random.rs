@@ -53,7 +53,7 @@ mod tests {
     #[test]
     fn test_random_bot_returns_move_on_empty_board() {
         let bot = RandomBot;
-        let game = GameY::new(5);
+        let game = GameY::new(5 , crate::game::Variant::Standard);
 
         let chosen_move = bot.choose_move(&game);
         assert!(chosen_move.is_some());
@@ -62,7 +62,7 @@ mod tests {
     #[test]
     fn test_random_bot_returns_valid_coordinates() {
         let bot = RandomBot;
-        let game = GameY::new(5);
+        let game = GameY::new(5 , crate::game::Variant::Standard);
 
         let coords = bot.choose_move(&game).unwrap();
         let index = coords.to_index(game.board_size());
@@ -75,7 +75,7 @@ mod tests {
     #[test]
     fn test_random_bot_returns_none_on_full_board() {
         let bot = RandomBot;
-        let mut game = GameY::new(2);
+        let mut game = GameY::new(2 , crate::game::Variant::Standard);
 
         // Fill the board (size 2 has 3 cells)
         let moves = vec![
@@ -106,7 +106,7 @@ mod tests {
     #[test]
     fn test_random_bot_chooses_from_available_cells() {
         let bot = RandomBot;
-        let mut game = GameY::new(3);
+        let mut game = GameY::new(3 , crate::game::Variant::Standard) ;
 
         // Make some moves to reduce available cells
         game.add_move(Movement::Placement {
@@ -125,7 +125,7 @@ mod tests {
     #[test]
     fn test_random_bot_multiple_calls_return_valid_moves() {
         let bot = RandomBot;
-        let game = GameY::new(7);
+        let game = GameY::new(7 , crate::game::Variant::Standard);
 
         // Call choose_move multiple times to exercise the randomness
         for _ in 0..10 {

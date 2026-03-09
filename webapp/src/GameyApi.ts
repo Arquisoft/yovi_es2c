@@ -16,6 +16,7 @@ export interface YEN {
     turn: number;          // 0 = Blue's turn, 1 = Red's turn
     players: string[];     // ["B", "R"]
     layout: string;        // e.g. "B/../..." rows joined by '/'
+    variant: GameVariant;  // "standard" | "why_not"
 }
 
 /** Barycentric coordinates (x + y + z must equal board_size - 1). */
@@ -24,6 +25,8 @@ export interface Coords {
     y: number;
     z: number;
 }
+
+export type GameVariant = "standard" | "why_not";
 
 // ─── /game/move ──────────────────────────────────────────────────────────────
 
@@ -42,7 +45,10 @@ export interface GameMoveResponse {
  * @returns      Updated state, status, and optional winner
  * @throws       Error with a human-readable message on invalid move or network failure
  */
-export async function applyMove(yen: YEN, coords: Coords): Promise<GameMoveResponse> {
+export async function applyMove(
+    yen: YEN,
+    coords: Coords
+): Promise<GameMoveResponse> {
     const res = await fetch(`${GAMEY_URL}/${API_VERSION}/game/move`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -73,11 +79,14 @@ export interface BotChooseResponse {
  * @param botId Bot identifier — use "random_bot" for the built-in random bot
  * @returns     The coordinates the bot wants to play
  */
-export async function chooseBotMove(yen: YEN, botId = "random_bot"): Promise<Coords> {
+export async function chooseBotMove(
+    yen: YEN,
+    botId = "random_bot"
+): Promise<Coords> {
     const res = await fetch(`${GAMEY_URL}/${API_VERSION}/ybot/choose/${botId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(yen),
+        body: JSON.stringify({ yen }),
     });
 
     const data = await res.json();
@@ -95,11 +104,12 @@ export async function chooseBotMove(yen: YEN, botId = "random_bot"): Promise<Coo
  * Build an empty YEN for a new game with the given board size.
  * Player 0 (Blue) always goes first.
  */
-export function newGameYEN(size: number): YEN {
+export function newGameYEN(size: number, variant: GameVariant): YEN {
     const layout = Array.from({ length: size }, (_, r) =>
         ".".repeat(r + 1)
     ).join("/");
-    return { size, turn: 0, players: ["B", "R"], layout };
+
+    return { size, turn: 0, players: ["B", "R"], layout, variant };
 }
 
 /**

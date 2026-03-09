@@ -5,6 +5,10 @@ lcov.info
 docs/build
 webapp/src/.env
 webapp/src/.env
+*.tsbuildinfo
+.env
+.env.*
+.env.local
 .vscode/
 /.idea
 /.idea/.gitignore

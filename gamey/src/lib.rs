@@ -12,13 +12,14 @@
 //! - [`notation`]: Game notation formats (YEN)
 //! - [`gamey_error`]: Error types for the library
 //!
+//!
 //! # Example
 //!
 //! ```
 //! use gamey::{GameY, Coordinates, Movement, PlayerId};
-//!
+//! use gamey::core::game::Variant;
 //! // Create a new game with board size 5
-//! let mut game = GameY::new(5);
+//! let mut game = GameY::new(5, Variant::Standard);
 //!
 //! // Make a move
 //! let movement = Movement::Placement {

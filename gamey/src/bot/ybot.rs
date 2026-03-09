@@ -8,5 +8,5 @@ pub trait YBot: Send + Sync {
     fn name(&self) -> &str;
 
     /// Chooses a move based on the current game state.
-    fn choose_move(&self, board: &GameY) -> Option<Coordinates>;
+    fn choose_move(&self, board: &GameY ) -> Option<Coordinates>;
 }

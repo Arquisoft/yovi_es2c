@@ -11,6 +11,7 @@ export default function App() {
   const [view, setView] = useState<View>('inicio');
   const [username, setUsername] = useState('Jugador');
   const [gameMode, setGameMode] = useState<GameMode>('local');
+  const [boardSize, setBoardSize] = useState(7);
 
   const logout = () => {
     setUsername('Jugador');
@@ -22,9 +23,10 @@ export default function App() {
     setView('menu');
   };
 
-  const startGame = (name: string, mode: GameMode) => {
+  const startGame = (name: string, mode: GameMode, size: number) => {
     setUsername(name || 'Jugador');
     setGameMode(mode);
+    setBoardSize(size);
     setView('game');
   };
 
@@ -44,7 +46,7 @@ export default function App() {
             <GameBoard
                 username={username}
                 mode={gameMode}
-                boardSize={8}
+                boardSize={boardSize}
                 onExit={() => setView('menu')}
             />
         )}

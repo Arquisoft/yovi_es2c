@@ -1,7 +1,9 @@
-use crate::{Coordinates, GameY, YEN, check_api_version, error::ErrorResponse, state::AppState};
+use crate::{
+    check_api_version, error::ErrorResponse, state::AppState, Coordinates, GameY, YEN,
+};
 use axum::{
-    Json,
     extract::{Path, State},
+    Json,
 };
 use serde::{Deserialize, Serialize};
 
@@ -12,6 +14,13 @@ pub struct ChooseParams {
     api_version: String,
     /// The identifier of the bot to use for move selection.
     bot_id: String,
+}
+
+/// Request body for the choose endpoint.
+#[derive(Deserialize)]
+pub struct ChooseRequest {
+    /// Current game state in YEN format.
+    pub yen: YEN,
 }
 
 /// Response returned by the choose endpoint on success.
@@ -30,26 +39,21 @@ pub struct MoveResponse {
 
 /// Handler for the bot move selection endpoint.
 ///
-/// This endpoint accepts a game state in YEN format and returns the
+/// This endpoint accepts a game state plus variant and returns the
 /// coordinates of the bot's chosen move.
 ///
 /// # Route
 /// `POST /{api_version}/ybot/choose/{bot_id}`
-///
-/// # Request Body
-/// A JSON object in YEN format representing the current game state.
-///
-/// # Response
-/// On success, returns a `MoveResponse` with the chosen coordinates.
-/// On failure, returns an `ErrorResponse` with details about what went wrong.
 #[axum::debug_handler]
 pub async fn choose(
     State(state): State<AppState>,
     Path(params): Path<ChooseParams>,
-    Json(yen): Json<YEN>,
+    Json(req): Json<ChooseRequest>,
 ) -> Result<Json<MoveResponse>, Json<ErrorResponse>> {
     check_api_version(&params.api_version)?;
-    let game_y = match GameY::try_from(yen) {
+
+
+    let game_y = match GameY::try_from(req.yen) {
         Ok(game) => game,
         Err(err) => {
             return Err(Json(ErrorResponse::error(
@@ -59,6 +63,7 @@ pub async fn choose(
             )));
         }
     };
+
     let bot = match state.bots().find(&params.bot_id) {
         Some(bot) => bot,
         None => {
@@ -73,10 +78,10 @@ pub async fn choose(
             )));
         }
     };
+
     let coords = match bot.choose_move(&game_y) {
         Some(coords) => coords,
         None => {
-            // Handle the case where the bot has no valid moves
             return Err(Json(ErrorResponse::error(
                 "No valid moves available for the bot",
                 Some(params.api_version),
@@ -84,11 +89,13 @@ pub async fn choose(
             )));
         }
     };
+
     let response = MoveResponse {
         api_version: params.api_version,
         bot_id: params.bot_id,
         coords,
     };
+
     Ok(Json(response))
 }
 

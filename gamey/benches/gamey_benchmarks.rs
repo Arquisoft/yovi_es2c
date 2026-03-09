@@ -1,4 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use gamey::game::Variant;
 use gamey::{Coordinates, GameY, Movement, PlayerId, RenderOptions};
 
 /// Benchmarks for coordinate conversion functions
@@ -61,7 +62,7 @@ fn bench_game_creation(c: &mut Criterion) {
             BenchmarkId::new("new", board_size),
             board_size,
             |b, &size| {
-                b.iter(|| black_box(GameY::new(size)))
+                b.iter(|| black_box(GameY::new(size, Variant::Standard)))
             },
         );
     }
@@ -76,13 +77,12 @@ fn bench_add_move(c: &mut Criterion) {
     for board_size in [5, 10, 15].iter() {
         let total_cells = (board_size * (board_size + 1)) / 2;
 
-        // Benchmark adding a single move to an empty board
         group.bench_with_input(
             BenchmarkId::new("single_move", board_size),
             board_size,
             |b, &size| {
                 b.iter_batched(
-                    || GameY::new(size),
+                    || GameY::new(size, Variant::Standard),
                     |mut game| {
                         let coords = Coordinates::from_index(0, size);
                         let movement = Movement::Placement {
@@ -97,13 +97,12 @@ fn bench_add_move(c: &mut Criterion) {
             },
         );
 
-        // Benchmark filling half the board
         group.bench_with_input(
             BenchmarkId::new("half_board", board_size),
             board_size,
             |b, &size| {
                 b.iter_batched(
-                    || GameY::new(size),
+                    || GameY::new(size, Variant::Standard),
                     |mut game| {
                         let half = total_cells / 2;
                         for idx in 0..half {
@@ -140,8 +139,7 @@ fn bench_render(c: &mut Criterion) {
     };
 
     for board_size in [5, 10, 15].iter() {
-        // Create a game with some moves
-        let mut game = GameY::new(*board_size);
+        let mut game = GameY::new(*board_size, Variant::Standard);
         let total_cells = (board_size * (board_size + 1)) / 2;
         for idx in 0..(total_cells / 3) {
             let coords = Coordinates::from_index(idx, *board_size);

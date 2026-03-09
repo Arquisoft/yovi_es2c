@@ -30,6 +30,16 @@ pub struct GameY {
     sets: Vec<PlayerSet>,
 
     available_cells: Vec<u32>,
+
+    // Variante del juego
+    variant: Variant,
+}
+
+// Escoger variante del juego
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Variant {
+    Standard,
+    WhyNot,
 }
 
 /// Represents the state of a single cell on the board.
@@ -43,7 +53,7 @@ pub enum Cell {
 
 impl GameY {
     /// Creates a new game with the specified board size and number of players.
-    pub fn new(board_size: u32) -> Self {
+    pub fn new(board_size: u32, variant : Variant) -> Self {
         let total_cells = (board_size * (board_size + 1)) / 2;
         Self {
             board_size,
@@ -54,8 +64,66 @@ impl GameY {
                 next_player: PlayerId::new(0),
             },
             available_cells: (0..total_cells).collect(),
+            variant,
         }
     }
+    pub fn from_yen(yen: YEN, variant: Variant) -> Result<Self> {
+        let mut ygame = GameY::new(yen.size(), variant);
+        let rows: Vec<&str> = yen.layout().split('/').collect();
+
+        if rows.len() as u32 != yen.size() {
+            return Err(GameYError::InvalidYENLayout {
+                expected: yen.size(),
+                found: rows.len() as u32,
+            });
+        }
+
+        for (row, row_str) in rows.iter().enumerate() {
+            let cells: Vec<char> = row_str.chars().collect();
+
+            if cells.len() as u32 != row as u32 + 1 {
+                return Err(GameYError::InvalidYENLayoutLine {
+                    expected: row as u32 + 1,
+                    found: cells.len() as u32,
+                    line: row as u32,
+                });
+            }
+
+            for (col, cell) in cells.iter().enumerate() {
+                let x = yen.size() - 1 - row as u32;
+                let y = col as u32;
+                let z = yen.size() - 1 - x - y;
+                let coords = Coordinates::new(x, y, z);
+
+                match cell {
+                    'B' => {
+                        ygame.handle_placement(PlayerId::new(0), coords)?;
+                    }
+                    'R' => {
+                        ygame.handle_placement(PlayerId::new(1), coords)?;
+                    }
+                    '.' => {}
+                    _ => {
+                        return Err(GameYError::InvalidCharInLayout {
+                            char: *cell,
+                            row,
+                            col,
+                        });
+                    }
+                }
+            }
+        }
+
+        if !ygame.check_game_over() {
+            ygame.status = GameStatus::Ongoing {
+                next_player: PlayerId::new(yen.turn()),
+            };
+        }
+
+        Ok(ygame)
+    }
+
+
 
     /// Returns the current game status.
     pub fn status(&self) -> &GameStatus {
@@ -135,6 +203,8 @@ impl GameY {
 
     /// Adds a move to the game.
     pub fn add_move(&mut self, movement: Movement) -> Result<()> {
+        self.check_player_turn(&movement)?;
+
         match &movement {
             Movement::Placement { player, coords } => {
                 self.handle_placement(*player, *coords)?;
@@ -192,10 +262,14 @@ impl GameY {
         if self.check_game_over() {
             tracing::info!("Game was already over. Move ignored for status update.");
         } else if won {
-            tracing::debug!("Player {} wins the game!", player);
-            self.status = GameStatus::Finished { winner: player };
+            let winner = match self.variant {
+                Variant::Standard => player,
+                Variant::WhyNot => other_player(player),
+            };
+
+            tracing::debug!("Winner is {}", winner);
+            self.status = GameStatus::Finished { winner };
         } else {
-            // tracing::debug!("No win yet..."); // Optional debug
             self.status = GameStatus::Ongoing {
                 next_player: other_player(player),
             };
@@ -451,55 +525,16 @@ impl TryFrom<YEN> for GameY {
     type Error = GameYError;
 
     fn try_from(game: YEN) -> Result<Self> {
-        let mut ygame = GameY::new(game.size());
-        let rows: Vec<&str> = game.layout().split('/').collect();
-        if rows.len() as u32 != game.size() {
-            return Err(GameYError::InvalidYENLayout {
-                expected: game.size(),
-                found: rows.len() as u32,
-            });
-        }
-        for (row, row_str) in rows.iter().enumerate() {
-            let cells: Vec<char> = row_str.chars().collect();
-            if cells.len() as u32 != row as u32 + 1 {
-                return Err(GameYError::InvalidYENLayoutLine {
-                    expected: row as u32 + 1,
-                    found: cells.len() as u32,
-                    line: row as u32,
-                });
-            }
-            for (col, cell) in cells.iter().enumerate() {
-                let x = game.size() - 1 - (row as u32);
-                let y = col as u32;
-                let z = game.size() - 1 - x - y;
-                let coords = Coordinates::new(x, y, z);
-                match cell {
-                    'B' => {
-                        ygame.add_move(Movement::Placement {
-                            player: PlayerId::new(0),
-                            coords,
-                        })?;
-                    }
-                    'R' => {
-                        ygame.add_move(Movement::Placement {
-                            player: PlayerId::new(1),
-                            coords,
-                        })?;
-                    }
-                    '.' => {}
-                    _ => {
-                        return Err(GameYError::InvalidCharInLayout {
-                            char: *cell,
-                            row,
-                            col,
-                        });
-                    }
-                }
-            }
-        }
-        Ok(ygame)
+        let variant = match game.variant() {
+            "why_not" => Variant::WhyNot,
+            _ => Variant::Standard,
+        };
+
+        GameY::from_yen(game, variant)
     }
 }
+
+
 
 impl From<&GameY> for YEN {
     fn from(game: &GameY) -> Self {
@@ -508,9 +543,11 @@ impl From<&GameY> for YEN {
             GameStatus::Finished { winner } => other_player(winner).id() as u32,
             GameStatus::Ongoing { next_player } => next_player.id(),
         };
+
         let mut layout = String::new();
         let total_cells = (game.board_size * (game.board_size + 1)) / 2;
         let players = vec!['B', 'R'];
+
         for idx in 0..total_cells {
             let coords = Coordinates::from_index(idx, game.board_size);
             let cell_char = match game.board_map.get(&coords) {
@@ -523,7 +560,13 @@ impl From<&GameY> for YEN {
                 layout.push('/');
             }
         }
-        YEN::new(size, turn, players, layout)
+
+        let variant = match game.variant {
+            Variant::Standard => "standard".to_string(),
+            Variant::WhyNot => "why_not".to_string(),
+        };
+
+        YEN::new(size, turn, players, layout, variant)
     }
 }
 
@@ -566,7 +609,7 @@ mod tests {
 
     #[test]
     fn test_game_initialization() {
-        let game = GameY::new(7);
+        let game = GameY::new(7 , Variant::Standard);
         assert_eq!(game.board_size, 7);
         assert_eq!(game.history.len(), 0);
         match game.status {
@@ -586,7 +629,7 @@ mod tests {
 
     #[test]
     fn test_interior_cell_has_six_neighbors() {
-        let board = GameY::new(5);
+        let board = GameY::new(5 , Variant::Standard);
         let cell = Coordinates::new(2, 1, 1);
 
         let neighbors = board.get_neighbors(&cell);
@@ -606,7 +649,7 @@ mod tests {
 
     #[test]
     fn test_corner_cell_has_two_neighbors() {
-        let board = GameY::new(5);
+        let board = GameY::new(5, Variant::Standard);
         let top_corner = Coordinates::new(4, 0, 0);
 
         let neighbors = board.get_neighbors(&top_corner);
@@ -619,7 +662,7 @@ mod tests {
 
     #[test]
     fn test_edge_cell_has_four_neighbors() {
-        let board = GameY::new(5);
+        let board = GameY::new(5 , Variant::Standard);
         let edge_cell = Coordinates::new(0, 2, 2);
 
         let neighbors = board.get_neighbors(&edge_cell);
@@ -637,7 +680,7 @@ mod tests {
 
     #[test]
     fn test_winning_condition() {
-        let mut game = GameY::new(3);
+        let mut game = GameY::new(3 , Variant::Standard);
 
         let moves = vec![
             Movement::Placement {
@@ -676,7 +719,7 @@ mod tests {
 
     #[test]
     fn test_yen_conversion() {
-        let mut game = GameY::new(3);
+        let mut game = GameY::new(3 , Variant::Standard);
 
         let moves = vec![
             Movement::Placement {
@@ -778,6 +821,44 @@ mod tests {
                 assert_eq!(next_player, PlayerId::new(0));
             }
             _ => panic!("Game should be ongoing"),
+        }
+    }
+    #[test]
+    fn test_winning_condition_why_not() {
+        let mut game = GameY::new(3, Variant::WhyNot);
+
+        let moves = vec![
+            Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 2, 0),
+            },
+            Movement::Placement {
+                player: PlayerId::new(1),
+                coords: Coordinates::new(2, 0, 0),
+            },
+            Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 1, 1),
+            },
+            Movement::Placement {
+                player: PlayerId::new(1),
+                coords: Coordinates::new(1, 1, 0),
+            },
+            Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 0, 2),
+            },
+        ];
+
+        for mv in moves {
+            game.add_move(mv).unwrap();
+        }
+
+        match game.status {
+            GameStatus::Finished { winner } => {
+                assert_eq!(winner, PlayerId::new(1));
+            }
+            _ => panic!("Game should be finished with inverted winner"),
         }
     }
 

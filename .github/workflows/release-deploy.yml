@@ -153,6 +153,9 @@ jobs:
           user: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_KEY }}
           command: |
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export DB_URI=${{ secrets.DB_URI }}
+  
             wget https://raw.githubusercontent.com/${{ github.repository_owner }}/${{ github.event.repository.name }}/master/docker-compose.yml -O docker-compose.yml
             docker compose down
             docker compose up -d --pull always

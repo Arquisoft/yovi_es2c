@@ -1,15 +1,20 @@
+import { useState } from 'react';
 import type { GameMode } from '../GameBoard';
 
+const BOARD_SIZE_OPTIONS = [5, 7, 9] as const;
+
 type MenuProps = {
-    onVolver: () => void;
+    onLogout: () => void;
     initialUsername: string;
-    onJugar: (username: string, mode: GameMode) => void;
+    onJugar: (username: string, mode: GameMode, boardSize: number) => void;
 };
 
-export default function Menu({ onVolver, onJugar, initialUsername }: MenuProps) {
+export default function Menu({ onLogout, onJugar, initialUsername }: MenuProps) {
+    const [boardSize, setBoardSize] = useState<number>(7);
+
     const launch = (mode: GameMode) => {
         const chosenUsername = initialUsername || 'Jugador';
-        onJugar(chosenUsername, mode);
+        onJugar(chosenUsername, mode, boardSize);
     };
 
     return (
@@ -19,10 +24,31 @@ export default function Menu({ onVolver, onJugar, initialUsername }: MenuProps) 
                     <p className="menu__eyebrow">GAME LOBBY</p>
                     <h2 className="menu__title">Elige Tu Modo</h2>
                 </div>
-                <button className="menu__back" onClick={onVolver}>
-                    Volver al inicio
-                </button>
+                <div className="menu__actions">
+                    <button className="menu__back" onClick={onLogout}>
+                        Desconectar
+                    </button>
+                </div>
             </header>
+
+            <section className="menu__size-picker panel" aria-label="Selector de tamaño de tablero">
+                <p className="menu__size-title">Tamaño del tablero</p>
+                <div className="menu__size-options">
+                    {BOARD_SIZE_OPTIONS.map((size) => (
+                        <button
+                            key={size}
+                            className={`menu__size-btn ${boardSize === size ? 'menu__size-btn--active' : ''}`}
+                            onClick={() => setBoardSize(size)}
+                            type="button"
+                        >
+                            {size}
+                        </button>
+                    ))}
+                </div>
+                <p className="menu__size-hint">
+                    Lados del triángulo: {boardSize} celdas.
+                </p>
+            </section>
 
             {/* Mode cards */}
             <div className="menu__grid">

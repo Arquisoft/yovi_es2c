@@ -25,6 +25,7 @@ interface GameBoardProps {
 
 const PLAYER_COLOR: Record<number, 'blue' | 'red'> = { 0: 'blue', 1: 'red' };
 const PLAYER_NAME: Record<number, string> = { 0: 'Azul', 1: 'Rojo' };
+const MIN_BOARD_SIZE = 5;
 
 type Cell = {
     index: number;
@@ -63,17 +64,18 @@ function layoutToIndexMap(yen: YEN): Map<number, string> {
 export default function GameBoard({
                                       username,
                                       mode,
-                                      boardSize = 8,
+                                      boardSize = 7,
                                       onExit,
                                   }: GameBoardProps) {
-    const [yen, setYen] = useState<YEN>(() => newGameYEN(boardSize));
+    const safeBoardSize = Math.max(MIN_BOARD_SIZE, boardSize);
+    const [yen, setYen] = useState<YEN>(() => newGameYEN(safeBoardSize));
     const [winner, setWinner] = useState<number | null>(null);
     const nextPlayer = yen.turn;
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const botTurnRef = useRef(false);
 
-    const cells = useMemo(() => buildCells(boardSize), [boardSize]);
+    const cells = useMemo(() => buildCells(safeBoardSize), [safeBoardSize]);
     const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
 
     // ── Bot turn ────────────────────────────────────────────────────────────────
@@ -135,7 +137,7 @@ export default function GameBoard({
 
     // ── Reset ───────────────────────────────────────────────────────────────────
     const reset = () => {
-        setYen(newGameYEN(boardSize));
+        setYen(newGameYEN(safeBoardSize));
         setWinner(null);
         setError(null);
     };
@@ -168,7 +170,7 @@ export default function GameBoard({
                             Nueva partida
                         </button>
                         <button type="button" className="exit-button" onClick={onExit}>
-                            Salir
+                            Salir de la partida
                         </button>
                     </div>
                 </div>
@@ -195,13 +197,13 @@ export default function GameBoard({
                 <div className="side-label side-c">Lado C</div>
 
                 <div className="y-board">
-                    {Array.from({ length: boardSize }, (_, row) => {
+                    {Array.from({ length: safeBoardSize }, (_, row) => {
                         const rowCells = cells.filter((c) => c.row === row);
                         return (
                             <div
                                 key={row}
                                 className="y-row"
-                                style={{ marginLeft: `${(boardSize - 1 - row) * 32}px` }}
+                                style={{ marginLeft: `${(safeBoardSize - 1 - row) * 32}px` }}
                             >
                                 {rowCells.map((cell) => {
                                     const symbol = indexMap.get(cell.index) ?? '.';

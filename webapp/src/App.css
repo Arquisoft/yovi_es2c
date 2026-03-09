@@ -229,6 +229,11 @@
   text-transform: uppercase;
 }
 
+.menu__actions {
+  display: flex;
+  gap: 10px;
+}
+
 .menu__back {
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 10px;
@@ -243,6 +248,48 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+.menu__size-picker {
+  margin-bottom: 14px;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.menu__size-title {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9fd1ff;
+}
+
+.menu__size-options {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.menu__size-btn {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  min-width: 52px;
+  padding: 8px 10px;
+  font-weight: 700;
+  color: #dce8ff;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+}
+
+.menu__size-btn--active {
+  border-color: rgba(42, 140, 255, 0.95);
+  background: rgba(42, 140, 255, 0.2);
+}
+
+.menu__size-hint {
+  margin: 10px 0 0;
+  font-size: 0.84rem;
+  color: var(--muted);
 }
 
 .menu__card {

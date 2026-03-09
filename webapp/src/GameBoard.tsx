@@ -26,6 +26,7 @@ interface GameBoardProps {
 
 const PLAYER_COLOR: Record<number, 'blue' | 'red'> = { 0: 'blue', 1: 'red' };
 const PLAYER_NAME: Record<number, string> = { 0: 'Azul', 1: 'Rojo' };
+const MIN_BOARD_SIZE = 5;
 
 type Cell = {
     index: number;
@@ -62,23 +63,30 @@ function layoutToIndexMap(yen: YEN): Map<number, string> {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function GameBoard({
-                                      username,
-                                      mode: initialMode,
-                                      boardSize = 8,
-                                      onExit,
-                                  }: GameBoardProps) {
+    username,
+    mode: initialMode,
+    boardSize = 7,
+    onExit,
+}: GameBoardProps) {
+
+    const safeBoardSize = Math.max(MIN_BOARD_SIZE, boardSize);
+
     const [mode, setMode] = useState<GameMode>(initialMode);
     const [variant, setVariant] = useState<GameVariant>('standard');
-    const [yen, setYen] = useState<YEN>(() => newGameYEN(boardSize, 'standard'));
+    const [yen, setYen] = useState<YEN>(() => newGameYEN(safeBoardSize, 'standard'));
+
     const [winner, setWinner] = useState<number | null>(null);
     const nextPlayer = yen.turn;
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
     const botTurnRef = useRef(false);
 
     const currentVariant = yen.variant;
-
-    const cells = useMemo(() => buildCells(boardSize), [boardSize]);
+  
+    const cells = useMemo(() => buildCells(safeBoardSize), [safeBoardSize]);
+  
     const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
 
     // ── Bot turn ────────────────────────────────────────────────────────────────
@@ -140,24 +148,24 @@ export default function GameBoard({
 
     // ── Reset / mode / variant ────────────────────────────────────────────────
     const reset = () => {
-        setYen(newGameYEN(boardSize, variant));
-        setWinner(null);
-        setError(null);
-    };
+    setYen(newGameYEN(safeBoardSize, variant));
+    setWinner(null);
+    setError(null);
+};
 
-    const changeMode = (newMode: GameMode) => {
-        setMode(newMode);
-        setYen(newGameYEN(boardSize, variant));
-        setWinner(null);
-        setError(null);
-    };
+const changeMode = (newMode: GameMode) => {
+    setMode(newMode);
+    setYen(newGameYEN(safeBoardSize, variant));
+    setWinner(null);
+    setError(null);
+};
 
-    const changeVariant = (newVariant: GameVariant) => {
-        setVariant(newVariant);
-        setYen(newGameYEN(boardSize, newVariant));
-        setWinner(null);
-        setError(null);
-    };
+const changeVariant = (newVariant: GameVariant) => {
+    setVariant(newVariant);
+    setYen(newGameYEN(safeBoardSize, newVariant));
+    setWinner(null);
+    setError(null);
+};
 
     // ── Derived UI state ────────────────────────────────────────────────────────
     const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
@@ -252,13 +260,13 @@ export default function GameBoard({
                 <div className="side-label side-c">Lado C</div>
 
                 <div className="y-board">
-                    {Array.from({ length: boardSize }, (_, row) => {
+                    {Array.from({ length: safeBoardSize }, (_, row) => {
                         const rowCells = cells.filter((c) => c.row === row);
                         return (
                             <div
                                 key={row}
                                 className="y-row"
-                                style={{ marginLeft: `${(boardSize - 1 - row) * 32}px` }}
+                                style={{ marginLeft: `${(safeBoardSize - 1 - row) * 32}px` }}
                             >
                                 {rowCells.map((cell) => {
                                     const symbol = indexMap.get(cell.index) ?? '.';

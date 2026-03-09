@@ -1,4 +1,4 @@
-import { test, expect } from 'vitest'
+//import { test, expect } from 'vitest'
 
 // Este test evita que GitHub Actions llore porque el archivo está "vacío"
 test('Skipping tests for now', () => {

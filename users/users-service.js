@@ -9,7 +9,7 @@ const promBundle = require('express-prom-bundle');
 const { MongoClient } = require('mongodb');
 const crypto = require('node:crypto');
 
-const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017';
+const mongoUri = process.env.DB_URI || 'mongodb://localhost:27017';
 const client = new MongoClient(mongoUri);
 
 async function connectToMongo() {

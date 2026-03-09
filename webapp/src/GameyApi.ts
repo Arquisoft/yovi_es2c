@@ -7,6 +7,7 @@
 
 const GAMEY_URL = import.meta.env.VITE_GAMEY_URL ?? "http://localhost:4000";
 const API_VERSION = "v1";
+const MIN_BOARD_SIZE = 5;
 
 // ─── Shared types ────────────────────────────────────────────────────────────
 
@@ -105,6 +106,10 @@ export async function chooseBotMove(
  * Player 0 (Blue) always goes first.
  */
 export function newGameYEN(size: number, variant: GameVariant): YEN {
+    if (size < MIN_BOARD_SIZE) {
+        throw new Error(`Board size must be at least ${MIN_BOARD_SIZE}`);
+    }
+
     const layout = Array.from({ length: size }, (_, r) =>
         ".".repeat(r + 1)
     ).join("/");

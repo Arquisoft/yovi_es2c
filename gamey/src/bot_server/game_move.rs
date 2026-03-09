@@ -43,7 +43,9 @@ use crate::{
     error::ErrorResponse,
     Coordinates, PlayerId,
     version::check_api_version,
+    db,
 };
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Request body for the game move endpoint.
 #[derive(Deserialize)]
@@ -120,6 +122,17 @@ pub async fn make_move(
 
     let (status_str, winner, next_player) = match game.status() {
         GameStatus::Finished { winner } => {
+            let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs() as i64;
+            if let Ok(database) = db::connect().await {
+                let record = db::GameRecord {
+                    winner: Some(winner.to_string()),
+                    board_size: game.board_size(),
+                    moves_count: 0,
+                    timestamp,
+                    duration_seconds: 0,
+                };
+                let _ = db::save_game_result(&database, record).await;
+            }
             ("finished".to_string(), Some(winner.id()), None)
         }
         GameStatus::Ongoing { next_player } => {

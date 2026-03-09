@@ -1,49 +1,15 @@
 //! Game management endpoint for the Y game server.
-//!
-//! This module provides an HTTP endpoint for making moves in a Y game.
-//! It accepts a game state in YEN format plus coordinates, applies the move,
-//! and returns the updated game state along with win/ongoing status.
-//!
-//! # Route
-//! `POST /{api_version}/game/move`
-//!
-//! # Example Request
-//! ```json
-//! {
-//!   "yen": { "size": 3, "turn": 0, "players": ["B","R"], "layout": "../..." },
-//!   "x": 1, "y": 1, "z": 1
-//! }
-//! ```
-//!
-//! # Example Response (ongoing)
-//! ```json
-//! {
-//!   "yen": { ... updated state ... },
-//!   "status": "ongoing",
-//!   "winner": null,
-//!   "next_player": 1
-//! }
-//! ```
-//!
-//! # Example Response (finished)
-//! ```json
-//! {
-//!   "yen": { ... final state ... },
-//!   "status": "finished",
-//!   "winner": 0,
-//!   "next_player": null
-//! }
-//! ```
 
 use axum::{extract::Path, Json};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    GameStatus, GameY, Movement, YEN,
     error::ErrorResponse,
-    Coordinates, PlayerId,
     version::check_api_version,
+    db,
+    Coordinates, GameStatus, GameY, Movement, PlayerId, YEN,
 };
+use std::time::{SystemTime, UNIX_EPOCH};
 
 /// Request body for the game move endpoint.
 #[derive(Deserialize)]
@@ -71,12 +37,6 @@ pub struct GameMoveResponse {
     pub next_player: Option<u32>,
 }
 
-/// Handler for the game move endpoint.
-///
-/// Accepts a YEN game state and barycentric coordinates for the move,
-/// validates the move, applies it, and returns the resulting state.
-///
-/// The player is determined automatically from the `turn` field of the YEN.
 #[axum::debug_handler]
 pub async fn make_move(
     Path(api_version): Path<String>,
@@ -84,8 +44,7 @@ pub async fn make_move(
 ) -> Result<Json<GameMoveResponse>, Json<ErrorResponse>> {
     check_api_version(&api_version)?;
 
-    // Reconstruct the game from the provided YEN state
-    let turn = req.yen.turn();  // leer ANTES de consumir el YEN
+    let turn = req.yen.turn();
 
     let mut game = GameY::try_from(req.yen).map_err(|e| {
         Json(ErrorResponse::error(
@@ -104,7 +63,6 @@ pub async fn make_move(
     }
 
     let player = PlayerId::new(turn);
-
     let coords = Coordinates::new(req.x, req.y, req.z);
     let movement = Movement::Placement { player, coords };
 
@@ -120,6 +78,17 @@ pub async fn make_move(
 
     let (status_str, winner, next_player) = match game.status() {
         GameStatus::Finished { winner } => {
+            let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs() as i64;
+            if let Ok(database) = db::connect().await {
+                let record = db::GameRecord {
+                    winner: Some(winner.to_string()),
+                    board_size: game.board_size(),
+                    moves_count: 0,
+                    timestamp,
+                    duration_seconds: 0,
+                };
+                let _ = db::save_game_result(&database, record).await;
+            }
             ("finished".to_string(), Some(winner.id()), None)
         }
         GameStatus::Ongoing { next_player } => {
@@ -141,28 +110,34 @@ mod tests {
     use crate::YEN;
 
     fn empty_yen(size: u32) -> YEN {
-        // Build an empty YEN layout: rows separated by '/'
-        // Row r has r+1 dots
         let layout = (0..size)
             .map(|r| ".".repeat((r + 1) as usize))
             .collect::<Vec<_>>()
             .join("/");
-        YEN::new(size, 0, vec!['B', 'R'], layout)
+
+        YEN::new(size, 0, vec!['B', 'R'], layout, "standard".to_string())
     }
 
     #[test]
     fn test_request_deserialization() {
         let json = r#"{
-            "yen": {"size": 3,
-            "turn": 0,
-            "players": ["B","R"],
-            "layout": "../..."},
-            "x": 1, "y": 1, "z": 0
+            "yen": {
+                "size": 3,
+                "turn": 0,
+                "players": ["B","R"],
+                "layout": "../...",
+                "variant": "why_not"
+            },
+            "x": 1,
+            "y": 1,
+            "z": 0
         }"#;
+
         let req: GameMoveRequest = serde_json::from_str(json).unwrap();
         assert_eq!(req.x, 1);
         assert_eq!(req.y, 1);
         assert_eq!(req.z, 0);
+        assert_eq!(req.yen.variant(), "why_not");
     }
 
     #[test]

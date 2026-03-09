@@ -32,7 +32,7 @@ pub struct YEN {
     /// Character symbols representing each player.
     players: Vec<char>,
     /// A compact string representation of the board.
-    ///
+
     /// Rows are separated by '/', with cells represented by player symbols
     /// or '.' for empty cells. Example: "B/..R/.B.R"
     layout: String,

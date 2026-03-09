@@ -3,6 +3,7 @@ import './styles/GameBoard.css';
 import {
     type Coords,
     type YEN,
+    type GameVariant,
     applyMove,
     chooseBotMove,
     gridToCoords,
@@ -62,20 +63,30 @@ function layoutToIndexMap(yen: YEN): Map<number, string> {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function GameBoard({
-                                      username,
-                                      mode,
-                                      boardSize = 7,
-                                      onExit,
-                                  }: GameBoardProps) {
+    username,
+    mode: initialMode,
+    boardSize = 7,
+    onExit,
+}: GameBoardProps) {
+
     const safeBoardSize = Math.max(MIN_BOARD_SIZE, boardSize);
-    const [yen, setYen] = useState<YEN>(() => newGameYEN(safeBoardSize));
+
+    const [mode, setMode] = useState<GameMode>(initialMode);
+    const [variant, setVariant] = useState<GameVariant>('standard');
+    const [yen, setYen] = useState<YEN>(() => newGameYEN(safeBoardSize, 'standard'));
+
     const [winner, setWinner] = useState<number | null>(null);
     const nextPlayer = yen.turn;
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
     const botTurnRef = useRef(false);
 
+    const currentVariant = yen.variant;
+  
     const cells = useMemo(() => buildCells(safeBoardSize), [safeBoardSize]);
+  
     const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
 
     // ── Bot turn ────────────────────────────────────────────────────────────────
@@ -135,12 +146,26 @@ export default function GameBoard({
         [winner, loading, mode, nextPlayer, indexMap, yen],
     );
 
-    // ── Reset ───────────────────────────────────────────────────────────────────
+    // ── Reset / mode / variant ────────────────────────────────────────────────
     const reset = () => {
-        setYen(newGameYEN(safeBoardSize));
-        setWinner(null);
-        setError(null);
-    };
+    setYen(newGameYEN(safeBoardSize, variant));
+    setWinner(null);
+    setError(null);
+};
+
+const changeMode = (newMode: GameMode) => {
+    setMode(newMode);
+    setYen(newGameYEN(safeBoardSize, variant));
+    setWinner(null);
+    setError(null);
+};
+
+const changeVariant = (newVariant: GameVariant) => {
+    setVariant(newVariant);
+    setYen(newGameYEN(safeBoardSize, newVariant));
+    setWinner(null);
+    setError(null);
+};
 
     // ── Derived UI state ────────────────────────────────────────────────────────
     const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
@@ -148,7 +173,10 @@ export default function GameBoard({
     const statusText = (() => {
         if (isBotThinking) return 'LA IA ESTÁ PENSANDO…';
         if (winner !== null) return `¡GANÓ JUGADOR ${PLAYER_NAME[winner].toUpperCase()}!`;
-        const whose = mode === 'bot' && nextPlayer === 0 ? username.toUpperCase() : PLAYER_NAME[nextPlayer].toUpperCase();
+        const whose =
+            mode === 'bot' && nextPlayer === 0
+                ? username.toUpperCase()
+                : PLAYER_NAME[nextPlayer].toUpperCase();
         return `ES TU TURNO, ${whose}`;
     })();
 
@@ -164,13 +192,48 @@ export default function GameBoard({
         <section className={`game-layout ${layoutStateClass}`} aria-label="Tablero de juego Y">
             <header className="game-header">
                 <div className="title-block">
-                    <h2>Tablero Y · {username}</h2>
+                    <h2>
+                        Tablero Y · {username} · {currentVariant === 'standard' ? 'Estándar' : 'Why Not'}
+                    </h2>
+
                     <div className="game-controls">
                         <button type="button" className="exit-button" onClick={reset}>
                             Nueva partida
                         </button>
                         <button type="button" className="exit-button" onClick={onExit}>
                             Salir de la partida
+                        </button>
+
+                        <button
+                            type="button"
+                            className={`exit-button ${mode === 'local' ? 'active-mode' : ''}`}
+                            onClick={() => changeMode('local')}
+                        >
+                            Local
+                        </button>
+
+                        <button
+                            type="button"
+                            className={`exit-button ${mode === 'bot' ? 'active-mode' : ''}`}
+                            onClick={() => changeMode('bot')}
+                        >
+                            Vs Bot
+                        </button>
+
+                        <button
+                            type="button"
+                            className={`exit-button ${currentVariant === 'standard' ? 'active-mode' : ''}`}
+                            onClick={() => changeVariant('standard')}
+                        >
+                            Estándar
+                        </button>
+
+                        <button
+                            type="button"
+                            className={`exit-button ${currentVariant === 'why_not' ? 'active-mode' : ''}`}
+                            onClick={() => changeVariant('why_not')}
+                        >
+                            Why Not
                         </button>
                     </div>
                 </div>
@@ -182,12 +245,12 @@ export default function GameBoard({
                 )}
 
                 <div className="player-pills">
-          <span className={`pill pill-blue ${nextPlayer === 0 || winner === 0 ? 'active' : ''}`}>
-            {mode === 'bot' ? username : 'Azul'}
-          </span>
+                    <span className={`pill pill-blue ${nextPlayer === 0 || winner === 0 ? 'active' : ''}`}>
+                        {mode === 'bot' ? username : 'Azul'}
+                    </span>
                     <span className={`pill pill-red ${nextPlayer === 1 || winner === 1 ? 'active' : ''}`}>
-            {mode === 'bot' ? 'IA Bot' : 'Rojo'}
-          </span>
+                        {mode === 'bot' ? 'IA Bot' : 'Rojo'}
+                    </span>
                 </div>
             </header>
 

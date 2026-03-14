@@ -74,7 +74,7 @@ jobs:
       - name: Install Playwright browsers
         run: |
           cd webapp
-          npm run test:e2e:install-browsers
+          #npm run test:e2e:install-browsers
       - name: Run E2E tests (start servers and run cucumber)
         run: |
           cd webapp

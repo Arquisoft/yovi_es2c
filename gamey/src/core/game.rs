@@ -864,9 +864,10 @@ mod tests {
             }
             _ => panic!("Game should be finished with inverted winner"),
         }
+    }
 
 
-        // ─── Tests por tamaño de tablero ───────────────────────────────────────────
+    // ─── Tests por tamaño de tablero ───────────────────────────────────────────
 
         // ── Tamaño 1 1 casilla, con  un movimiento te vale para ganar ──────────────────────────────────────────────────────────────
 
@@ -1215,8 +1216,4 @@ mod tests {
             }
         }
 
-
-
     }
-
-}

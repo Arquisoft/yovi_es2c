@@ -10,10 +10,10 @@ const { MongoClient } = require('mongodb');
 const crypto = require('node:crypto');
 
 const mongoUri = process.env.DB_URI || 'mongodb://localhost:27017';
-const client = new MongoClient(mongoUri);
 
 async function connectToMongo() {
   try {
+    const client = new MongoClient(mongoUri);
     await client.connect();
     console.log('Connected to MongoDB');
     const db = client.db('yovi2c_db');

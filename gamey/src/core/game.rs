@@ -866,4 +866,354 @@ mod tests {
         }
     }
 
-}
+
+    // ─── Tests por tamaño de tablero ───────────────────────────────────────────
+
+        // ── Tamaño 1 1 casilla, con  un movimiento te vale para ganar ──────────────────────────────────────────────────────────────
+
+        #[test]
+        fn test_size1_total_cells() {
+            let game = GameY::new(1, Variant::Standard);
+            assert_eq!(game.total_cells(), 1);
+            assert_eq!(game.available_cells().len(), 1);
+        }
+
+        #[test]
+        fn test_size1_single_move_wins() {
+            // En tamaño 1 la única casilla (0,0,0) toca los tres lados → victoria inmediata
+            let mut game = GameY::new(1, Variant::Standard);
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 0, 0),
+            }).unwrap();
+            match game.status {
+                GameStatus::Finished { winner } => assert_eq!(winner, PlayerId::new(0)),
+                _ => panic!("Tamaño 1: una ficha debe ganar la partida"),
+            }
+        }
+
+        #[test]
+        fn test_size1_why_not_single_move_loses_placer() {
+            // En WhyNot completar la conexión hace ganar al rival
+            let mut game = GameY::new(1, Variant::WhyNot);
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 0, 0),
+            }).unwrap();
+            match game.status {
+                GameStatus::Finished { winner } => assert_eq!(winner, PlayerId::new(1)),
+                _ => panic!("Tamaño 1 WhyNot: el ganador debe ser el jugador 1"),
+            }
+        }
+
+        // ── Tamaño 2 3 celdas, comprubea lo basico, Yen guarda estado, el juego sigue su curso tras 1 mov... ──────────────────────────────────────────────────────────────
+
+        #[test]
+        fn test_size2_total_cells() {
+            let game = GameY::new(2, Variant::Standard);
+            // (2 * 3) / 2 = 3
+            assert_eq!(game.total_cells(), 3);
+            assert_eq!(game.available_cells().len(), 3);
+        }
+
+        #[test]
+        fn test_size2_initial_state_ongoing() {
+            let game = GameY::new(2, Variant::Standard);
+            match game.status() {
+                GameStatus::Ongoing { next_player } => assert_eq!(*next_player, PlayerId::new(0)),
+                _ => panic!("Tamaño 2: el juego debería estar en curso al inicio"),
+            }
+        }
+
+        #[test]
+        fn test_size2_win_two_moves() {
+            // (0,1,0) toca A y C; (1,0,0) toca B y C → son vecinos → cubren A,B,C
+            let mut game = GameY::new(2, Variant::Standard);
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 1, 0),
+            }).unwrap();
+            // Jugador 1 coloca en la casilla restante que no bloquea
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(1),
+                coords: Coordinates::new(0, 0, 1),
+            }).unwrap();
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(1, 0, 0),
+            }).unwrap();
+            match game.status {
+                GameStatus::Finished { winner } => assert_eq!(winner, PlayerId::new(0)),
+                _ => panic!("Tamaño 2: jugador 0 debería haber ganado"),
+            }
+        }
+
+        #[test]
+        fn test_size2_no_winner_after_one_move() {
+            let mut game = GameY::new(2, Variant::Standard);
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 1, 0),
+            }).unwrap();
+            assert!(!game.check_game_over());
+        }
+
+        #[test]
+        fn test_size2_yen_roundtrip() {
+            let mut game = GameY::new(2, Variant::Standard);
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 1, 0),
+            }).unwrap();
+            let yen: YEN = (&game).into();
+            let restored = GameY::try_from(yen.clone()).unwrap();
+            let yen2: YEN = (&restored).into();
+            assert_eq!(yen.layout(), yen2.layout());
+            assert_eq!(yen.size(), 2);
+        }
+
+        // ── Tamaño 3 6 celdas, comprueba lo mismo ──────────────────────────────────────────────────────────────
+
+        #[test]
+        fn test_size3_total_cells() {
+            let game = GameY::new(3, Variant::Standard);
+            // (3 * 4) / 2 = 6
+            assert_eq!(game.total_cells(), 6);
+            assert_eq!(game.available_cells().len(), 6);
+        }
+
+        #[test]
+        fn test_size3_win_diagonal_path() {
+            // Camino en z=0: (0,2,0)→(1,1,0)→(2,0,0)
+            // (0,2,0) toca A,C; (2,0,0) toca B,C → conectados cubren A,B,C
+            let mut game = GameY::new(3, Variant::Standard);
+            let moves = vec![
+                (0, Coordinates::new(0, 2, 0)),
+                (1, Coordinates::new(1, 0, 1)),
+                (0, Coordinates::new(1, 1, 0)),
+                (1, Coordinates::new(0, 0, 2)),
+                (0, Coordinates::new(2, 0, 0)),
+            ];
+            for (player_id, coords) in moves {
+                game.add_move(Movement::Placement {
+                    player: PlayerId::new(player_id),
+                    coords,
+                }).unwrap();
+            }
+            match game.status {
+                GameStatus::Finished { winner } => assert_eq!(winner, PlayerId::new(0)),
+                _ => panic!("Tamaño 3: jugador 0 debería haber ganado"),
+            }
+        }
+
+        #[test]
+        fn test_size3_ongoing_after_two_moves() {
+            let mut game = GameY::new(3, Variant::Standard);
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 2, 0),
+            }).unwrap();
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(1),
+                coords: Coordinates::new(2, 0, 0),
+            }).unwrap();
+            assert!(!game.check_game_over());
+        }
+
+        #[test]
+        fn test_size3_available_cells_decrease() {
+            let mut game = GameY::new(3, Variant::Standard);
+            assert_eq!(game.available_cells().len(), 6);
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 2, 0),
+            }).unwrap();
+            assert_eq!(game.available_cells().len(), 5);
+        }
+
+        #[test]
+        fn test_size3_yen_roundtrip() {
+            let mut game = GameY::new(3, Variant::Standard);
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 2, 0),
+            }).unwrap();
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(1),
+                coords: Coordinates::new(2, 0, 0),
+            }).unwrap();
+            let yen: YEN = (&game).into();
+            let restored = GameY::try_from(yen.clone()).unwrap();
+            let yen2: YEN = (&restored).into();
+            assert_eq!(yen.layout(), yen2.layout());
+            assert_eq!(yen.turn(), yen2.turn());
+        }
+
+        // ── Tamaño 4 10 celdas comprueba lo mismo ──────────────────────────────────────────────────────────────
+
+        #[test]
+        fn test_size4_total_cells() {
+            let game = GameY::new(4, Variant::Standard);
+            // (4 * 5) / 2 = 10
+            assert_eq!(game.total_cells(), 10);
+            assert_eq!(game.available_cells().len(), 10);
+        }
+
+        #[test]
+        fn test_size4_initial_state_ongoing() {
+            let game = GameY::new(4, Variant::Standard);
+            match game.status() {
+                GameStatus::Ongoing { next_player } => assert_eq!(*next_player, PlayerId::new(0)),
+                _ => panic!("Tamaño 4: el juego debería estar en curso al inicio"),
+            }
+        }
+
+        #[test]
+        fn test_size4_win_along_side_c() {
+            // Camino en z=0: (0,3,0)→(1,2,0)→(2,1,0)→(3,0,0)
+            // (0,3,0) toca A,C; (3,0,0) toca B,C → cubren A,B,C
+            let mut game = GameY::new(4, Variant::Standard);
+            let moves: Vec<(u32, Coordinates)> = vec![
+                (0, Coordinates::new(0, 3, 0)),
+                (1, Coordinates::new(0, 0, 3)),
+                (0, Coordinates::new(1, 2, 0)),
+                (1, Coordinates::new(0, 1, 2)),
+                (0, Coordinates::new(2, 1, 0)),
+                (1, Coordinates::new(0, 2, 1)),
+                (0, Coordinates::new(3, 0, 0)),
+            ];
+            for (player_id, coords) in moves {
+                game.add_move(Movement::Placement {
+                    player: PlayerId::new(player_id),
+                    coords,
+                }).unwrap();
+            }
+            match game.status {
+                GameStatus::Finished { winner } => assert_eq!(winner, PlayerId::new(0)),
+                _ => panic!("Tamaño 4: jugador 0 debería haber ganado"),
+            }
+        }
+
+        #[test]
+        fn test_size4_yen_roundtrip() {
+            let mut game = GameY::new(4, Variant::Standard);
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 3, 0),
+            }).unwrap();
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(1),
+                coords: Coordinates::new(3, 0, 0),
+            }).unwrap();
+            let yen: YEN = (&game).into();
+            let restored = GameY::try_from(yen.clone()).unwrap();
+            let yen2: YEN = (&restored).into();
+            assert_eq!(yen.layout(), yen2.layout());
+            assert_eq!(yen.size(), 4);
+        }
+
+        // ── Tamaño 5 15 celdas, comprueba lo basico pero ademas que se gana wn why not ──────────────────────────────────────────────────────────────
+
+        #[test]
+        fn test_size5_total_cells() {
+            let game = GameY::new(5, Variant::Standard);
+            // (5 * 6) / 2 = 15
+            assert_eq!(game.total_cells(), 15);
+            assert_eq!(game.available_cells().len(), 15);
+        }
+
+        #[test]
+        fn test_size5_initial_state_ongoing() {
+            let game = GameY::new(5, Variant::Standard);
+            assert!(!game.check_game_over());
+            assert_eq!(game.next_player(), Some(PlayerId::new(0)));
+        }
+
+        #[test]
+        fn test_size5_win_along_side_c() {
+            // Camino en z=0: (0,4,0)→(1,3,0)→(2,2,0)→(3,1,0)→(4,0,0)
+            // (0,4,0) toca A,C; (4,0,0) toca B,C → cubren A,B,C
+            let mut game = GameY::new(5, Variant::Standard);
+            let moves: Vec<(u32, Coordinates)> = vec![
+                (0, Coordinates::new(0, 4, 0)),
+                (1, Coordinates::new(0, 0, 4)),
+                (0, Coordinates::new(1, 3, 0)),
+                (1, Coordinates::new(0, 1, 3)),
+                (0, Coordinates::new(2, 2, 0)),
+                (1, Coordinates::new(0, 2, 2)),
+                (0, Coordinates::new(3, 1, 0)),
+                (1, Coordinates::new(0, 3, 1)),
+                (0, Coordinates::new(4, 0, 0)),
+            ];
+            for (player_id, coords) in moves {
+                game.add_move(Movement::Placement {
+                    player: PlayerId::new(player_id),
+                    coords,
+                }).unwrap();
+            }
+            match game.status {
+                GameStatus::Finished { winner } => assert_eq!(winner, PlayerId::new(0)),
+                _ => panic!("Tamaño 5: jugador 0 debería haber ganado"),
+            }
+        }
+
+        #[test]
+        fn test_size5_available_cells_after_moves() {
+            let mut game = GameY::new(5, Variant::Standard);
+            for i in 0..4 {
+                let coords = Coordinates::from_index(i * 2, 5);
+                let player = if i % 2 == 0 { 0 } else { 1 };
+                game.add_move(Movement::Placement {
+                    player: PlayerId::new(player),
+                    coords,
+                }).unwrap();
+            }
+            assert_eq!(game.available_cells().len(), 11);
+        }
+
+        #[test]
+        fn test_size5_yen_roundtrip() {
+            let mut game = GameY::new(5, Variant::Standard);
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(0),
+                coords: Coordinates::new(0, 4, 0),
+            }).unwrap();
+            game.add_move(Movement::Placement {
+                player: PlayerId::new(1),
+                coords: Coordinates::new(4, 0, 0),
+            }).unwrap();
+            let yen: YEN = (&game).into();
+            let restored = GameY::try_from(yen.clone()).unwrap();
+            let yen2: YEN = (&restored).into();
+            assert_eq!(yen.layout(), yen2.layout());
+            assert_eq!(yen.size(), 5);
+        }
+
+        #[test]
+        fn test_size5_why_not_win_inverts_winner() {
+            // Mismo camino ganador que Standard pero el ganador debe ser el rival
+            let mut game = GameY::new(5, Variant::WhyNot);
+            let moves: Vec<(u32, Coordinates)> = vec![
+                (0, Coordinates::new(0, 4, 0)),
+                (1, Coordinates::new(0, 0, 4)),
+                (0, Coordinates::new(1, 3, 0)),
+                (1, Coordinates::new(0, 1, 3)),
+                (0, Coordinates::new(2, 2, 0)),
+                (1, Coordinates::new(0, 2, 2)),
+                (0, Coordinates::new(3, 1, 0)),
+                (1, Coordinates::new(0, 3, 1)),
+                (0, Coordinates::new(4, 0, 0)),
+            ];
+            for (player_id, coords) in moves {
+                game.add_move(Movement::Placement {
+                    player: PlayerId::new(player_id),
+                    coords,
+                }).unwrap();
+            }
+            match game.status {
+                GameStatus::Finished { winner } => assert_eq!(winner, PlayerId::new(1)),
+                _ => panic!("Tamaño 5 WhyNot: el ganador debería ser el jugador 1"),
+            }
+        }
+
+    }

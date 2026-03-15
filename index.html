@@ -509,6 +509,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_adr_04_persistencia_de_estadísticas_e_histórico_de_partidas">9.4. ADR-04: Persistencia de estadísticas e histórico de partidas</a></li>
 <li><a href="#_adr_05_diseño_modular_para_permitir_nuevas_estrategias">9.5. ADR-05: Diseño modular para permitir nuevas estrategias</a></li>
 <li><a href="#_adr_06_uso_de_mongodb_atlas_como_sistema_de_persistencia">9.6. ADR-06: Uso de MongoDB Atlas como sistema de persistencia</a></li>
+<li><a href="#_adr_07_uso_de_aws_como_infraestructura_de_despliegue">9.7. ADR-07: Uso de AWS como infraestructura de despliegue</a></li>
 </ul>
 </li>
 <li><a href="#section-quality-scenarios">10. Quality Requirements</a>
@@ -2431,6 +2432,145 @@ para la persistencia de datos del sistema.</p>
 - Posibles costes al aumentar el uso.
 - Requiere correcta configuración de seguridad y accesos.</p>
 </div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_adr_07_uso_de_aws_como_infraestructura_de_despliegue">9.7. ADR-07: Uso de AWS como infraestructura de despliegue</h3>
+<div class="sect3">
+<h4 id="_estado_7">9.7.1. Estado</h4>
+<div class="paragraph">
+<p>Aceptada</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_contexto_7">9.7.2. Contexto</h4>
+<div class="paragraph">
+<p>El sistema YOVI necesita:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Hospedar la aplicación web.</p>
+</li>
+<li>
+<p>Ejecutar el motor en Rust.</p>
+</li>
+<li>
+<p>Exponer la API pública a Internet.</p>
+</li>
+<li>
+<p>Garantizar disponibilidad y escalabilidad.</p>
+</li>
+<li>
+<p>Permitir despliegues reproducibles.</p>
+</li>
+<li>
+<p>Separar entornos (desarrollo, pruebas, producción).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Se requiere además:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Infraestructura fiable y ampliamente soportada.</p>
+</li>
+<li>
+<p>Posibilidad de escalar horizontalmente.</p>
+</li>
+<li>
+<p>Integración con servicios gestionados.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_decisión_7">9.7.3. Decisión</h4>
+<div class="paragraph">
+<p>Utilizar Amazon Web Services (AWS) como proveedor de infraestructura
+para desplegar los componentes del sistema.</p>
+</div>
+<div class="paragraph">
+<p>La arquitectura se desplegará sobre servicios cloud gestionados,
+permitiendo:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Servidores virtuales (EC2) o contenedores.</p>
+</li>
+<li>
+<p>Balanceo de carga.</p>
+</li>
+<li>
+<p>Configuración de red segura.</p>
+</li>
+<li>
+<p>Escalado automático.</p>
+</li>
+<li>
+<p>Integración con MongoDB Atlas y otros servicios externos.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_alternativas_consideradas_7">9.7.4. Alternativas consideradas</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Otros proveedores cloud (Azure).</p>
+</li>
+<li>
+<p>Otros proveedores cloud (Google Cloud).</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_justificación_7">9.7.5. Justificación</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>AWS ofrece alta disponibilidad global.</p>
+</li>
+<li>
+<p>Amplio ecosistema de servicios.</p>
+</li>
+<li>
+<p>Escalabilidad bajo demanda.</p>
+</li>
+<li>
+<p>Buen soporte para arquitecturas distribuidas.</p>
+</li>
+<li>
+<p>Integración sencilla con despliegues modernos (CI/CD, contenedores).</p>
+</li>
+<li>
+<p>El equipo ya ha trabajado previamente con Azure en otros proyectos,
+por lo que adoptar AWS amplía la experiencia en entornos multi-cloud.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_consecuencias_7">9.7.6. Consecuencias</h4>
+<div class="paragraph">
+<p>Positivas:
+- Alta disponibilidad.
+- Escalabilidad horizontal.
+- Infraestructura flexible.
+- Separación clara de entornos.
+- Soporte para automatización de despliegues.</p>
+</div>
+<div class="paragraph">
+<p>Negativas:
+- Dependencia de proveedor externo.
+- Costes variables según uso.
+- Necesidad de configurar correctamente seguridad (IAM, redes, firewall).</p>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -2633,7 +2773,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-02-09 13:04:57 +0100
+Last updated 2026-02-20 18:34:09 +0100
 </div>
 </div>
 </body>

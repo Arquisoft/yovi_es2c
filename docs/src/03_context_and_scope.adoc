@@ -3,48 +3,50 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-context-and-scope]]
 == Context and Scope
 
-Esta sección describe el contexto del sistema YOVI, es decir, su entorno,
+Esta sección describe el contexto del sistema YOVI: su entorno,
 los actores externos con los que interactúa y las interfaces que delimitan
-el alcance del sistema.
+su alcance.
 
-A diferencia de la sección de *Introduction and Goals*, aquí no se describen
-requisitos ni objetivos de calidad, sino las fronteras del sistema y
-su relación con el entorno.
+A diferencia de *Introduction and Goals*, aquí no se detallan requisitos
+ni objetivos de calidad, sino las fronteras del sistema y su relación con el entorno.
 
 === Business Context
 
-YOVI es una plataforma web que permite jugar partidas básicas del juego de
-tablero Y contra un bot. El sistema actúa como intermediario entre los
-jugadores humanos, el motor de juego automático y el almacenamiento de
-resultados de las partidas.
+YOVI es una plataforma web para jugar al juego de tablero Y en modo local
+(dos jugadores en la misma pantalla) o contra un bot. El sistema integra
+interfaz de usuario, autenticación básica y la lógica del motor GameY.
 
-Desde el punto de vista del negocio, el sistema se considera una *caja negra*
-que ofrece una experiencia de juego sencilla y automatizada.
+Desde el punto de vista del negocio, YOVI se considera una *caja negra* que
+ofrece una experiencia de juego sencilla con registro y login.
 
-Los principales actores externos que interactúan con el sistema son:
+Actores externos principales:
 
 [options="header",cols="1,2,2"]
 |===
 | Actor / Sistema externo | Inputs hacia YOVI | Outputs desde YOVI
 
 | Jugador
-| Nombre de usuario, movimientos de la partida
-| Confirmaciones, estado del tablero, resultado de la partida
+| Credenciales (username y password), selección de modo/tamaño, movimientos
+| Mensajes de login/registro, estado del tablero, resultado
 
 | Motor GameY
-| Estado del tablero en notación YEN
-| Movimiento calculado del bot
+| Estado del tablero en notación YEN y movimiento humano
+| Movimiento del bot y estado actualizado
 
-| Base de Datos
-| Resultado final de la partida
+| Base de Datos (Users)
+| Usuarios registrados (username + hash)
+| Confirmación de alta o rechazo
+
+| Base de Datos (GameY)
+| Resultado final de la partida (winner, board_size, etc.)
 | Confirmación de persistencia
 |===
 
 El jugador interactúa únicamente con la aplicación web.
-El motor GameY no tiene conocimiento del usuario ni de la interfaz gráfica;
-su responsabilidad se limita al cálculo del siguiente movimiento.
-La base de datos almacena únicamente el **resultado final de cada partida**,
-sin gestionar estadísticas avanzadas ni rankings en esta versión.
+GameY no conoce al usuario ni a la interfaz gráfica; se limita a validar
+jugadas, calcular el movimiento del bot y devolver el nuevo estado.
+Las bases de datos almacenan usuarios y resultados finales, sin rankings ni
+estadísticas avanzadas en esta versión.
 
 === Context Diagram
 
@@ -58,9 +60,8 @@ image::contexto-diagrama.png["Diagrama de Contexto del Sistema"]
 
 === Technical Context
 
-Desde el punto de vista técnico, el sistema está compuesto por tres
-subsistemas independientes que se comunican mediante interfaces REST
-y mensajes JSON.
+Desde el punto de vista técnico, el sistema se compone de tres subsistemas
+independientes que se comunican por REST con mensajes JSON.
 
 [options="header",cols="1,2,2"]
 |===
@@ -74,36 +75,70 @@ y mensajes JSON.
 | HTTP REST (puerto 4000)
 | JSON (notación YEN)
 
-| Users Service ↔ Base de Datos
+| Users Service ↔ MongoDB
 | Conexión directa (driver de BD)
-| Datos estructurados
+| Documentos (users)
+
+| GameY ↔ MongoDB
+| Conexión directa (driver de BD)
+| Documentos (games)
 |===
 
-La aplicación web se ejecuta en el navegador del usuario y constituye el
-punto de entrada único al sistema.
-Los servicios backend no exponen interfaces gráficas y están diseñados
-para ser consumidos únicamente mediante API.
+La webapp corre en el navegador y es el punto de entrada único.
+Los servicios backend no exponen interfaz gráfica y se consumen por API.
+
+Endpoints de GameY:
+
+[options="header",cols="1,2"]
+|===
+| Endpoint | Uso
+
+| /status
+| Health check del servicio
+
+| /v1/ybot/choose/{bot_id}
+| Devuelve la jugada del bot
+
+| /v1/game/move
+| Aplica una jugada humana y devuelve el nuevo estado
+|===
+
+Puertos de despliegue en Docker:
+
+[options="header",cols="1,1"]
+|===
+| Servicio | Puerto
+
+| Webapp
+| 80
+
+| Users Service
+| 3000
+
+| GameY
+| 4000
+|===
 
 === Scope (Alcance)
 
-El alcance de esta primera entrega (versión 0.1) está limitado a una
-**prueba de concepto funcional**, cuyo objetivo es validar la arquitectura
-y la integración entre los distintos subsistemas.
+El alcance de esta entrega es una **prueba de concepto funcional**
+para validar arquitectura e integración entre subsistemas.
 
 **Dentro del alcance:**
 
-* Registro básico de usuarios para identificar las partidas.
-* Juego de una partida básica del juego Y contra un bot.
-* Comunicación funcional entre Webapp, Users Service y GameY.
-* Almacenamiento en base de datos del **resultado final de la partida**.
-* Aplicación desplegada y accesible vía web.
+* Registro y login con validación básica (usuarios guardados como username + hash).
+* Modo local y modo contra bot.
+* Selección de tamaño de tablero y variante (standard / why_not).
+* Comunicación funcional Webapp ↔ Users Service y Webapp ↔ GameY.
+* Almacenamiento en BD del **resultado final de la partida** (persistido por GameY).
+* Aplicación accesible vía web.
 
 **Fuera del alcance (versiones futuras):**
 
-* Rankings y estadísticas agregadas de usuarios.
-* Almacenamiento del histórico completo de movimientos.
-* Múltiples estrategias o niveles de dificultad del bot.
-* Partidas multijugador entre personas.
+* Rankings y estadísticas agregadas.
+* Histórico completo de movimientos y replays.
+* Múltiples niveles de dificultad del bot.
+* Multijugador en red entre personas.
 
-Este alcance permite demostrar la viabilidad técnica del sistema y sirve
-como base para futuras extensiones funcionales.
+Este alcance permite demostrar la viabilidad técnica y servir como base
+para futuras extensiones.

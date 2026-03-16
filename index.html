@@ -468,10 +468,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#section-solution-strategy">4. Solution Strategy</a>
 <ul class="sectlevel2">
-<li><a href="#_decisiones_tecnologicas_clave">4.1. Decisiones tecnologicas clave</a></li>
-<li><a href="#_descomposicion_y_patron_arquitectonico">4.2. Descomposicion y patron arquitectonico</a></li>
-<li><a href="#_estrategias_para_objetivos_de_calidad">4.3. Estrategias para objetivos de calidad</a></li>
-<li><a href="#_decisiones_organizativas">4.4. Decisiones organizativas</a></li>
+<li><a href="#_resumen_de_decisiones_arquitectonicas">4.1. Resumen de decisiones arquitectonicas</a></li>
+<li><a href="#_decisiones_tecnologicas_clave">4.2. Decisiones tecnologicas clave</a></li>
+<li><a href="#_descomposicion_y_patron_arquitectonico">4.3. Descomposicion y patron arquitectonico</a></li>
+<li><a href="#_estrategias_para_alcanzar_los_objetivos_de_calidad">4.4. Estrategias para alcanzar los objetivos de calidad</a></li>
+<li><a href="#_decisiones_organizativas_y_de_desarrollo">4.5. Decisiones organizativas y de desarrollo</a></li>
 </ul>
 </li>
 <li><a href="#section-building-block-view">5. Building Block View</a>
@@ -943,29 +944,27 @@ conventions (e.g. programming or versioning guidelines, documentation or naming 
 <h2 id="section-context-and-scope">3. Context and Scope</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Esta sección describe el contexto del sistema YOVI, es decir, su entorno,
+<p>Esta sección describe el contexto del sistema YOVI: su entorno,
 los actores externos con los que interactúa y las interfaces que delimitan
-el alcance del sistema.</p>
+su alcance.</p>
 </div>
 <div class="paragraph">
-<p>A diferencia de la sección de <strong>Introduction and Goals</strong>, aquí no se describen
-requisitos ni objetivos de calidad, sino las fronteras del sistema y
-su relación con el entorno.</p>
+<p>A diferencia de <strong>Introduction and Goals</strong>, aquí no se detallan requisitos
+ni objetivos de calidad, sino las fronteras del sistema y su relación con el entorno.</p>
 </div>
 <div class="sect2">
 <h3 id="_business_context">3.1. Business Context</h3>
 <div class="paragraph">
-<p>YOVI es una plataforma web que permite jugar partidas básicas del juego de
-tablero Y contra un bot. El sistema actúa como intermediario entre los
-jugadores humanos, el motor de juego automático y el almacenamiento de
-resultados de las partidas.</p>
+<p>YOVI es una plataforma web para jugar al juego de tablero Y en modo local
+(dos jugadores en la misma pantalla) o contra un bot. El sistema integra
+interfaz de usuario, autenticación básica y la lógica del motor GameY.</p>
 </div>
 <div class="paragraph">
-<p>Desde el punto de vista del negocio, el sistema se considera una <strong>caja negra</strong>
-que ofrece una experiencia de juego sencilla y automatizada.</p>
+<p>Desde el punto de vista del negocio, YOVI se considera una <strong>caja negra</strong> que
+ofrece una experiencia de juego sencilla con registro y login.</p>
 </div>
 <div class="paragraph">
-<p>Los principales actores externos que interactúan con el sistema son:</p>
+<p>Actores externos principales:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -983,27 +982,32 @@ que ofrece una experiencia de juego sencilla y automatizada.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Jugador</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Nombre de usuario, movimientos de la partida</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Confirmaciones, estado del tablero, resultado de la partida</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Credenciales (username y password), selección de modo/tamaño, movimientos</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mensajes de login/registro, estado del tablero, resultado</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Motor GameY</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Estado del tablero en notación YEN</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Movimiento calculado del bot</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Estado del tablero en notación YEN y movimiento humano</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Movimiento del bot y estado actualizado</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Base de Datos</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Resultado final de la partida</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base de Datos (Users)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usuarios registrados (username + hash)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Confirmación de alta o rechazo</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base de Datos (GameY)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resultado final de la partida (winner, board_size, etc.)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Confirmación de persistencia</p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
 <p>El jugador interactúa únicamente con la aplicación web.
-El motor GameY no tiene conocimiento del usuario ni de la interfaz gráfica;
-su responsabilidad se limita al cálculo del siguiente movimiento.
-La base de datos almacena únicamente el <strong>resultado final de cada partida</strong>,
-sin gestionar estadísticas avanzadas ni rankings en esta versión.</p>
+GameY no conoce al usuario ni a la interfaz gráfica; se limita a validar
+jugadas, calcular el movimiento del bot y devolver el nuevo estado.
+Las bases de datos almacenan usuarios y resultados finales, sin rankings ni
+estadísticas avanzadas en esta versión.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1021,9 +1025,8 @@ con los actores y sistemas externos:</p>
 <div class="sect2">
 <h3 id="_technical_context">3.3. Technical Context</h3>
 <div class="paragraph">
-<p>Desde el punto de vista técnico, el sistema está compuesto por tres
-subsistemas independientes que se comunican mediante interfaces REST
-y mensajes JSON.</p>
+<p>Desde el punto de vista técnico, el sistema se compone de tres subsistemas
+independientes que se comunican por REST con mensajes JSON.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1050,25 +1053,85 @@ y mensajes JSON.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">JSON (notación YEN)</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Users Service ↔ Base de Datos</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Users Service ↔ MongoDB</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Conexión directa (driver de BD)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Datos estructurados</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Documentos (users)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GameY ↔ MongoDB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Conexión directa (driver de BD)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Documentos (games)</p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
-<p>La aplicación web se ejecuta en el navegador del usuario y constituye el
-punto de entrada único al sistema.
-Los servicios backend no exponen interfaces gráficas y están diseñados
-para ser consumidos únicamente mediante API.</p>
+<p>La webapp corre en el navegador y es el punto de entrada único.
+Los servicios backend no exponen interfaz gráfica y se consumen por API.</p>
 </div>
+<div class="paragraph">
+<p>Endpoints de GameY:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 66.6667%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Endpoint</th>
+<th class="tableblock halign-left valign-top">Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/status</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Health check del servicio</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/v1/ybot/choose/{bot_id}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Devuelve la jugada del bot</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">/v1/game/move</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aplica una jugada humana y devuelve el nuevo estado</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Puertos de despliegue en Docker:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Servicio</th>
+<th class="tableblock halign-left valign-top">Puerto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Webapp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">80</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Users Service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3000</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GameY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4000</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect2">
 <h3 id="_scope_alcance">3.4. Scope (Alcance)</h3>
 <div class="paragraph">
-<p>El alcance de esta primera entrega (versión 0.1) está limitado a una
-<strong>prueba de concepto funcional</strong>, cuyo objetivo es validar la arquitectura
-y la integración entre los distintos subsistemas.</p>
+<p>El alcance de esta entrega es una <strong>prueba de concepto funcional</strong>
+para validar arquitectura e integración entre subsistemas.</p>
 </div>
 <div class="paragraph">
 <p><strong>Dentro del alcance:</strong></p>
@@ -1076,19 +1139,22 @@ y la integración entre los distintos subsistemas.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Registro básico de usuarios para identificar las partidas.</p>
+<p>Registro y login con validación básica (usuarios guardados como username + hash).</p>
 </li>
 <li>
-<p>Juego de una partida básica del juego Y contra un bot.</p>
+<p>Modo local y modo contra bot.</p>
 </li>
 <li>
-<p>Comunicación funcional entre Webapp, Users Service y GameY.</p>
+<p>Selección de tamaño de tablero y variante (standard / why_not).</p>
 </li>
 <li>
-<p>Almacenamiento en base de datos del <strong>resultado final de la partida</strong>.</p>
+<p>Comunicación funcional Webapp ↔ Users Service y Webapp ↔ GameY.</p>
 </li>
 <li>
-<p>Aplicación desplegada y accesible vía web.</p>
+<p>Almacenamiento en BD del <strong>resultado final de la partida</strong> (persistido por GameY).</p>
+</li>
+<li>
+<p>Aplicación accesible vía web.</p>
 </li>
 </ul>
 </div>
@@ -1098,22 +1164,22 @@ y la integración entre los distintos subsistemas.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Rankings y estadísticas agregadas de usuarios.</p>
+<p>Rankings y estadísticas agregadas.</p>
 </li>
 <li>
-<p>Almacenamiento del histórico completo de movimientos.</p>
+<p>Histórico completo de movimientos y replays.</p>
 </li>
 <li>
-<p>Múltiples estrategias o niveles de dificultad del bot.</p>
+<p>Múltiples niveles de dificultad del bot.</p>
 </li>
 <li>
-<p>Partidas multijugador entre personas.</p>
+<p>Multijugador en red entre personas.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Este alcance permite demostrar la viabilidad técnica del sistema y sirve
-como base para futuras extensiones funcionales.</p>
+<p>Este alcance permite demostrar la viabilidad técnica y servir como base
+para futuras extensiones.</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -1164,80 +1230,152 @@ Refer to details in the following sections.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>La estrategia de solucion de YOVI se basa en una arquitectura modular por servicios, con comunicacion HTTP/REST y mensajes JSON, y un motor de juego separado para garantizar rendimiento y mantenibilidad.</p>
+<p>La estrategia de solucion de YOVI prioriza una arquitectura sencilla, modular y facil de evolucionar. La idea principal es separar claramente la interfaz de usuario, la gestion de usuarios y la logica del juego, de forma que cada parte pueda desarrollarse, probarse y desplegarse con bajo acoplamiento.</p>
+</div>
+<div class="paragraph">
+<p>Esta decision responde a los objetivos de calidad definidos para el proyecto: una experiencia de uso directa para el jugador, tiempos de respuesta bajos en las operaciones del motor, facilidad para introducir cambios en nuevas funcionalidades y una base tecnica suficientemente flexible para crecer sin redisenar el sistema por completo.</p>
 </div>
 <div class="sect2">
-<h3 id="_decisiones_tecnologicas_clave">4.1. Decisiones tecnologicas clave</h3>
+<h3 id="_resumen_de_decisiones_arquitectonicas">4.1. Resumen de decisiones arquitectonicas</h3>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 22.2222%;">
+<col style="width: 44.4444%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Decision</th>
+<th class="tableblock halign-left valign-top">Motivacion</th>
+<th class="tableblock halign-left valign-top">Impacto esperado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Separar interfaz, usuarios y motor de juego en subsistemas independientes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Evitar acoplamiento excesivo entre presentacion, gestion de cuentas y reglas del dominio</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mejora la mantenibilidad y facilita el despliegue y evolucion independientes</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implementar la webapp con React, Vite y TypeScript</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Necesidad de una interfaz rapida de desarrollar, con buena experiencia interactiva y menor riesgo de errores de integracion</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mayor productividad en frontend y mejor robustez en el contrato con las APIs</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implementar el servicio de usuarios con Node.js y Express</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resolver de forma sencilla la autenticacion y la exposicion de una API REST</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Backend ligero, comprensible y facil de integrar con la webapp</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Implementar GameY en Rust</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aislar la logica critica del juego en un componente eficiente y fiable</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mejor rendimiento y menor probabilidad de errores en la validacion de reglas</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Comunicar subsistemas mediante HTTP/REST y JSON</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usar un contrato simple, interoperable y facil de depurar</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Menor acoplamiento tecnico y facilidad para probar integraciones</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Representar tableros con notacion YEN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Disponer de un formato comun y compacto para intercambiar estados del juego</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Homogeneidad en la comunicacion entre cliente y motor</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Desplegar el sistema con Docker Compose</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reducir diferencias entre entornos de desarrollo, prueba y demostracion</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ejecucion reproducible y puesta en marcha mas simple para el equipo</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="sect2">
+<h3 id="_decisiones_tecnologicas_clave">4.2. Decisiones tecnologicas clave</h3>
 <div class="ulist">
 <ul>
 <li>
-<p>Webapp: React + Vite + TypeScript para una UI rapida y facil de evolucionar.</p>
+<p><strong>Webapp con React, Vite y TypeScript.</strong> Se elige una SPA ligera para ofrecer una interfaz rapida, con recarga agil durante el desarrollo y tipado estatico para reducir errores en la integracion con los servicios.</p>
 </li>
 <li>
-<p>Servicio de usuarios: Node.js + Express para exponer una API REST sencilla.</p>
+<p><strong>Servicio de usuarios con Node.js y Express.</strong> Esta tecnologia permite implementar una API REST pequena y comprensible, adecuada para operaciones CRUD, autenticacion basica e integracion rapida con la webapp.</p>
 </li>
 <li>
-<p>Motor de juego: Rust para validar partidas y calcular movimientos con buen rendimiento.</p>
+<p><strong>Motor de juego en Rust.</strong> La logica de validacion de partidas y calculo de movimientos se aisla en un componente de alto rendimiento y comportamiento predecible, reduciendo el riesgo de errores en la parte mas sensible del dominio.</p>
 </li>
 <li>
-<p>Intercambio de datos: JSON y notacion YEN para el estado del tablero.</p>
+<p><strong>Intercambio de datos mediante JSON y notacion YEN.</strong> Se adopta un formato legible, portable y facil de depurar, que simplifica la comunicacion entre subsistemas y desacopla las implementaciones internas.</p>
 </li>
 <li>
-<p>Despliegue local: Docker Compose para ejecutar los servicios de forma consistente.</p>
+<p><strong>Despliegue local con Docker Compose.</strong> Se busca reproducibilidad del entorno y facilidad de puesta en marcha para desarrollo, pruebas y demostraciones.</p>
 </li>
 <li>
-<p>Observabilidad basica: Prometheus/Grafana para metricas del backend.</p>
+<p><strong>Observabilidad basica con Prometheus y Grafana.</strong> Se introduce una base minima para inspeccionar el estado del sistema y detectar problemas de rendimiento o disponibilidad.</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_descomposicion_y_patron_arquitectonico">4.2. Descomposicion y patron arquitectonico</h3>
+<h3 id="_descomposicion_y_patron_arquitectonico">4.3. Descomposicion y patron arquitectonico</h3>
+<div class="paragraph">
+<p>YOVI sigue una descomposicion por subsistemas con responsabilidades claras:</p>
+</div>
 <div class="ulist">
 <ul>
 <li>
-<p>Separacion en tres subsistemas: webapp (UI), users (gestion de usuarios) y gamey (logica del juego).</p>
+<p><strong>Webapp</strong>: punto de entrada del usuario, gestion de vistas, interaccion de juego y consumo de APIs.</p>
 </li>
 <li>
-<p>Cada subsistema es desplegable de forma independiente y se comunica mediante REST.</p>
+<p><strong>Users service</strong>: gestion de registro, autenticacion y persistencia de informacion de usuarios.</p>
 </li>
 <li>
-<p>Persistencia de resultados y datos de usuarios delegada al servicio de usuarios/BD.</p>
+<p><strong>GameY</strong>: motor encargado de aplicar reglas, validar estados y calcular jugadas.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>La comunicacion entre componentes se realiza mediante HTTP/REST y mensajes JSON. Esta estrategia favorece el desacoplamiento, hace visibles los contratos entre modulos y permite sustituir o evolucionar un subsistema sin afectar de forma directa a los demas mientras se mantenga la interfaz publica.</p>
+</div>
+<div class="paragraph">
+<p>Ademas, la persistencia se delega en los servicios backend en lugar de en la interfaz. Con ello, la webapp queda centrada en la experiencia de usuario y la logica de negocio permanece en los componentes que pueden validarla y protegerla mejor.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_estrategias_para_alcanzar_los_objetivos_de_calidad">4.4. Estrategias para alcanzar los objetivos de calidad</h3>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Usabilidad.</strong> La webapp concentra todo el flujo de interaccion en una unica entrada, con navegacion sencilla y operaciones directas para registrarse, iniciar sesion y jugar.</p>
+</li>
+<li>
+<p><strong>Rendimiento.</strong> La logica computacional del juego se concentra en Rust y se expone mediante endpoints pequenos, minimizando procesamiento innecesario en la capa web.</p>
+</li>
+<li>
+<p><strong>Mantenibilidad.</strong> La separacion por responsabilidades evita mezclar interfaz, autenticacion y reglas del juego, lo que facilita localizar cambios y ampliar el sistema.</p>
+</li>
+<li>
+<p><strong>Escalabilidad.</strong> La independencia de despliegue permite dimensionar por separado los subsistemas que reciban mas carga, especialmente el motor de juego o los servicios de usuario.</p>
+</li>
+<li>
+<p><strong>Fiabilidad.</strong> La validacion de reglas se centraliza en un unico motor, evitando inconsistencias derivadas de duplicar logica entre cliente y servidor.</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_estrategias_para_objetivos_de_calidad">4.3. Estrategias para objetivos de calidad</h3>
+<h3 id="_decisiones_organizativas_y_de_desarrollo">4.5. Decisiones organizativas y de desarrollo</h3>
 <div class="ulist">
 <ul>
 <li>
-<p>Usabilidad: interfaz web minimalista con flujo de registro y juego directo.</p>
+<p><strong>Mono-repo por subsistemas.</strong> El repositorio agrupa codigo y documentacion en una unica estructura, lo que simplifica la coordinacion del equipo y la trazabilidad entre decisiones de arquitectura e implementacion.</p>
 </li>
 <li>
-<p>Rendimiento: calculo del motor en Rust y endpoints ligeros.</p>
+<p><strong>Documentacion arc42.</strong> Se utiliza una estructura documental estandar para justificar decisiones y mantener alineados requisitos, contexto, estrategia y despliegue.</p>
 </li>
 <li>
-<p>Escalabilidad: servicios independientes y contenedorizados para escalar por separado.</p>
+<p><strong>Integracion continua y pruebas automatizadas.</strong> La estrategia de desarrollo busca validar cambios de forma temprana mediante builds, tests y comprobaciones de integracion.</p>
 </li>
 <li>
-<p>Mantenibilidad: responsabilidades claras y contratos REST estables.</p>
-</li>
-<li>
-<p>Fiabilidad: validacion de reglas centralizada en gamey.</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_decisiones_organizativas">4.4. Decisiones organizativas</h3>
-<div class="ulist">
-<ul>
-<li>
-<p>Repositorio mono-repo con carpetas por subsistema y documentacion arc42.</p>
-</li>
-<li>
-<p>Integracion continua para build/test y despliegue mediante contenedores.</p>
+<p><strong>Contenerizacion como base comun de trabajo.</strong> Todos los miembros del equipo comparten una forma consistente de ejecutar el sistema, reduciendo diferencias entre entornos.</p>
 </li>
 </ul>
 </div>
@@ -1248,303 +1386,228 @@ Refer to details in the following sections.</p>
 <div class="sect1">
 <h2 id="section-building-block-view">5. Building Block View</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
-<div class="content">
+<div class="sect2">
+<h3 id="_whitebox_overall_system">5.1. Whitebox Overall System</h3>
 <div class="paragraph">
-<div class="title">Content</div>
-<p>The building block view shows the static decomposition of the system into building blocks (modules, components, subsystems, classes, interfaces, packages, libraries, frameworks, layers, partitions, tiers, functions, macros, operations, data structures, &#8230;&#8203;) as well as their dependencies (relationships, associations, &#8230;&#8203;)</p>
-</div>
-<div class="paragraph">
-<p>This view is mandatory for every architecture documentation.
-In analogy to a house this is the <em>floor plan</em>.</p>
-</div>
-<div class="paragraph">
-<div class="title">Motivation</div>
-<p>Maintain an overview of your source code by making its structure understandable through
-abstraction.</p>
-</div>
-<div class="paragraph">
-<p>This allows you to communicate with your stakeholder on an abstract level without disclosing implementation details.</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>The building block view is a hierarchical collection of black boxes and white boxes
-(see figure below) and their descriptions.</p>
+<p><em><strong>Overview Diagram</strong></em></p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="./images/05_building_blocks-EN.png" alt="Hierarchy of building blocks">
+<img src="./images/Level1-Building-Blocks-Overview.png" alt="Building Block View (Level 1)">
 </div>
-</div>
-<div class="paragraph">
-<p><strong>Level 1</strong> is the white box description of the overall system together with black
-box descriptions of all contained building blocks.</p>
-</div>
-<div class="paragraph">
-<p><strong>Level 2</strong> zooms into some building blocks of level 1.
-Thus it contains the white box description of selected building blocks of level 1, together with black box descriptions of their internal building blocks.</p>
-</div>
-<div class="paragraph">
-<p><strong>Level 3</strong> zooms into selected building blocks of level 2, and so on.</p>
-</div>
-<div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-5/">Building Block View</a> in the arc42 documentation.</p>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_whitebox_overall_system">5.1. Whitebox Overall System</h3>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<p>Here you describe the decomposition of the overall system using the following white box template. It contains</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>an overview diagram</p>
-</li>
-<li>
-<p>a motivation for the decomposition</p>
-</li>
-<li>
-<p>black box descriptions of the contained building blocks. For these we offer you alternatives:</p>
-<div class="ulist">
-<ul>
-<li>
-<p>use <em>one</em> table for a short and pragmatic overview of all contained building blocks and their interfaces</p>
-</li>
-<li>
-<p>use a list of black box descriptions of the building blocks according to the black box template (see below).
-Depending on your choice of tool this list could be sub-chapters (in text files), sub-pages (in a Wiki) or nested elements (in a modeling tool).</p>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>(optional:) important interfaces, that are not explained in the black box templates of a building block, but are very important for understanding the white box.
-Since there are so many ways to specify interfaces why do not provide a specific template for them.
- In the worst case you have to specify and describe syntax, semantics, protocols, error handling,
- restrictions, versions, qualities, necessary compatibilities and many things more.
-In the best case you will get away with examples or simple signatures.</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="paragraph">
-<p><em><strong>&lt;Overview Diagram&gt;</strong></em></p>
 </div>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Motivation</dt>
 <dd>
-<p><em>&lt;text explanation&gt;</em></p>
+<p>La descomposición separa claramente interfaz, servicios y persistencia.
+Esto facilita mantener el sistema, probar cada parte por separado y evolucionar
+cada bloque sin afectar al resto.</p>
 </dd>
 <dt class="hdlist1">Contained Building Blocks</dt>
-<dd>
-<p><em>&lt;Description of contained building block (black boxes)&gt;</em></p>
-</dd>
-<dt class="hdlist1">Important Interfaces</dt>
-<dd>
-<p><em>&lt;Description of important interfaces&gt;</em></p>
-</dd>
 </dl>
-</div>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<p>Insert your explanations of black boxes from level 1:</p>
-</div>
-<div class="paragraph">
-<p>If you use tabular form you will only describe your black boxes with name and
-responsibility according to the following schema:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 66.6667%;">
+<col style="width: 25%;">
+<col style="width: 75%;">
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top"><strong>Name</strong></th>
-<th class="tableblock halign-left valign-top"><strong>Responsibility</strong></th>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Responsibility</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;black box 1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Text&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Webapp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aplicación SPA. Gestiona pantallas, estado de juego en cliente y coordinación de llamadas a APIs.</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;black box 2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Text&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Users Service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Servicio de autenticación. Registra usuarios, valida credenciales y devuelve respuestas de login/registro.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GameY Engine</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Motor del juego Y. Aplica reglas, valida jugadas y ofrece endpoints de bot y movimiento.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MongoDB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Persistencia común con dos colecciones: <code>users</code> (usuarios) y <code>games</code> (resultados de partidas).</p></td>
 </tr>
 </tbody>
 </table>
-<div class="paragraph">
-<p>If you use a list of black box descriptions then you fill in a separate black box template for every important building block .
-Its headline is the name of the black box.</p>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_black_box_1">5.1.1. &lt;Name black box 1&gt;</h4>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<p>Here you describe &lt;black box 1&gt;
-according the the following black box template:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Purpose/Responsibility</p>
-</li>
-<li>
-<p>Interface(s), when they are not extracted as separate paragraphs. This interfaces may include qualities and performance characteristics.</p>
-</li>
-<li>
-<p>(Optional) Quality-/Performance characteristics of the black box, e.g.availability, run time behavior, &#8230;&#8203;.</p>
-</li>
-<li>
-<p>(Optional) directory/file location</p>
-</li>
-<li>
-<p>(Optional) Fulfilled requirements (if you need traceability to requirements).</p>
-</li>
-<li>
-<p>(Optional) Open issues/problems/risks</p>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div class="paragraph">
-<p><em>&lt;Purpose/Responsibility&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;Interface(s)&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(Optional) Quality/Performance Characteristics&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(Optional) Directory/File Location&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(Optional) Fulfilled Requirements&gt;</em></p>
-</div>
-<div class="paragraph">
-<p><em>&lt;(optional) Open Issues/Problems/Risks&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_black_box_2">5.1.2. &lt;Name black box 2&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;black box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_black_box_n">5.1.3. &lt;Name black box n&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;black box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_interface_1">5.1.4. &lt;Name interface 1&gt;</h4>
-<div class="paragraph">
-<p>&#8230;&#8203;</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_name_interface_m">5.1.5. &lt;Name interface m&gt;</h4>
-
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Important Interfaces</dt>
+<dd>
+<p>Las interfaces clave se describen en el nivel 2.</p>
+</dd>
+</dl>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_level_2">5.2. Level 2</h3>
-<div class="sidebarblock arc42help">
+<div class="sect3">
+<h4 id="_white_box_webapp">5.2.1. White Box Webapp</h4>
+<div class="paragraph">
+<p><em><strong>Diagram</strong></em></p>
+</div>
+<div class="imageblock">
 <div class="content">
-<div class="paragraph">
-<p>Here you can specify the inner structure of (some) building blocks from level 1 as white boxes.</p>
-</div>
-<div class="paragraph">
-<p>You have to decide which building blocks of your system are important enough to justify such a detailed description.
-Please prefer relevance over completeness. Specify important, surprising, risky, complex or volatile building blocks.
-Leave out normal, simple, boring or standardized parts of your system</p>
+<img src="./images/Level2-WebApp.png" alt="Building Block View (Level 2 - Webapp)">
 </div>
 </div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Responsibility</dt>
+<dd>
+<p>Controla el flujo de usuario (inicio → menú → partida), renderiza el tablero
+y coordina la comunicación con los servicios.</p>
+</dd>
+<dt class="hdlist1">Contained Building Blocks</dt>
+</dl>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Component</th>
+<th class="tableblock halign-left valign-top">Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">App.tsx</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Orquesta las vistas principales.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">RegisterForm.tsx</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Login/registro y validaciones en cliente.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Menu.tsx</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Selección de modo, tamaño y variante.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GameBoard.tsx</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Render del tablero y control de turnos.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GameyApi.ts</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cliente HTTP hacia GameY.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
-<h4 id="_white_box_building_block_1">5.2.1. White Box <em>&lt;building block 1&gt;</em></h4>
-<div class="sidebarblock arc42help">
+<h4 id="_white_box_users_service">5.2.2. White Box Users Service</h4>
+<div class="paragraph">
+<p><em><strong>Diagram</strong></em></p>
+</div>
+<div class="imageblock">
 <div class="content">
-<div class="paragraph">
-<p>&#8230;&#8203;describes the internal structure of <em>building block 1</em>.</p>
+<img src="./images/Level2-UsersService.png" alt="Building Block View (Level 2 - Users Service)">
 </div>
 </div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Responsibility</dt>
+<dd>
+<p>API de autenticación. Verifica entradas, genera hash de contraseñas y
+persiste usuarios en MongoDB.</p>
+</dd>
+<dt class="hdlist1">Contained Building Blocks</dt>
+</dl>
 </div>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Module</th>
+<th class="tableblock halign-left valign-top">Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">users-service.js</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Endpoints <code>/register</code>, <code>/login</code>, <code>/createuser</code> y lógica principal.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">openapi.yaml</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contrato de API.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
-<h4 id="_white_box_building_block_2">5.2.2. White Box <em>&lt;building block 2&gt;</em></h4>
+<h4 id="_white_box_gamey_engine">5.2.3. White Box GameY Engine</h4>
 <div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
+<p><em><strong>Diagram</strong></em></p>
 </div>
-<div class="paragraph">
-<p>&#8230;&#8203;</p>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Level2-GameY.png" alt="Building Block View (Level 2 - GameY)">
 </div>
 </div>
-<div class="sect3">
-<h4 id="_white_box_building_block_m">5.2.3. White Box <em>&lt;building block m&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Responsibility</dt>
+<dd>
+<p>Motor de reglas del juego. Recibe el estado (YEN), valida jugadas y
+devuelve el nuevo estado, además del movimiento del bot.</p>
+</dd>
+<dt class="hdlist1">Contained Building Blocks</dt>
+</dl>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Module</th>
+<th class="tableblock halign-left valign-top">Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">core/</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Estado del juego, reglas y validación.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">notation/</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Conversión a/desde YEN.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bot/</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Estrategias de bot (random).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bot_server/</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Endpoints HTTP.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">db/</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Persistencia de resultados finales.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_level_3">5.3. Level 3</h3>
-<div class="sidebarblock arc42help">
-<div class="content">
 <div class="paragraph">
-<p>Here you can specify the inner structure of (some) building blocks from level 2 as white boxes.</p>
-</div>
-<div class="paragraph">
-<p>When you need more detailed levels of your architecture please copy this
-part of arc42 for additional levels.</p>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_white_box_building_block_x_1">5.3.1. White Box &lt;_building block x.1_&gt;</h4>
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<p>Specifies the internal structure of <em>building block x.1</em>.</p>
-</div>
-</div>
-</div>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_white_box_building_block_x_2">5.3.2. White Box &lt;_building block x.2_&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_white_box_building_block_y_1">5.3.3. White Box &lt;_building block y.1_&gt;</h4>
-<div class="paragraph">
-<p><em>&lt;white box template&gt;</em></p>
+<p>No se requiere más detalle en esta versión.</p>
 </div>
 <div style="page-break-after: always;"></div>
-</div>
 </div>
 </div>
 </div>

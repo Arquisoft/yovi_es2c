@@ -33,28 +33,73 @@ See https://docs.arc42.org/section-4/[Solution Strategy] in the arc42 documentat
 ****
 endif::arc42help[]
 
-La estrategia de solucion de YOVI se basa en una arquitectura modular por servicios, con comunicacion HTTP/REST y mensajes JSON, y un motor de juego separado para garantizar rendimiento y mantenibilidad.
+La estrategia de solucion de YOVI prioriza una arquitectura sencilla, modular y facil de evolucionar. La idea principal es separar claramente la interfaz de usuario, la gestion de usuarios y la logica del juego, de forma que cada parte pueda desarrollarse, probarse y desplegarse con bajo acoplamiento.
+
+Esta decision responde a los objetivos de calidad definidos para el proyecto: una experiencia de uso directa para el jugador, tiempos de respuesta bajos en las operaciones del motor, facilidad para introducir cambios en nuevas funcionalidades y una base tecnica suficientemente flexible para crecer sin redisenar el sistema por completo.
+
+=== Resumen de decisiones arquitectonicas
+
+[options="header",cols="2,4,3"]
+|===
+| Decision | Motivacion | Impacto esperado
+
+| Separar interfaz, usuarios y motor de juego en subsistemas independientes
+| Evitar acoplamiento excesivo entre presentacion, gestion de cuentas y reglas del dominio
+| Mejora la mantenibilidad y facilita el despliegue y evolucion independientes
+
+| Implementar la webapp con React, Vite y TypeScript
+| Necesidad de una interfaz rapida de desarrollar, con buena experiencia interactiva y menor riesgo de errores de integracion
+| Mayor productividad en frontend y mejor robustez en el contrato con las APIs
+
+| Implementar el servicio de usuarios con Node.js y Express
+| Resolver de forma sencilla la autenticacion y la exposicion de una API REST
+| Backend ligero, comprensible y facil de integrar con la webapp
+
+| Implementar GameY en Rust
+| Aislar la logica critica del juego en un componente eficiente y fiable
+| Mejor rendimiento y menor probabilidad de errores en la validacion de reglas
+
+| Comunicar subsistemas mediante HTTP/REST y JSON
+| Usar un contrato simple, interoperable y facil de depurar
+| Menor acoplamiento tecnico y facilidad para probar integraciones
+
+| Representar tableros con notacion YEN
+| Disponer de un formato comun y compacto para intercambiar estados del juego
+| Homogeneidad en la comunicacion entre cliente y motor
+
+| Desplegar el sistema con Docker Compose
+| Reducir diferencias entre entornos de desarrollo, prueba y demostracion
+| Ejecucion reproducible y puesta en marcha mas simple para el equipo
+|===
 
 === Decisiones tecnologicas clave
-* Webapp: React + Vite + TypeScript para una UI rapida y facil de evolucionar.
-* Servicio de usuarios: Node.js + Express para exponer una API REST sencilla.
-* Motor de juego: Rust para validar partidas y calcular movimientos con buen rendimiento.
-* Intercambio de datos: JSON y notacion YEN para el estado del tablero.
-* Despliegue local: Docker Compose para ejecutar los servicios de forma consistente.
-* Observabilidad basica: Prometheus/Grafana para metricas del backend.
+* *Webapp con React, Vite y TypeScript.* Se elige una SPA ligera para ofrecer una interfaz rapida, con recarga agil durante el desarrollo y tipado estatico para reducir errores en la integracion con los servicios.
+* *Servicio de usuarios con Node.js y Express.* Esta tecnologia permite implementar una API REST pequena y comprensible, adecuada para operaciones CRUD, autenticacion basica e integracion rapida con la webapp.
+* *Motor de juego en Rust.* La logica de validacion de partidas y calculo de movimientos se aisla en un componente de alto rendimiento y comportamiento predecible, reduciendo el riesgo de errores en la parte mas sensible del dominio.
+* *Intercambio de datos mediante JSON y notacion YEN.* Se adopta un formato legible, portable y facil de depurar, que simplifica la comunicacion entre subsistemas y desacopla las implementaciones internas.
+* *Despliegue local con Docker Compose.* Se busca reproducibilidad del entorno y facilidad de puesta en marcha para desarrollo, pruebas y demostraciones.
+* *Observabilidad basica con Prometheus y Grafana.* Se introduce una base minima para inspeccionar el estado del sistema y detectar problemas de rendimiento o disponibilidad.
 
 === Descomposicion y patron arquitectonico
-* Separacion en tres subsistemas: webapp (UI), users (gestion de usuarios) y gamey (logica del juego).
-* Cada subsistema es desplegable de forma independiente y se comunica mediante REST.
-* Persistencia de resultados y datos de usuarios delegada al servicio de usuarios/BD.
+YOVI sigue una descomposicion por subsistemas con responsabilidades claras:
 
-=== Estrategias para objetivos de calidad
-* Usabilidad: interfaz web minimalista con flujo de registro y juego directo.
-* Rendimiento: calculo del motor en Rust y endpoints ligeros.
-* Escalabilidad: servicios independientes y contenedorizados para escalar por separado.
-* Mantenibilidad: responsabilidades claras y contratos REST estables.
-* Fiabilidad: validacion de reglas centralizada en gamey.
+* *Webapp*: punto de entrada del usuario, gestion de vistas, interaccion de juego y consumo de APIs.
+* *Users service*: gestion de registro, autenticacion y persistencia de informacion de usuarios.
+* *GameY*: motor encargado de aplicar reglas, validar estados y calcular jugadas.
 
-=== Decisiones organizativas
-* Repositorio mono-repo con carpetas por subsistema y documentacion arc42.
-* Integracion continua para build/test y despliegue mediante contenedores.
+La comunicacion entre componentes se realiza mediante HTTP/REST y mensajes JSON. Esta estrategia favorece el desacoplamiento, hace visibles los contratos entre modulos y permite sustituir o evolucionar un subsistema sin afectar de forma directa a los demas mientras se mantenga la interfaz publica.
+
+Ademas, la persistencia se delega en los servicios backend en lugar de en la interfaz. Con ello, la webapp queda centrada en la experiencia de usuario y la logica de negocio permanece en los componentes que pueden validarla y protegerla mejor.
+
+=== Estrategias para alcanzar los objetivos de calidad
+* *Usabilidad.* La webapp concentra todo el flujo de interaccion en una unica entrada, con navegacion sencilla y operaciones directas para registrarse, iniciar sesion y jugar.
+* *Rendimiento.* La logica computacional del juego se concentra en Rust y se expone mediante endpoints pequenos, minimizando procesamiento innecesario en la capa web.
+* *Mantenibilidad.* La separacion por responsabilidades evita mezclar interfaz, autenticacion y reglas del juego, lo que facilita localizar cambios y ampliar el sistema.
+* *Escalabilidad.* La independencia de despliegue permite dimensionar por separado los subsistemas que reciban mas carga, especialmente el motor de juego o los servicios de usuario.
+* *Fiabilidad.* La validacion de reglas se centraliza en un unico motor, evitando inconsistencias derivadas de duplicar logica entre cliente y servidor.
+
+=== Decisiones organizativas y de desarrollo
+* *Mono-repo por subsistemas.* El repositorio agrupa codigo y documentacion en una unica estructura, lo que simplifica la coordinacion del equipo y la trazabilidad entre decisiones de arquitectura e implementacion.
+* *Documentacion arc42.* Se utiliza una estructura documental estandar para justificar decisiones y mantener alineados requisitos, contexto, estrategia y despliegue.
+* *Integracion continua y pruebas automatizadas.* La estrategia de desarrollo busca validar cambios de forma temprana mediante builds, tests y comprobaciones de integracion.
+* *Contenerizacion como base comun de trabajo.* Todos los miembros del equipo comparten una forma consistente de ejecutar el sistema, reduciendo diferencias entre entornos.

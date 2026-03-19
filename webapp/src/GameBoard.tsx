@@ -26,6 +26,19 @@ import {
     parseLayout,
 } from './GameyApi';
 
+//Para animacion y pulsos, es un css global
+const CELL_STYLES = `
+@keyframes popIn {
+    0%   { transform: scale(0.3); opacity: 0; }
+    70%  { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0px rgba(255,255,255,0.3); }
+    50%       { box-shadow: 0 0 0 5px rgba(255,255,255,0); }
+}
+`;
+
 export type GameMode = 'local' | 'bot';
 
 interface GameBoardProps {
@@ -44,9 +57,12 @@ type Cell = { index: number; row: number; col: number; coords: Coords };
 function buildCells(size: number): Cell[] {
     const cells: Cell[] = [];
     let index = 0;
-    for (let row = 0; row < size; row++)
-        for (let col = 0; col <= row; col++)
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col <= row; col++) {
             cells.push({ index, row, col, coords: gridToCoords(row, col, size) });
+            index++;
+        }
+    }
     return cells;
 }
 
@@ -132,6 +148,8 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
     const activeColor = winner !== null ? PLAYER_COLOR[winner] : PLAYER_COLOR[nextPlayer];
 
     return (
+        <>
+        <style>{CELL_STYLES}</style>
         <Box sx={{
             minHeight: '100vh',
             background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
@@ -251,62 +269,99 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
             </Box>
 
             {/* Board */}
-            <Box sx={{ position: 'relative' }}>
-                {/* Side labels */}
-                {[
-                    { label: 'Lado A', sx: { top: 0, left: -60 } },
-                    { label: 'Lado B', sx: { bottom: 0, left: -60 } },
-                    { label: 'Lado C', sx: { bottom: 0, right: -60 } },
-                ].map(({ label, sx }) => (
-                    <Typography key={label} variant="caption"
-                                sx={{ position: 'absolute', color: 'rgba(255,255,255,0.2)', ...sx }}>
-                        {label}
-                    </Typography>
-                ))}
+            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <Box sx={{ position: 'relative', display: 'inline-block', pt: 2, pb: 4 }}>
 
-                {/* Rows */}
-                {Array.from({ length: safeBoardSize }, (_, row) => {
-                    const rowCells = cells.filter((c) => c.row === row);
-                    return (
-                        <Box key={row} sx={{ display: 'flex', justifyContent: 'center',
-                            ml: `${(safeBoardSize - 1 - row) * 20}px`, mb: '4px' }}>
-                            {rowCells.map((cell) => {
-                                const symbol = indexMap.get(cell.index) ?? '.';
-                                const isBlue = symbol === 'B';
-                                const isRed = symbol === 'R';
-                                const isEmpty = symbol === '.';
-                                const isDisabled = winner !== null || !isEmpty || loading || (mode === 'bot' && nextPlayer === 1);
+                    {/* Side labels */}
+                    <Typography variant="caption" sx={{
+                        position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                        color: 'rgba(255,255,255,0.3)'
+                    }}>Lado A</Typography>
+                    <Typography variant="caption" sx={{
+                        position: 'absolute', bottom: 0, left: 0,
+                        color: 'rgba(255,255,255,0.3)'
+                    }}>Lado B</Typography>
+                    <Typography variant="caption" sx={{
+                        position: 'absolute', bottom: 0, right: 0,
+                        color: 'rgba(255,255,255,0.3)'
+                    }}>Lado C</Typography>
 
-                                return (
-                                    <Box
-                                        key={cell.index}
-                                        component="button"
-                                        onClick={() => playAt(cell)}
-                                        disabled={isDisabled}
-                                        title={`(${cell.coords.x},${cell.coords.y},${cell.coords.z})`}
-                                        sx={{
-                                            width: 28,
-                                            height: 28,
-                                            borderRadius: '50%',
-                                            border: '2px solid',
-                                            borderColor: isBlue ? '#4fc3f7' : isRed ? '#ef5350' : 'rgba(255,255,255,0.2)',
-                                            bgcolor: isBlue ? '#4fc3f7' : isRed ? '#ef5350' : 'rgba(255,255,255,0.05)',
-                                            mx: '3px',
-                                            cursor: isDisabled ? 'not-allowed' : 'pointer',
-                                            transition: 'all 0.15s',
-                                            '&:hover': isDisabled ? {} : {
-                                                bgcolor: `${activeColor}40`,
-                                                borderColor: activeColor,
-                                                transform: 'scale(1.2)',
-                                            },
-                                        }}
-                                    />
-                                );
-                            })}
-                        </Box>
-                    );
-                })}
+                    {/* Rows */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        {Array.from({ length: safeBoardSize }, (_, row) => {
+                            const rowCells = cells.filter((c) => c.row === row);
+                            const cellSize = 38;
+                            const cellGap = 10;
+                            const offset = (safeBoardSize - 1 - row) * ((cellSize + cellGap) / 2);
+
+                            return (
+                                <Box key={row} sx={{
+                                    display: 'flex',
+                                    ml: `${offset}px`,
+                                    mb: '4px',
+                                }}>
+                                    {rowCells.map((cell) => {
+                                        const symbol = indexMap.get(cell.index) ?? '.';
+                                        const isBlue = symbol === 'B';
+                                        const isRed = symbol === 'R';
+                                        const isEmpty = symbol === '.';
+                                        const isDisabled = winner !== null || !isEmpty || loading
+                                            || (mode === 'bot' && nextPlayer === 1);
+
+                                        const bgColor = isBlue
+                                            ? '#4fc3f7'
+                                            : isRed
+                                                ? '#ef5350'
+                                                : 'rgba(255,255,255,0.05)';
+                                        const borderColor = isBlue
+                                            ? '#4fc3f7'
+                                            : isRed
+                                                ? '#ef5350'
+                                                : 'rgba(255,255,255,0.25)';
+
+                                        return (
+                                            <button
+                                                key={cell.index}
+                                                onClick={() => !isDisabled && playAt(cell)}
+                                                disabled={isDisabled}
+                                                title={`(${cell.coords.x},${cell.coords.y},${cell.coords.z})`}
+                                                style={{
+                                                    width: cellSize,
+                                                    height: cellSize,
+                                                    borderRadius: '50%',
+                                                    border: `2px solid ${borderColor}`,
+                                                    backgroundColor: bgColor,
+                                                    marginRight: cellGap,
+                                                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                                    padding: 0,
+                                                    flexShrink: 0,
+                                                    // Animación al colocar ficha
+                                                    animation: !isEmpty ? 'popIn 0.3s ease forwards' : 'none',
+                                                    // Pulso al hover (via CSS, no se puede inline, lo manejamos con onMouseEnter)
+                                                    transition: 'transform 0.15s, box-shadow 0.15s, background-color 0.15s',
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    if (!isDisabled && isEmpty) {
+                                                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.25)';
+                                                        (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 8px ${activeColor}`;
+                                                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = `${activeColor}50`;
+                                                    }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                                                    (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                                                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = bgColor;
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </Box>
+                            );
+                        })}
+                    </Box>
+                </Box>
             </Box>
         </Box>
+        </>
     );
 }

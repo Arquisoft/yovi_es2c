@@ -43,19 +43,19 @@ describe('Menu board size selection', () => {
     const size7 = screen.getByRole('button', { name: '7' });
     const size9 = screen.getByRole('button', { name: '9' });
 
-    expect(size7).toHaveClass('menu__size-btn--active');
+    expect(size7).toHaveAttribute('aria-pressed', 'true');
 
     await user.click(size5);
     await screen.findByText(/Lados del tri.*: 5/i);
-    expect(size5).toHaveClass('menu__size-btn--active');
-    expect(size7).not.toHaveClass('menu__size-btn--active');
-    expect(size9).not.toHaveClass('menu__size-btn--active');
+    expect(size5).toHaveAttribute('aria-pressed', 'true');
+    expect(size7).toHaveAttribute('aria-pressed', 'false');
+    expect(size9).toHaveAttribute('aria-pressed', 'false');
 
     await user.click(size9);
     await screen.findByText(/Lados del tri.*: 9/i);
-    expect(size9).toHaveClass('menu__size-btn--active');
-    expect(size5).not.toHaveClass('menu__size-btn--active');
-    expect(size7).not.toHaveClass('menu__size-btn--active');
+    expect(size9).toHaveAttribute('aria-pressed', 'true');
+    expect(size5).toHaveAttribute('aria-pressed', 'false');
+    expect(size7).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('keeps the selected size when switching between local and bot modes', async () => {
@@ -105,7 +105,7 @@ describe('Menu board size selection', () => {
       await user.click(sizeNineButton);
     });
 
-    expect(sizeNineButton).toHaveClass('menu__size-btn--active');
+    expect(sizeNineButton).toHaveAttribute('aria-pressed', 'true');
 
     await act(async () => {
       await user.click(screen.getByRole('button', { name: /partida local/i }));

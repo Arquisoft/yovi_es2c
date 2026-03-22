@@ -14,7 +14,7 @@ describe('GameBoard board size', () => {
       />,
     );
 
-    const cells = screen.getAllByLabelText(/celda/i);
+    const cells = screen.getAllByTitle(/^\(/i);
     // Minimum size is 5 => 5 * (5 + 1) / 2 = 15 cells
     expect(cells).toHaveLength(15);
   });
@@ -29,7 +29,7 @@ describe('GameBoard board size', () => {
       />,
     );
 
-    const cells = screen.getAllByLabelText(/celda/i);
+    const cells = screen.getAllByTitle(/^\(/i);
     // 7 * (7 + 1) / 2 = 28 cells
     expect(cells).toHaveLength(28);
   });
@@ -44,7 +44,7 @@ describe('GameBoard board size', () => {
       />,
     );
 
-    const cells = screen.getAllByLabelText(/celda/i);
+    const cells = screen.getAllByTitle(/^\(/i);
     // 9 * (9 + 1) / 2 = 45 cells
     expect(cells).toHaveLength(45);
   });

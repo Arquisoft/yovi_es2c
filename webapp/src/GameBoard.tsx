@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Box,
     Typography,
@@ -41,6 +41,8 @@ const CELL_STYLES = `
 
 export type GameMode = 'local' | 'bot';
 
+type BotId = 'random_bot' | 'side_bot' | 'side_bot_hard';
+
 interface GameBoardProps {
     username: string;
     mode: GameMode;
@@ -80,6 +82,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
     const safeBoardSize = Math.max(MIN_BOARD_SIZE, boardSize);
 
     const [mode, setMode] = useState<GameMode>(initialMode);
+    const [botId, setBotId] = useState<BotId>('side_bot');
     const [variant, setVariant] = useState<GameVariant>('standard');
     const [yen, setYen] = useState<YEN>(() => newGameYEN(safeBoardSize, 'standard'));
     const [winner, setWinner] = useState<number | null>(null);
@@ -98,7 +101,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
         setLoading(true);
         setError(null);
         try {
-            const botCoords = await chooseBotMove(currentYen);
+            const botCoords = await chooseBotMove(currentYen, botId);
             const result = await applyMove(currentYen, botCoords);
             setYen(result.yen);
             if (result.status === 'finished') setWinner(result.winner);
@@ -108,7 +111,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
             setLoading(false);
             botTurnRef.current = false;
         }
-    }, []);
+    }, [botId]);
 
     useEffect(() => {
         if (mode === 'bot' && nextPlayer === 1 && winner === null && !loading)
@@ -221,6 +224,35 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                             Why Not
                         </Button>
                     </ButtonGroup>
+
+                    {mode === 'bot' && (
+                        <ButtonGroup size="small">
+                            <Button
+                                onClick={() => setBotId('side_bot')}
+                                variant={botId === 'side_bot' ? 'contained' : 'outlined'}
+                                sx={botId === 'side_bot'
+                                    ? { bgcolor: '#26c6da', color: '#000' }
+                                    : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                Bot fácil (laterales)
+                            </Button>
+                            <Button
+                                onClick={() => setBotId('side_bot_hard')}
+                                variant={botId === 'side_bot_hard' ? 'contained' : 'outlined'}
+                                sx={botId === 'side_bot_hard'
+                                    ? { bgcolor: '#ffb74d', color: '#000' }
+                                    : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                Bot difícil (laterales)
+                            </Button>
+                            <Button
+                                onClick={() => setBotId('random_bot')}
+                                variant={botId === 'random_bot' ? 'contained' : 'outlined'}
+                                sx={botId === 'random_bot'
+                                    ? { bgcolor: '#8bc34a', color: '#000' }
+                                    : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                Aleatorio global
+                            </Button>
+                        </ButtonGroup>
+                    )}
                 </Stack>
 
                 {/* Status */}

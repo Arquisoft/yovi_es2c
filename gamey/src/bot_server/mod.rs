@@ -15,7 +15,7 @@
 pub mod choose;
 pub mod error;
 pub mod game_move;
-
+pub mod history;
 pub mod state;
 pub mod version;
 
@@ -27,7 +27,7 @@ pub use choose::MoveResponse;
 pub use error::ErrorResponse;
 pub use version::*;
 
-use crate::{GameYError, RandomBot, YBotRegistry, state::AppState};
+use crate::{GameYError, RandomBot, SideBot, SideBotHard, YBotRegistry, state::AppState};
 use axum::response::IntoResponse;
 
 /// Creates the Axum router with all routes and CORS middleware.
@@ -44,15 +44,21 @@ pub fn create_router(state: AppState) -> axum::Router {
             "/{api_version}/ybot/choose/{bot_id}",
             axum::routing::post(choose::choose),
         )
-        // ...
         .route("/{api_version}/game/move", axum::routing::post(game_move::make_move))
+        .route(
+            "/{api_version}/game/history",
+            axum::routing::get(history::history),
+        )
         .with_state(state)
         .layer(cors)
 }
 
 /// Creates the default application state with the standard bot registry.
 pub fn create_default_state() -> AppState {
-    let bots = YBotRegistry::new().with_bot(Arc::new(RandomBot));
+    let bots = YBotRegistry::new()
+        .with_bot(Arc::new(RandomBot))
+        .with_bot(Arc::new(SideBot))
+        .with_bot(Arc::new(SideBotHard));
     AppState::new(bots)
 }
 

@@ -1,3 +1,4 @@
+use futures::stream::TryStreamExt;
 use mongodb::{
     bson::{doc, Document},
     options::{ClientOptions, ServerApi, ServerApiVersion},
@@ -53,6 +54,24 @@ pub async fn save_game_result(db: &Database, record: GameRecord) -> mongodb::err
     collection.insert_one(record).await?;
     println!("Game record saved successfully!");
     Ok(())
+}
+
+pub async fn list_recent_games(
+    db: &Database,
+    limit: i64,
+) -> mongodb::error::Result<Vec<GameRecord>> {
+    let collection = db.collection::<GameRecord>("games");
+    let mut cursor = collection.find(doc! {}).await?;
+    let mut games = Vec::new();
+    while let Some(doc) = cursor.try_next().await? {
+        games.push(doc);
+    }
+    games.sort_by_key(|g| g.timestamp);
+    games.reverse();
+    if games.len() as i64 > limit {
+        games.truncate(limit as usize);
+    }
+    Ok(games)
 }
 
 /// Generic function to save a document to a specific collection.

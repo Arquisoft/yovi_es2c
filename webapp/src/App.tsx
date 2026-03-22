@@ -3,18 +3,13 @@ import './App.css';
 import './styles/Additions.css';
 import Inicio from './pages/Inicio';
 import Menu from './pages/Menu';
+import Historial from './pages/Historial';
 import GameBoard, { type GameMode } from './GameBoard';
 import FadeView from './FadeView';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
-/**
- * Las tres vistas posibles de la aplicación.
- * - inicio: pantalla de login/registro
- * - menu:   lobby de selección de modo de juego
- * - game:   tablero de juego
- */
-type View = 'inicio' | 'menu' | 'game';
+type View = 'inicio' | 'menu' | 'game' | 'historial';
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
@@ -91,6 +86,7 @@ export default function App() {
                   onLogout={logout}
                   initialUsername={username}
                   onJugar={startGame}
+                  onVerHistorial={() => setView('historial')}
               />
           )}
 
@@ -101,6 +97,13 @@ export default function App() {
                   mode={gameMode}
                   boardSize={boardSize}
                   onExit={() => setView('menu')}
+              />
+          )}
+
+          {view === 'historial' && (
+              <Historial
+                  username={username}
+                  onBack={() => setView('menu')}
               />
           )}
 

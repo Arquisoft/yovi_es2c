@@ -29,6 +29,19 @@ export interface Coords {
 
 export type GameVariant = "standard" | "why_not";
 
+export interface HistoryGame {
+    winner: string | null;
+    board_size: number;
+    moves_count: number;
+    timestamp: number;
+    duration_seconds: number;
+}
+
+export interface HistoryResponse {
+    api_version: string;
+    games: HistoryGame[];
+}
+
 // ─── /game/move ──────────────────────────────────────────────────────────────
 
 export interface GameMoveResponse {
@@ -97,6 +110,21 @@ export async function chooseBotMove(
     }
 
     return (data as BotChooseResponse).coords;
+}
+
+export async function fetchGameHistory(): Promise<HistoryGame[]> {
+    const res = await fetch(`${GAMEY_URL}/${API_VERSION}/game/history`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data?.message ?? `HTTP ${res.status}`);
+    }
+
+    return (data as HistoryResponse).games;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

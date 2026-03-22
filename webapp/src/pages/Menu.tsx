@@ -23,6 +23,7 @@ type MenuProps = {
     onLogout: () => void;
     initialUsername: string;
     onJugar: (username: string, mode: GameMode, boardSize: number) => void;
+    onVerHistorial: () => void;
 };
 
 const CARDS = [
@@ -60,7 +61,7 @@ const CARDS = [
     },
 ];
 
-export default function Menu({ onLogout, onJugar, initialUsername }: MenuProps) {
+export default function Menu({ onLogout, onJugar, initialUsername, onVerHistorial }: MenuProps) {
     const [boardSize, setBoardSize] = useState<number>(7);
 
     const launch = (mode: GameMode) => {
@@ -182,9 +183,19 @@ export default function Menu({ onLogout, onJugar, initialUsername }: MenuProps) 
                 ))}
             </Box>
 
-            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.2)', mt: 4, display: 'block', textAlign: 'center' }}>
-                Conéctate al servidor Gamey para jugar
-            </Typography>
+            <Stack direction="row" justifyContent="center" mt={4}>
+                <Button
+                    variant="outlined"
+                    onClick={onVerHistorial}
+                    sx={{
+                        borderColor: 'rgba(255,255,255,0.2)',
+                        color: 'rgba(255,255,255,0.7)',
+                        '&:hover': { borderColor: '#7c4dff', color: '#7c4dff' },
+                    }}
+                >
+                    Ver historial de partidas
+                </Button>
+            </Stack>
         </Box>
     );
 }

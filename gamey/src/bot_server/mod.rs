@@ -15,7 +15,7 @@
 pub mod choose;
 pub mod error;
 pub mod game_move;
-
+pub mod history;
 pub mod state;
 pub mod version;
 
@@ -44,8 +44,11 @@ pub fn create_router(state: AppState) -> axum::Router {
             "/{api_version}/ybot/choose/{bot_id}",
             axum::routing::post(choose::choose),
         )
-        // ...
         .route("/{api_version}/game/move", axum::routing::post(game_move::make_move))
+        .route(
+            "/{api_version}/game/history",
+            axum::routing::get(history::history),
+        )
         .with_state(state)
         .layer(cors)
 }

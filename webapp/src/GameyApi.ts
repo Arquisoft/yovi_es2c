@@ -56,17 +56,20 @@ export interface GameMoveResponse {
  *
  * @param yen    Current game state
  * @param coords Barycentric coordinates of the cell to occupy
+ * @param username Logged-in username (used to store friendly winner name)
  * @returns      Updated state, status, and optional winner
  * @throws       Error with a human-readable message on invalid move or network failure
  */
 export async function applyMove(
     yen: YEN,
-    coords: Coords
+    coords: Coords,
+    username: string,
+    durationSeconds?: number
 ): Promise<GameMoveResponse> {
     const res = await fetch(`${GAMEY_URL}/${API_VERSION}/game/move`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ yen, ...coords }),
+        body: JSON.stringify({ yen, ...coords, username, duration_seconds: durationSeconds }),
     });
 
     const data = await res.json();

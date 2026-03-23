@@ -99,13 +99,16 @@ pub async fn run_cli_game() -> Result<()> {
                 let duration = start_time.elapsed().as_secs();
                 let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64;
 
+                let total_cells = game.total_cells() as usize;
+                let moves_count = total_cells.saturating_sub(game.available_cells().len());
+
                 println!("Connecting to database...");
                 match db::connect().await {
                     Ok(database) => {
                         let record = db::GameRecord {
                             winner: Some(winner.to_string()),
                             board_size: args.size,
-                            moves_count: 0, // TODO: track moves count if needed
+                            moves_count,
                             timestamp,
                             duration_seconds: duration,
                         };

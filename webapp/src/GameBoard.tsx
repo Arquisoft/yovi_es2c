@@ -88,6 +88,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
     const [winner, setWinner] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [startTimestamp, setStartTimestamp] = useState<number>(() => Math.floor(Date.now() / 1000));
     const botTurnRef = useRef(false);
 
     const nextPlayer = yen.turn;
@@ -101,8 +102,10 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
         setLoading(true);
         setError(null);
         try {
+            const nowSeconds = Math.floor(Date.now() / 1000);
+            const durationSeconds = Math.max(0, nowSeconds - startTimestamp);
             const botCoords = await chooseBotMove(currentYen, botId);
-            const result = await applyMove(currentYen, botCoords);
+            const result = await applyMove(currentYen, botCoords, username, durationSeconds);
             setYen(result.yen);
             if (result.status === 'finished') setWinner(result.winner);
         } catch (e) {
@@ -111,7 +114,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
             setLoading(false);
             botTurnRef.current = false;
         }
-    }, [botId]);
+    }, [botId, startTimestamp]);
 
     useEffect(() => {
         if (mode === 'bot' && nextPlayer === 1 && winner === null && !loading)
@@ -127,7 +130,9 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
         setLoading(true);
         setError(null);
         try {
-            const result = await applyMove(yen, cell.coords);
+            const nowSeconds = Math.floor(Date.now() / 1000);
+            const durationSeconds = Math.max(0, nowSeconds - startTimestamp);
+            const result = await applyMove(yen, cell.coords, username, durationSeconds);
             setYen(result.yen);
             if (result.status === 'finished') setWinner(result.winner);
         } catch (e) {
@@ -135,11 +140,28 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
         } finally {
             setLoading(false);
         }
-    }, [winner, loading, mode, nextPlayer, indexMap, yen]);
+    }, [winner, loading, mode, nextPlayer, indexMap, yen, startTimestamp, username]);
 
-    const reset = () => { setYen(newGameYEN(safeBoardSize, variant)); setWinner(null); setError(null); };
-    const changeMode = (m: GameMode) => { setMode(m); setYen(newGameYEN(safeBoardSize, variant)); setWinner(null); setError(null); };
-    const changeVariant = (v: GameVariant) => { setVariant(v); setYen(newGameYEN(safeBoardSize, v)); setWinner(null); setError(null); };
+    const reset = () => {
+        setYen(newGameYEN(safeBoardSize, variant));
+        setWinner(null);
+        setError(null);
+        setStartTimestamp(Math.floor(Date.now() / 1000));
+    };
+    const changeMode = (m: GameMode) => {
+        setMode(m);
+        setYen(newGameYEN(safeBoardSize, variant));
+        setWinner(null);
+        setError(null);
+        setStartTimestamp(Math.floor(Date.now() / 1000));
+    };
+    const changeVariant = (v: GameVariant) => {
+        setVariant(v);
+        setYen(newGameYEN(safeBoardSize, v));
+        setWinner(null);
+        setError(null);
+        setStartTimestamp(Math.floor(Date.now() / 1000));
+    };
 
     const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
     const statusText = isBotThinking

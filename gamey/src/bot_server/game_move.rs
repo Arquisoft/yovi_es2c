@@ -22,6 +22,12 @@ pub struct GameMoveRequest {
     pub y: u32,
     /// Z component of the barycentric coordinate to place a piece.
     pub z: u32,
+    /// Optional duration in seconds since the start of the game (sent by the client).
+    #[serde(default)]
+    pub duration_seconds: Option<u64>,
+    /// Optional username of the human player (used to store a friendly winner name).
+    #[serde(default)]
+    pub username: Option<String>,
 }
 
 /// Response returned after a successful game move.
@@ -78,14 +84,32 @@ pub async fn make_move(
 
     let (status_str, winner, next_player) = match game.status() {
         GameStatus::Finished { winner } => {
-            let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs() as i64;
+            let timestamp = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs() as i64;
+
+            let moves_count = game
+                .total_cells() as usize
+                - game.available_cells().len();
+
             if let Ok(database) = db::connect().await {
+                let winner_name = if let Some(username) = req.username.clone() {
+                    if winner.id() == 0 {
+                        username
+                    } else {
+                        "Bot".to_string()
+                    }
+                } else {
+                    winner.to_string()
+                };
+
                 let record = db::GameRecord {
-                    winner: Some(winner.to_string()),
+                    winner: Some(winner_name),
                     board_size: game.board_size(),
-                    moves_count: 0,
+                    moves_count,
                     timestamp,
-                    duration_seconds: 0,
+                    duration_seconds: req.duration_seconds.unwrap_or(0),
                 };
                 let _ = db::save_game_result(&database, record).await;
             }

@@ -1,30 +1,100 @@
-import { test, expect } from 'vitest'
+import { Given, When, Then } from '@cucumber/cucumber';
+import assert from 'node:assert/strict';
 
-// Este test evita que GitHub Actions llore porque el archivo está "vacío"
-test('Skipping tests for now', () => {
-  expect(true).toBe(true)
-})
+function uniqueUsername(base) {
+  const suffix = Date.now().toString(36);
+  return `${base}-${suffix}`;
+}
 
-/*import { Given, When, Then } from '@cucumber/cucumber'
-import assert from 'assert'
+Given('la app de Yovi esta abierta', async function () {
+  await this.page.goto(this.baseUrl, { waitUntil: 'domcontentloaded' });
+});
 
-Given('the register page is open', async function () {
-  const page = this.page
-  if (!page) throw new Error('Page not initialized')
-  await page.goto('http://localhost:5173')
-})
+When('selecciono el modo {string}', async function (mode) {
+  await this.page.getByRole('button', { name: mode }).click();
+});
 
-When('I enter {string} as the username and submit', async function (username) {
-  const page = this.page
-  if (!page) throw new Error('Page not initialized')
-  await page.fill('#username', username)
-  await page.click('.submit-button')
-})*/
+When('registro un usuario nuevo con base {string} y password {string}', async function (base, password) {
+  const username = uniqueUsername(base);
+  this.username = username;
+  this.password = password;
+  await this.page.getByRole('button', { name: 'Register' }).click();
+  await this.page.getByLabel('Username').fill(username);
+  await this.page.getByRole('textbox', { name: 'Password', exact: true }).fill(password);
+  await this.page.getByRole('textbox', { name: 'Confirm password', exact: true }).fill(password);
+  await this.page.getByRole('button', { name: 'Create account' }).click();
+});
 
-/*Then('I should see a welcome message containing {string}', async function (expected) {
-  const page = this.page
-  if (!page) throw new Error('Page not initialized')
-  await page.waitForSelector('.success-message', { timeout: 5000 })
-  const text = await page.textContent('.success-message')
-  assert.ok(text && text.includes(expected), `Expected success message to include "${expected}", got: "${text}"`)
-})*/
+When('completo el formulario con usuario {string} y password {string}', async function (username, password) {
+  this.username = username;
+  this.password = password;
+  await this.page.getByLabel('Username').fill(username);
+  await this.page.getByRole('textbox', { name: 'Password', exact: true }).fill(password);
+});
+
+When('confirmo la password {string}', async function (password) {
+  await this.page.getByRole('textbox', { name: 'Confirm password', exact: true }).fill(password);
+});
+
+When('envio el formulario', async function () {
+  const submit = await this.page.getByRole('button', { name: /Create account|Enter/ });
+  const waitResponse = this.page.waitForResponse((res) => {
+    if (res.request().method() !== 'POST') return false;
+    return res.url().includes('/register') || res.url().includes('/login');
+  });
+  const waitAlert = this.page.getByRole('alert').waitFor({ timeout: 20000 });
+  await submit.click();
+  await Promise.race([waitResponse, waitAlert]);
+});
+
+When('cierro sesion', async function () {
+  await this.page.getByRole('button', { name: 'Desconectar' }).click();
+});
+
+When('inicio sesion con las mismas credenciales', async function () {
+  assert.ok(this.username, 'No username stored from previous step');
+  assert.ok(this.password, 'No password stored from previous step');
+  await this.page.getByRole('button', { name: 'Log in' }).click();
+  await this.page.getByLabel('Username').fill(this.username);
+  await this.page.getByRole('textbox', { name: 'Password', exact: true }).fill(this.password);
+  await this.page.getByRole('button', { name: 'Enter' }).click();
+});
+
+When('selecciono el tamano de tablero {int}', async function (size) {
+  await this.page.getByRole('button', { name: String(size) }).click();
+});
+
+When('inicio una partida local', async function () {
+  await this.page.getByRole('button', { name: 'Partida Local' }).click();
+});
+
+Then('veo el lobby de juego', async function () {
+  const logoutBtn = this.page.getByRole('button', { name: 'Desconectar' });
+  const lobbyTitle = this.page.getByRole('heading', { name: 'Elige Tu Modo' });
+  const errorAlert = this.page.getByRole('alert');
+
+  await Promise.race([
+    logoutBtn.waitFor({ timeout: 20000 }),
+    lobbyTitle.waitFor({ timeout: 20000 }),
+    errorAlert.waitFor({ timeout: 20000 }),
+  ]);
+
+  if (await errorAlert.isVisible()) {
+    const msg = (await errorAlert.textContent())?.trim() || 'Unknown error';
+    throw new Error(`Registro/login fallo: ${msg}`);
+  }
+});
+
+Then('veo el mensaje de error {string}', async function (message) {
+  await this.page.getByText(message, { exact: true }).waitFor();
+});
+
+Then('veo el texto del tablero {string}', async function (text) {
+  await this.page.getByText(text, { exact: true }).waitFor();
+});
+
+Then('veo la pantalla de juego', async function () {
+  await this.page.getByRole('button', { name: 'Salir' }).waitFor();
+  const status = await this.page.getByText(/TURNO DE|LA IA ESTÁ PENSANDO|¡GANÓ/).textContent();
+  assert.ok(status, 'Expected a status message in the game board');
+});

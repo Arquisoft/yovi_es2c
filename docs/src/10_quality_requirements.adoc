@@ -27,6 +27,8 @@ See https://docs.arc42.org/section-10/[Quality Requirements] in the arc42 docume
 ****
 endif::arc42help[]
 
+Los requisitos de calidad de YOVI se derivan de los objetivos definidos en la sección 1.2 y se concretan aquí con escenarios verificables sobre la arquitectura actual: `webapp` (React/Vite), `users` (Node/Express) y `gamey` (Rust), desplegados con Docker Compose.
+
 === Quality Tree
 
 ifdef::arc42help[]
@@ -49,6 +51,29 @@ In any case the tree should include links to the scenarios of the following sect
 
 ****
 endif::arc42help[]
+
+Raíz de calidad: *Utilidad del sistema YOVI*
+
+* *Usabilidad (Prioridad 1)*
+** Flujo de inicio de partida simple para usuario nuevo
+** Mensajes claros ante errores de autenticación o red
+** Escenarios: <<qr-us-01>>, <<qr-us-02>>
+* *Rendimiento (Prioridad 2)*
+** Respuesta rápida en operaciones críticas de juego (`/v1/game/move`, `/v1/ybot/choose/{bot_id}`)
+** Latencia acotada en login/registro en `users`
+** Escenarios: <<qr-perf-01>>, <<qr-perf-02>>
+* *Escalabilidad (Prioridad 3)*
+** Posibilidad de escalar horizontalmente servicios backend sin cambiar contratos HTTP/JSON
+** Degradación controlada con carga concurrente moderada
+** Escenarios: <<qr-scal-01>>, <<qr-scal-02>>
+* *Mantenibilidad (Prioridad 4)*
+** Añadir nuevas estrategias de bot en `gamey` sin romper endpoints existentes
+** Evolución segura por cobertura y CI en los tres subsistemas
+** Escenarios: <<qr-main-01>>, <<qr-main-02>>
+* *Fiabilidad (Prioridad 5)*
+** Validación consistente de reglas del juego y persistencia básica de resultados
+** Disponibilidad mínima de endpoints de estado y APIs principales
+** Escenarios: <<qr-rel-01>>, <<qr-rel-02>>
 
 === Quality Scenarios
 
@@ -77,3 +102,73 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 Tabular or free form text.
 ****
 endif::arc42help[]
+
+[options="header",cols="1,1,2,2,2"]
+|===
+|ID |Tipo |Estímulo |Respuesta esperada |Medida / criterio de aceptación
+
+|[[qr-us-01]]qr-us-01
+|Uso
+|Usuario nuevo accede a la webapp y quiere registrarse e iniciar partida contra bot.
+|Completa registro/login y comienza partida desde la interfaz principal sin pasos ocultos.
+|Tiempo total <= 2 minutos en una prueba guiada con usuario no entrenado.
+
+|[[qr-us-02]]qr-us-02
+|Uso
+|Usuario introduce credenciales inválidas o falla conexión con `users`.
+|La webapp muestra mensaje de error entendible y permite reintentar sin recargar manualmente.
+|100% de errores de autenticación y red muestran feedback visible en pantalla.
+
+|[[qr-perf-01]]qr-perf-01
+|Uso
+|Petición de jugada a `gamey` (`/v1/game/move` o `/v1/ybot/choose/{bot_id}`) con tablero válido.
+|`gamey` devuelve estado actualizado/jugada en JSON.
+|p95 de latencia <= 1s en condiciones normales de laboratorio.
+
+|[[qr-perf-02]]qr-perf-02
+|Uso
+|Operaciones de autenticación en `users` (`/createuser`, login) bajo carga baja-media.
+|Respuesta HTTP correcta sin bloqueo del servicio.
+|p95 <= 500ms con hasta 30 solicitudes concurrentes.
+
+|[[qr-scal-01]]qr-scal-01
+|Cambio
+|Aumento de demanda sobre cálculo de jugadas del bot.
+|Se incrementan réplicas de `gamey` detrás de balanceador manteniendo contratos API.
+|Sin cambios en `webapp` ni en formato JSON/YEN; solo ajustes de despliegue.
+
+|[[qr-scal-02]]qr-scal-02
+|Uso
+|Ejecución concurrente de sesiones de juego y autenticación.
+|El sistema sigue atendiendo sin caída total y con errores controlados.
+|Tasa de error < 2% en ventana de prueba con 50 usuarios virtuales.
+
+|[[qr-main-01]]qr-main-01
+|Cambio
+|Se añade una nueva estrategia de bot en `gamey/src/bot`.
+|La estrategia se registra y expone sin modificar contratos externos.
+|Cambio localizado en módulo de bots + pruebas asociadas pasando en CI.
+
+|[[qr-main-02]]qr-main-02
+|Cambio
+|Se modifica una API de `users` o `gamey`.
+|Los tests de `users`, `webapp` y `gamey` detectan regresiones antes del merge.
+|Pipeline de GitHub Actions en verde (tests + cobertura + análisis estático).
+
+|[[qr-rel-01]]qr-rel-01
+|Uso
+|Se procesa un movimiento válido/no válido durante una partida.
+|`gamey` aplica reglas de forma determinista y devuelve resultado coherente.
+|Casos de prueba unitarios/integración del motor sin discrepancias en CI.
+
+|[[qr-rel-02]]qr-rel-02
+|Uso
+|Se despliegan los contenedores con Docker Compose y se consulta estado.
+|Servicios críticos quedan accesibles (`webapp`, `users`, `gamey`, `/status`).
+|Disponibilidad de endpoints críticos >= 99% durante sesión de demostración/pruebas.
+|===
+
+Notas de verificación:
+
+* Las métricas de mantenibilidad y fiabilidad se apoyan en los tests existentes (`webapp/src/__tests__`, `users/__tests__`, `gamey/tests`) y en el pipeline de CI definido en `.github/workflows/build.yml`.
+* Las métricas de rendimiento y escalabilidad deben validarse con pruebas de carga específicas (pendiente de automatización en esta versión).

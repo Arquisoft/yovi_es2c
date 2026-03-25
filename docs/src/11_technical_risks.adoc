@@ -25,3 +25,64 @@ See https://docs.arc42.org/section-11/[Risks and Technical Debt] in the arc42 do
 
 ****
 endif::arc42help[]
+
+Los siguientes riesgos y deudas técnicas están priorizados según impacto potencial sobre los objetivos de calidad (usabilidad, rendimiento, escalabilidad, mantenibilidad y fiabilidad) definidos en la sección 1.2.
+
+[options="header",cols="1,3,3,2,1"]
+|===
+|Prioridad |Riesgo / deuda técnica |Impacto potencial |Mitigación propuesta |Estado
+
+|1
+|Seguridad de autenticación básica en `users` (riesgo de controles insuficientes en login/registro, gestión de secretos y endurecimiento de API).
+|Acceso no autorizado, fuga de datos de usuario y pérdida de confianza en el sistema.
+|Aplicar hashing robusto con sal, validación estricta de entrada, rate limiting, gestión segura de variables de entorno y revisión periódica de dependencias.
+|Abierto
+
+|2
+|Punto único de fallo en despliegue mononodo con Docker Compose (sin alta disponibilidad).
+|Caída total del sistema ante fallo de contenedor/host.
+|Definir estrategia de despliegue con réplicas y balanceo para `users`/`gamey`, health checks activos y reinicio automático.
+|Abierto
+
+|3
+|Cobertura desigual de pruebas de integración extremo a extremo entre `webapp`, `users` y `gamey`.
+|Regresiones funcionales no detectadas en flujos críticos de partida/autenticación.
+|Incrementar tests de integración y E2E sobre flujos completos; incluir casos de error y contratos API.
+|En progreso
+
+|4
+|Riesgo de rendimiento en operaciones de juego bajo concurrencia (cálculo de jugadas y validación).
+|Latencia elevada en `/v1/game/move` y `/v1/ybot/choose/{bot_id}`, degradando experiencia de usuario.
+|Definir presupuesto de rendimiento (p95), ejecutar pruebas de carga periódicas y perfilar `gamey` en escenarios de estrés.
+|Abierto
+
+|5
+|Modelo de datos aún limitado para histórico/estadísticas avanzadas.
+|Dificultad para evolucionar funcionalidades de analítica sin migraciones cuidadosas.
+|Versionar esquemas, definir contratos de persistencia y plan de migraciones.
+|Abierto
+
+|6
+|Acoplamiento operativo a configuración manual de entorno (`DB_URI`, secretos, variables de build).
+|Errores de despliegue entre entornos y fallos difíciles de reproducir.
+|Plantillas de configuración por entorno, validación al arranque y documentación operativa mínima.
+|En progreso
+
+|7
+|Observabilidad parcial (Prometheus/Grafana básicos, métricas de negocio limitadas).
+|Detección tardía de incidencias y diagnóstico más lento.
+|Añadir métricas de negocio (latencia por endpoint, tasa de error, partidas iniciadas/finalizadas) y alertas mínimas.
+|Abierto
+
+|8
+|Deuda técnica documental: partes de runtime/deployment aún en plantilla o con detalle desigual.
+|Menor trazabilidad entre arquitectura real y documentación; dificulta mantenimiento futuro.
+|Completar secciones pendientes (runtime/deployment) con diagramas y métricas consistentes con implementación.
+|En progreso
+|===
+
+=== Seguimiento y revisión
+
+* Frecuencia de revisión: al cierre de cada iteración y antes de cada release.
+* Criterio de escalado: cualquier riesgo con impacto alto y probabilidad media/alta debe tener tarea de mitigación planificada.
+* Evidencias: resultados de CI, cobertura, pruebas de carga y paneles de monitorización.

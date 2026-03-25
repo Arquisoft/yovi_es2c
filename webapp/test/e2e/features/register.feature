@@ -32,7 +32,6 @@ Feature: Autenticacion y flujo base
     When inicio una partida local
     Then veo la pantalla de juego
 
-  @Skip
   Scenario: Registro falla si las contraseñas no coinciden
     Given la app de Yovi esta abierta
     When selecciono el modo "Register"
@@ -41,7 +40,6 @@ Feature: Autenticacion y flujo base
     And envio el formulario
     Then veo el mensaje de error "Passwords do not match."
 
-  @Skip
   Scenario: Login falla con credenciales invalidas
     Given la app de Yovi esta abierta
     When selecciono el modo "Log in"
@@ -49,7 +47,6 @@ Feature: Autenticacion y flujo base
     And envio el formulario
     Then veo el mensaje de error "Invalid username or password"
 
-  @Skip
   Scenario: Ver historial vacio
     Given la app de Yovi esta abierta
     When registro un usuario nuevo con base "e2e_historial" y password "Secret123"
@@ -57,7 +54,6 @@ Feature: Autenticacion y flujo base
     When hago clic en "Ver historial de partidas"
     Then veo el mensaje "Todavía no hay partidas registradas."
 
-  @Skip
   Scenario: Modo bot muestra indicador de IA
     Given la app de Yovi esta abierta
     When registro un usuario nuevo con base "e2e_bot" y password "Secret123"

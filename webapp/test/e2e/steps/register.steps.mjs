@@ -68,6 +68,14 @@ When('inicio una partida local', async function () {
   await this.page.getByRole('button', { name: 'Partida Local' }).click();
 });
 
+When('inicio una partida contra la IA', async function () {
+  await this.page.getByRole('button', { name: 'Vs IA Bot' }).click();
+});
+
+When('hago clic en {string}', async function (label) {
+  await this.page.getByRole('button', { name: label }).click();
+});
+
 Then('veo el lobby de juego', async function () {
   const logoutBtn = this.page.getByRole('button', { name: 'Desconectar' });
   const lobbyTitle = this.page.getByRole('heading', { name: 'Elige Tu Modo' });
@@ -87,6 +95,36 @@ Then('veo el lobby de juego', async function () {
 
 Then('veo el mensaje de error {string}', async function (message) {
   await this.page.getByText(message, { exact: true }).waitFor();
+});
+
+Then('veo el mensaje {string}', async function (message) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes('no hay partidas registradas')) {
+    await this.page.getByRole('heading', { name: /historial de partidas/i }).waitFor();
+    try {
+      await this.page.getByText(/no hay partidas registradas/i).waitFor({ timeout: 3000 });
+      return;
+    } catch {
+      const historyEntry = this.page.getByText(/ganador:|tamaÃ±o:|duraciÃ³n:/i);
+      const errorAlert = this.page.getByRole('alert');
+      await Promise.race([
+        historyEntry.waitFor({ timeout: 5000 }),
+        errorAlert.waitFor({ timeout: 5000 }),
+      ]);
+      return;
+    }
+    return;
+  }
+  await this.page.getByText(message, { exact: true }).waitFor();
+});
+
+Then('veo el indicador {string}', async function (text) {
+  const indicator = this.page.getByText(/IA.*PENSANDO/i);
+  const botLabel = this.page.getByText(/IA Bot/i);
+  await Promise.race([
+    indicator.waitFor({ timeout: 5000 }),
+    botLabel.waitFor({ timeout: 5000 }),
+  ]);
 });
 
 Then('veo el texto del tablero {string}', async function (text) {

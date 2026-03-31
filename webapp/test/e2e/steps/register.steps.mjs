@@ -113,16 +113,24 @@ Then('veo el mensaje {string}', async function (message) {
       ]);
       return;
     }
-    return;
   }
   await this.page.getByText(message, { exact: true }).waitFor();
 });
 
+Then('veo el formulario de registro', async function () {
+  await this.page.getByRole('heading', { name: /register/i }).waitFor();
+  await this.page.getByLabel('Username').waitFor();
+  await this.page.getByRole('textbox', { name: 'Password', exact: true }).waitFor();
+  await this.page.getByRole('textbox', { name: 'Confirm password', exact: true }).waitFor();
+});
+
 Then('veo el indicador {string}', async function (text) {
-  const indicator = this.page.getByText(/IA.*PENSANDO/i);
+  const indicator = this.page.getByText(text, { exact: true });
   const botLabel = this.page.getByText(/IA Bot/i);
+  const fallbackIndicator = this.page.getByText(/IA.*PENSANDO/i);
   await Promise.race([
     indicator.waitFor({ timeout: 5000 }),
+    fallbackIndicator.waitFor({ timeout: 5000 }),
     botLabel.waitFor({ timeout: 5000 }),
   ]);
 });

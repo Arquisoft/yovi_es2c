@@ -138,6 +138,31 @@ At this moment the GameY application is not needed but once it is needed you sho
 
 Each component has its own set of scripts defined in its `package.json`. Here are some of the most important ones:
 
+## Tests Overview
+
+This repository contains unit tests per component and E2E tests for the main web flow.
+
+### Webapp
+
+- Unit tests live in `webapp/src/__tests__` (Register form and board size components).
+- E2E tests live in `webapp/test/e2e` and use Playwright + Cucumber.
+- Execution:
+  - `npm test` (unit)
+  - `npm run test:e2e` (E2E, starts dev servers automatically)
+  - See `webapp/E2E.md` for details.
+
+### Users
+
+- Tests live in `users/__tests__` (DB and service tests).
+- Execution:
+  - `npm test`
+
+### Gamey
+
+- Tests live in `gamey/tests` (core, CLI, bot server).
+- Execution:
+  - `cargo test`
+
 ### Webapp (`webapp/package.json`)
 
 - `npm run dev`: Starts the development server for the webapp.

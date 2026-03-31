@@ -14,6 +14,8 @@ Feature: Autenticacion y flujo base
     When cierro sesion
     And inicio sesion con las mismas credenciales
     Then veo el lobby de juego
+    When cierro sesion
+    Then veo el formulario de registro
 
   Scenario: Validacion de password corta en registro
     Given la app de Yovi esta abierta

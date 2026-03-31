@@ -36,9 +36,33 @@ endif::arc42help[]
 |===
 |Term |Definition
 
-|<Term-1>
-|<definition-1>
+|YOVI
+|Plataforma web que integra la interfaz de usuario y los servicios backend para jugar al juego de tablero Y, gestionar usuarios y exponer una API pública.
 
-|<Term-2>
-|<definition-2>
+|Juego Y
+|Juego de tablero de conexión en el que dos jugadores compiten por unir lados opuestos del tablero siguiendo sus propias fichas.
+
+|GameY
+|Motor de juego en Rust encargado de validar jugadas, determinar ganadores y calcular el siguiente movimiento del bot.
+
+|Webapp
+|Aplicación frontend (React + Vite + TypeScript) que ofrece la interfaz de usuario y consume las APIs de usuarios y juego.
+
+|Users Service
+|Servicio backend (Node.js + Express) responsable del registro, autenticación y persistencia de usuarios.
+
+|Bot
+|Jugador automático que elige movimientos mediante estrategias implementadas en GameY.
+
+|Notación YEN
+|Formato JSON acordado para representar el estado del tablero y las jugadas intercambiadas entre la webapp y GameY.
+
+|Tablero
+|Superficie de juego del Y con un tamaño configurable (board_size) y posiciones ocupadas por las fichas de cada jugador.
+
+|Partida
+|Sesión completa de juego desde el inicio hasta el resultado final, con un estado de tablero asociado.
+
+|API pública
+|Interfaz HTTP/REST expuesta por YOVI para que clientes externos o bots inicien partidas y consulten el estado.
 |===

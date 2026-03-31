@@ -33,9 +33,9 @@ See https://docs.arc42.org/section-4/[Solution Strategy] in the arc42 documentat
 ****
 endif::arc42help[]
 
-La estrategia de solucion de YOVI prioriza una arquitectura sencilla, modular y facil de evolucionar. La idea principal es separar claramente la interfaz de usuario, la gestion de usuarios y la logica del juego, de forma que cada parte pueda desarrollarse, probarse y desplegarse con bajo acoplamiento.
+La estrategia de solucion de YOVI prioriza una arquitectura sencilla, modular y facil de evolucionar. La idea central es separar claramente la interfaz de usuario, la gestion de usuarios y la logica del juego para que cada parte pueda desarrollarse, probarse y desplegarse con bajo acoplamiento.
 
-Esta decision responde a los objetivos de calidad definidos para el proyecto: una experiencia de uso directa para el jugador, tiempos de respuesta bajos en las operaciones del motor, facilidad para introducir cambios en nuevas funcionalidades y una base tecnica suficientemente flexible para crecer sin redisenar el sistema por completo.
+Esta decision responde a los objetivos de calidad definidos para el proyecto: una experiencia directa para el jugador, tiempos de respuesta bajos en el motor, facilidad para introducir nuevas funcionalidades y una base tecnica suficientemente flexible para crecer sin redisenar el sistema.
 
 === Resumen de decisiones arquitectonicas
 
@@ -45,7 +45,7 @@ Esta decision responde a los objetivos de calidad definidos para el proyecto: un
 
 | Separar interfaz, usuarios y motor de juego en subsistemas independientes
 | Evitar acoplamiento excesivo entre presentacion, gestion de cuentas y reglas del dominio
-| Mejora la mantenibilidad y facilita el despliegue y evolucion independientes
+| Mejora la mantenibilidad y facilita el despliegue y la evolucion independientes
 
 | Implementar la webapp con React, Vite y TypeScript
 | Necesidad de una interfaz rapida de desarrollar, con buena experiencia interactiva y menor riesgo de errores de integracion
@@ -81,21 +81,21 @@ Esta decision responde a los objetivos de calidad definidos para el proyecto: un
 * *Observabilidad basica con Prometheus y Grafana.* Se introduce una base minima para inspeccionar el estado del sistema y detectar problemas de rendimiento o disponibilidad.
 
 === Descomposicion y patron arquitectonico
-YOVI sigue una descomposicion por subsistemas con responsabilidades claras:
+YOVI sigue una descomposicion por subsistemas con responsabilidades bien definidas:
 
 * *Webapp*: punto de entrada del usuario, gestion de vistas, interaccion de juego y consumo de APIs.
 * *Users service*: gestion de registro, autenticacion y persistencia de informacion de usuarios.
 * *GameY*: motor encargado de aplicar reglas, validar estados y calcular jugadas.
 
-La comunicacion entre componentes se realiza mediante HTTP/REST y mensajes JSON. Esta estrategia favorece el desacoplamiento, hace visibles los contratos entre modulos y permite sustituir o evolucionar un subsistema sin afectar de forma directa a los demas mientras se mantenga la interfaz publica.
+La comunicacion entre componentes se realiza mediante HTTP/REST y mensajes JSON. Esta estrategia favorece el desacoplamiento, hace visibles los contratos entre modulos y permite sustituir o evolucionar un subsistema sin afectar directamente a los demas mientras se mantenga la interfaz publica.
 
-Ademas, la persistencia se delega en los servicios backend en lugar de en la interfaz. Con ello, la webapp queda centrada en la experiencia de usuario y la logica de negocio permanece en los componentes que pueden validarla y protegerla mejor.
+Ademas, la persistencia se delega en los servicios backend en lugar de en la interfaz. Con ello, la webapp se centra en la experiencia de usuario y la logica de negocio permanece en los componentes que pueden validarla y protegerla mejor.
 
 === Estrategias para alcanzar los objetivos de calidad
-* *Usabilidad.* La webapp concentra todo el flujo de interaccion en una unica entrada, con navegacion sencilla y operaciones directas para registrarse, iniciar sesion y jugar.
+* *Usabilidad.* La webapp concentra el flujo de interaccion en una unica entrada, con navegacion sencilla y operaciones directas para registrarse, iniciar sesion y jugar.
 * *Rendimiento.* La logica computacional del juego se concentra en Rust y se expone mediante endpoints pequenos, minimizando procesamiento innecesario en la capa web.
 * *Mantenibilidad.* La separacion por responsabilidades evita mezclar interfaz, autenticacion y reglas del juego, lo que facilita localizar cambios y ampliar el sistema.
-* *Escalabilidad.* La independencia de despliegue permite dimensionar por separado los subsistemas que reciban mas carga, especialmente el motor de juego o los servicios de usuario.
+* *Escalabilidad.* La independencia de despliegue permite dimensionar por separado los subsistemas con mayor carga, especialmente el motor de juego o los servicios de usuario.
 * *Fiabilidad.* La validacion de reglas se centraliza en un unico motor, evitando inconsistencias derivadas de duplicar logica entre cliente y servidor.
 
 === Decisiones organizativas y de desarrollo

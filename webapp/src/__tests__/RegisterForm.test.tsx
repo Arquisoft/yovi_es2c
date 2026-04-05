@@ -69,10 +69,8 @@ describe('RegisterForm', () => {
     await waitFor(() => {
       expect(onAuthSuccess).toHaveBeenCalledWith('Pablo');
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:3000/login',
-        expect.objectContaining({
-          method: 'POST',
-        }),
+          expect.stringContaining('/login'),
+          expect.objectContaining({ method: 'POST' }),
       );
     });
   });

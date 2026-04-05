@@ -57,6 +57,8 @@ describe('GameApi', () => {
                         x: 4,
                         y: 0,
                         z: 0,
+                        username: 'test_user',
+                        duration_seconds: 0,
                     }),
                 }
             );

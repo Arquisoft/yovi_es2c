@@ -135,7 +135,11 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
                     }}
                 >
                     {BOARD_SIZE_OPTIONS.map((size) => (
-                        <ToggleButton key={size} value={size}>
+                        <ToggleButton
+                            key={size}
+                            value={size}
+                            aria-pressed={boardSize === size}
+                        >
                             {size}
                         </ToggleButton>
                     ))}

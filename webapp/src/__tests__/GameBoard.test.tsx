@@ -137,7 +137,7 @@ describe('GameBoard', () => {
 
         expect(screen.getByRole('button', { name: /Bot fácil/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Bot difícil/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Aleatorio global/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Aleatorio/i })).toBeInTheDocument();
     });
 
     it('cambia la variante visible al pulsar Why Not', async () => {

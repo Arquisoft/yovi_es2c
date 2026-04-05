@@ -6,10 +6,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DB_URI=${DB_URI}
-      - DB_PASSWORD=${DB_PASSWORD}
-      #- DB_URI=mongodb://mongodb:27017
-      #- DB_PASSWORD=
+      #- DB_URI=${DB_URI}
+      #- DB_PASSWORD=${DB_PASSWORD}
+      - DB_URI=mongodb://mongodb:27017
+      - DB_PASSWORD=
     networks:
       - monitor-net
 
@@ -25,10 +25,10 @@ services:
     build:
       context: ./webapp
       args:
-        - VITE_API_URL=http://{{ secrets.DEPLOY_HOST }}:3000
-        - VITE_GAMEY_URL=http://{{ secrets.DEPLOY_HOST }}:4000
-        #- VITE_API_URL=http://localhost:3000
-        #- VITE_GAMEY_URL=http://localhost:4000
+        #- VITE_API_URL=http://{{ secrets.DEPLOY_HOST }}:3000
+        #- VITE_GAMEY_URL=http://{{ secrets.DEPLOY_HOST }}:4000
+        - VITE_API_URL=http://localhost:3000
+        - VITE_GAMEY_URL=http://localhost:4000
     container_name: webapp
     image: ghcr.io/arquisoft/yovi_es2c-webapp:latest
     ports:

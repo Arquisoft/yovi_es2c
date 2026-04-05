@@ -25,8 +25,9 @@ import {
     newGameYEN,
     parseLayout,
 } from './GameyApi';
+import { recordGameResult } from './UsersApi';
 
-//Para animacion y pulsos, es un css global
+// CSS global para animaciones de las celdas
 const CELL_STYLES = `
 @keyframes popIn {
     0%   { transform: scale(0.3); opacity: 0; }
@@ -40,7 +41,6 @@ const CELL_STYLES = `
 `;
 
 export type GameMode = 'local' | 'bot';
-
 type BotId = 'random_bot' | 'side_bot' | 'side_bot_hard';
 
 interface GameBoardProps {
@@ -96,6 +96,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
     const cells = useMemo(() => buildCells(safeBoardSize), [safeBoardSize]);
     const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
 
+    // ── Bot turn ──────────────────────────────────────────────────────────────
     const runBotTurn = useCallback(async (currentYen: YEN) => {
         if (botTurnRef.current) return;
         botTurnRef.current = true;
@@ -107,20 +108,25 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
             const botCoords = await chooseBotMove(currentYen, botId);
             const result = await applyMove(currentYen, botCoords, username, durationSeconds);
             setYen(result.yen);
-            if (result.status === 'finished') setWinner(result.winner);
+            if (result.status === 'finished' && result.winner !== null) {
+                setWinner(result.winner);
+                // En modo bot, el jugador humano es siempre el jugador 0
+                await recordGameResult(username, result.winner === 0);
+            }
         } catch (e) {
             setError(`Error IA: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
             setLoading(false);
             botTurnRef.current = false;
         }
-    }, [botId, startTimestamp]);
+    }, [botId, startTimestamp, username]);
 
     useEffect(() => {
         if (mode === 'bot' && nextPlayer === 1 && winner === null && !loading)
             runBotTurn(yen);
     }, [mode, nextPlayer, winner, loading, yen, runBotTurn]);
 
+    // ── Human turn ────────────────────────────────────────────────────────────
     const playAt = useCallback(async (cell: Cell) => {
         if (winner !== null || loading) return;
         if (mode === 'bot' && nextPlayer === 1) return;
@@ -134,7 +140,14 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
             const durationSeconds = Math.max(0, nowSeconds - startTimestamp);
             const result = await applyMove(yen, cell.coords, username, durationSeconds);
             setYen(result.yen);
-            if (result.status === 'finished') setWinner(result.winner);
+            if (result.status === 'finished' && result.winner !== null) {
+                setWinner(result.winner);
+                // En modo bot registramos el resultado del humano (jugador 0)
+                // En modo local no registramos porque no sabemos quién es quién
+                if (mode === 'bot') {
+                    await recordGameResult(username, result.winner === 0);
+                }
+            }
         } catch (e) {
             setError(`Movimiento inválido: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
@@ -142,6 +155,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
         }
     }, [winner, loading, mode, nextPlayer, indexMap, yen, startTimestamp, username]);
 
+    // ── Reset / mode / variant ────────────────────────────────────────────────
     const reset = () => {
         setYen(newGameYEN(safeBoardSize, variant));
         setWinner(null);
@@ -163,6 +177,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
         setStartTimestamp(Math.floor(Date.now() / 1000));
     };
 
+    // ── Derived UI state ──────────────────────────────────────────────────────
     const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
     const statusText = isBotThinking
         ? 'LA IA ESTÁ PENSANDO…'
@@ -174,248 +189,246 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
 
     return (
         <>
-        <style>{CELL_STYLES}</style>
-        <Box sx={{
-            minHeight: '100vh',
-            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
-            color: 'white',
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-        }}>
-            {/* Header */}
-            <Box sx={{ width: '100%', maxWidth: 700 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                    <Typography variant="h6" fontWeight={800}>
-                        YOVI ARENA
-                        <Typography component="span" variant="caption"
-                                    sx={{ ml: 1, color: 'rgba(255,255,255,0.4)', letterSpacing: 2 }}>
-                            {username} · {currentVariant === 'standard' ? 'Estándar' : 'Why Not'}
+            <style>{CELL_STYLES}</style>
+            <Box sx={{
+                minHeight: '100vh',
+                background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+                color: 'white',
+                p: 2,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 2,
+            }}>
+                {/* Header */}
+                <Box sx={{ width: '100%', maxWidth: 700 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                        <Typography variant="h6" fontWeight={800}>
+                            YOVI ARENA
+                            <Typography component="span" variant="caption"
+                                        sx={{ ml: 1, color: 'rgba(255,255,255,0.4)', letterSpacing: 2 }}>
+                                {username} · {currentVariant === 'standard' ? 'Estándar' : 'Why Not'}
+                            </Typography>
                         </Typography>
-                    </Typography>
-                    <Stack direction="row" gap={1}>
-                        <Button size="small" startIcon={<RestartAlt />} onClick={reset}
-                                sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
-                                variant="outlined">
-                            Nueva
-                        </Button>
-                        <Button size="small" startIcon={<ExitToApp />} onClick={onExit}
-                                sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
-                                variant="outlined">
-                            Salir
-                        </Button>
+                        <Stack direction="row" gap={1}>
+                            <Button size="small" startIcon={<RestartAlt />} onClick={reset}
+                                    sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
+                                    variant="outlined">
+                                Nueva
+                            </Button>
+                            <Button size="small" startIcon={<ExitToApp />} onClick={onExit}
+                                    sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
+                                    variant="outlined">
+                                Salir
+                            </Button>
+                        </Stack>
                     </Stack>
-                </Stack>
 
-                {/* Controls */}
-                <Stack direction="row" gap={1} flexWrap="wrap" mb={2}>
-                    <ButtonGroup size="small">
-                        <Button onClick={() => changeMode('local')}
-                                variant={mode === 'local' ? 'contained' : 'outlined'}
-                                startIcon={<Person />}
-                                sx={mode === 'local'
-                                    ? { bgcolor: '#4fc3f7', color: '#000' }
-                                    : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                            Local
-                        </Button>
-                        <Button onClick={() => changeMode('bot')}
-                                variant={mode === 'bot' ? 'contained' : 'outlined'}
-                                startIcon={<SmartToy />}
-                                sx={mode === 'bot'
-                                    ? { bgcolor: '#ef5350', color: '#fff' }
-                                    : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                            Vs Bot
-                        </Button>
-                    </ButtonGroup>
-
-                    <ButtonGroup size="small">
-                        <Button onClick={() => changeVariant('standard')}
-                                variant={currentVariant === 'standard' ? 'contained' : 'outlined'}
-                                sx={currentVariant === 'standard'
-                                    ? { bgcolor: '#7c4dff', color: '#fff' }
-                                    : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                            Estándar
-                        </Button>
-                        <Button onClick={() => changeVariant('why_not')}
-                                variant={currentVariant === 'why_not' ? 'contained' : 'outlined'}
-                                sx={currentVariant === 'why_not'
-                                    ? { bgcolor: '#7c4dff', color: '#fff' }
-                                    : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                            Why Not
-                        </Button>
-                    </ButtonGroup>
-
-                    {mode === 'bot' && (
+                    {/* Controls */}
+                    <Stack direction="row" gap={1} flexWrap="wrap" mb={2}>
                         <ButtonGroup size="small">
-                            <Button
-                                onClick={() => setBotId('side_bot')}
-                                variant={botId === 'side_bot' ? 'contained' : 'outlined'}
-                                sx={botId === 'side_bot'
-                                    ? { bgcolor: '#26c6da', color: '#000' }
-                                    : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                Bot fácil (laterales)
+                            <Button onClick={() => changeMode('local')}
+                                    variant={mode === 'local' ? 'contained' : 'outlined'}
+                                    startIcon={<Person />}
+                                    sx={mode === 'local'
+                                        ? { bgcolor: '#4fc3f7', color: '#000' }
+                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                Local
                             </Button>
-                            <Button
-                                onClick={() => setBotId('side_bot_hard')}
-                                variant={botId === 'side_bot_hard' ? 'contained' : 'outlined'}
-                                sx={botId === 'side_bot_hard'
-                                    ? { bgcolor: '#ffb74d', color: '#000' }
-                                    : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                Bot difícil (laterales)
-                            </Button>
-                            <Button
-                                onClick={() => setBotId('random_bot')}
-                                variant={botId === 'random_bot' ? 'contained' : 'outlined'}
-                                sx={botId === 'random_bot'
-                                    ? { bgcolor: '#8bc34a', color: '#000' }
-                                    : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                Aleatorio global
+                            <Button onClick={() => changeMode('bot')}
+                                    variant={mode === 'bot' ? 'contained' : 'outlined'}
+                                    startIcon={<SmartToy />}
+                                    sx={mode === 'bot'
+                                        ? { bgcolor: '#ef5350', color: '#fff' }
+                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                Vs Bot
                             </Button>
                         </ButtonGroup>
-                    )}
-                </Stack>
 
-                {/* Status */}
-                <Box sx={{
-                    bgcolor: `${activeColor}18`,
-                    border: `1px solid ${activeColor}`,
-                    borderRadius: 2,
-                    p: 1.5,
-                    textAlign: 'center',
-                    mb: 1,
-                }}>
-                    <Typography fontWeight={800} letterSpacing={2} sx={{ color: activeColor }}>
-                        {isBotThinking
-                            ? <><CircularProgress size={14} sx={{ mr: 1, color: activeColor }} />{statusText}</>
-                            : statusText
-                        }
-                    </Typography>
+                        <ButtonGroup size="small">
+                            <Button onClick={() => changeVariant('standard')}
+                                    variant={currentVariant === 'standard' ? 'contained' : 'outlined'}
+                                    sx={currentVariant === 'standard'
+                                        ? { bgcolor: '#7c4dff', color: '#fff' }
+                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                Estándar
+                            </Button>
+                            <Button onClick={() => changeVariant('why_not')}
+                                    variant={currentVariant === 'why_not' ? 'contained' : 'outlined'}
+                                    sx={currentVariant === 'why_not'
+                                        ? { bgcolor: '#7c4dff', color: '#fff' }
+                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                Why Not
+                            </Button>
+                        </ButtonGroup>
+
+                        {mode === 'bot' && (
+                            <ButtonGroup size="small">
+                                <Button
+                                    onClick={() => setBotId('side_bot')}
+                                    variant={botId === 'side_bot' ? 'contained' : 'outlined'}
+                                    sx={botId === 'side_bot'
+                                        ? { bgcolor: '#26c6da', color: '#000' }
+                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                    Bot fácil
+                                </Button>
+                                <Button
+                                    onClick={() => setBotId('side_bot_hard')}
+                                    variant={botId === 'side_bot_hard' ? 'contained' : 'outlined'}
+                                    sx={botId === 'side_bot_hard'
+                                        ? { bgcolor: '#ffb74d', color: '#000' }
+                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                    Bot difícil
+                                </Button>
+                                <Button
+                                    onClick={() => setBotId('random_bot')}
+                                    variant={botId === 'random_bot' ? 'contained' : 'outlined'}
+                                    sx={botId === 'random_bot'
+                                        ? { bgcolor: '#8bc34a', color: '#000' }
+                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                    Aleatorio
+                                </Button>
+                            </ButtonGroup>
+                        )}
+                    </Stack>
+
+                    {/* Status */}
+                    <Box sx={{
+                        bgcolor: `${activeColor}18`,
+                        border: `1px solid ${activeColor}`,
+                        borderRadius: 2,
+                        p: 1.5,
+                        textAlign: 'center',
+                        mb: 1,
+                    }}>
+                        <Typography fontWeight={800} letterSpacing={2} sx={{ color: activeColor }}>
+                            {isBotThinking
+                                ? <><CircularProgress size={14} sx={{ mr: 1, color: activeColor }} />{statusText}</>
+                                : statusText
+                            }
+                        </Typography>
+                    </Box>
+
+                    {/* Players */}
+                    <Stack direction="row" justifyContent="center" gap={2} mb={1}>
+                        {[0, 1].map((p) => (
+                            <Chip
+                                key={p}
+                                label={p === 0
+                                    ? (mode === 'bot' ? username : 'Azul')
+                                    : (mode === 'bot' ? 'IA Bot' : 'Rojo')
+                                }
+                                sx={{
+                                    bgcolor: (nextPlayer === p || winner === p)
+                                        ? `${PLAYER_COLOR[p]}30`
+                                        : 'rgba(255,255,255,0.05)',
+                                    color: (nextPlayer === p || winner === p)
+                                        ? PLAYER_COLOR[p]
+                                        : 'rgba(255,255,255,0.3)',
+                                    border: `1px solid ${(nextPlayer === p || winner === p)
+                                        ? PLAYER_COLOR[p]
+                                        : 'transparent'}`,
+                                    fontWeight: 700,
+                                }}
+                            />
+                        ))}
+                    </Stack>
+
+                    {error && <Alert severity="error" sx={{ bgcolor: 'rgba(211,47,47,0.15)', color: '#ff6b6b', mb: 1 }}>{error}</Alert>}
                 </Box>
 
-                {/* Players */}
-                <Stack direction="row" justifyContent="center" gap={2} mb={1}>
-                    {[0, 1].map((p) => (
-                        <Chip
-                            key={p}
-                            label={p === 0
-                                ? (mode === 'bot' ? username : 'Azul')
-                                : (mode === 'bot' ? 'IA Bot' : 'Rojo')
-                            }
-                            sx={{
-                                bgcolor: (nextPlayer === p || winner === p)
-                                    ? `${PLAYER_COLOR[p]}30`
-                                    : 'rgba(255,255,255,0.05)',
-                                color: (nextPlayer === p || winner === p)
-                                    ? PLAYER_COLOR[p]
-                                    : 'rgba(255,255,255,0.3)',
-                                border: `1px solid ${(nextPlayer === p || winner === p)
-                                    ? PLAYER_COLOR[p]
-                                    : 'transparent'}`,
-                                fontWeight: 700,
-                            }}
-                        />
-                    ))}
-                </Stack>
+                {/* Board */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                    <Box sx={{ position: 'relative', display: 'inline-block', pt: 2, pb: 4 }}>
 
-                {error && <Alert severity="error" sx={{ bgcolor: 'rgba(211,47,47,0.15)', color: '#ff6b6b', mb: 1 }}>{error}</Alert>}
-            </Box>
+                        {/* Side labels */}
+                        <Typography variant="caption" sx={{
+                            position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+                            color: 'rgba(255,255,255,0.3)'
+                        }}>Lado A</Typography>
+                        <Typography variant="caption" sx={{
+                            position: 'absolute', bottom: 0, left: 0,
+                            color: 'rgba(255,255,255,0.3)'
+                        }}>Lado B</Typography>
+                        <Typography variant="caption" sx={{
+                            position: 'absolute', bottom: 0, right: 0,
+                            color: 'rgba(255,255,255,0.3)'
+                        }}>Lado C</Typography>
 
-            {/* Board */}
-            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <Box sx={{ position: 'relative', display: 'inline-block', pt: 2, pb: 4 }}>
+                        {/* Rows */}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                            {Array.from({ length: safeBoardSize }, (_, row) => {
+                                const rowCells = cells.filter((c) => c.row === row);
+                                const cellSize = 38;
+                                const cellGap = 10;
+                                const offset = (safeBoardSize - 1 - row) * ((cellSize + cellGap) / 2);
 
-                    {/* Side labels */}
-                    <Typography variant="caption" sx={{
-                        position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                        color: 'rgba(255,255,255,0.3)'
-                    }}>Lado A</Typography>
-                    <Typography variant="caption" sx={{
-                        position: 'absolute', bottom: 0, left: 0,
-                        color: 'rgba(255,255,255,0.3)'
-                    }}>Lado B</Typography>
-                    <Typography variant="caption" sx={{
-                        position: 'absolute', bottom: 0, right: 0,
-                        color: 'rgba(255,255,255,0.3)'
-                    }}>Lado C</Typography>
+                                return (
+                                    <Box key={row} sx={{
+                                        display: 'flex',
+                                        ml: `${offset}px`,
+                                        mb: '4px',
+                                    }}>
+                                        {rowCells.map((cell) => {
+                                            const symbol = indexMap.get(cell.index) ?? '.';
+                                            const isBlue = symbol === 'B';
+                                            const isRed = symbol === 'R';
+                                            const isEmpty = symbol === '.';
+                                            const isDisabled = winner !== null || !isEmpty || loading
+                                                || (mode === 'bot' && nextPlayer === 1);
 
-                    {/* Rows */}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                        {Array.from({ length: safeBoardSize }, (_, row) => {
-                            const rowCells = cells.filter((c) => c.row === row);
-                            const cellSize = 38;
-                            const cellGap = 10;
-                            const offset = (safeBoardSize - 1 - row) * ((cellSize + cellGap) / 2);
+                                            const bgColor = isBlue
+                                                ? '#4fc3f7'
+                                                : isRed
+                                                    ? '#ef5350'
+                                                    : 'rgba(255,255,255,0.05)';
+                                            const borderColor = isBlue
+                                                ? '#4fc3f7'
+                                                : isRed
+                                                    ? '#ef5350'
+                                                    : 'rgba(255,255,255,0.25)';
 
-                            return (
-                                <Box key={row} sx={{
-                                    display: 'flex',
-                                    ml: `${offset}px`,
-                                    mb: '4px',
-                                }}>
-                                    {rowCells.map((cell) => {
-                                        const symbol = indexMap.get(cell.index) ?? '.';
-                                        const isBlue = symbol === 'B';
-                                        const isRed = symbol === 'R';
-                                        const isEmpty = symbol === '.';
-                                        const isDisabled = winner !== null || !isEmpty || loading
-                                            || (mode === 'bot' && nextPlayer === 1);
-
-                                        const bgColor = isBlue
-                                            ? '#4fc3f7'
-                                            : isRed
-                                                ? '#ef5350'
-                                                : 'rgba(255,255,255,0.05)';
-                                        const borderColor = isBlue
-                                            ? '#4fc3f7'
-                                            : isRed
-                                                ? '#ef5350'
-                                                : 'rgba(255,255,255,0.25)';
-
-                                        return (
-                                            <button
-                                                key={cell.index}
-                                                onClick={() => !isDisabled && playAt(cell)}
-                                                disabled={isDisabled}
-                                                title={`(${cell.coords.x},${cell.coords.y},${cell.coords.z})`}
-                                                style={{
-                                                    width: cellSize,
-                                                    height: cellSize,
-                                                    borderRadius: '50%',
-                                                    border: `2px solid ${borderColor}`,
-                                                    backgroundColor: bgColor,
-                                                    marginRight: cellGap,
-                                                    cursor: isDisabled ? 'not-allowed' : 'pointer',
-                                                    padding: 0,
-                                                    flexShrink: 0,
-                                                    // Animación al colocar ficha
-                                                    animation: !isEmpty ? 'popIn 0.3s ease forwards' : 'none',
-                                                    // Pulso al hover (via CSS, no se puede inline, lo manejamos con onMouseEnter)
-                                                    transition: 'transform 0.15s, box-shadow 0.15s, background-color 0.15s',
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    if (!isDisabled && isEmpty) {
-                                                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.25)';
-                                                        (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 8px ${activeColor}`;
-                                                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = `${activeColor}50`;
-                                                    }
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                                                    (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                                                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = bgColor;
-                                                }}
-                                            />
-                                        );
-                                    })}
-                                </Box>
-                            );
-                        })}
+                                            return (
+                                                <button
+                                                    key={cell.index}
+                                                    onClick={() => !isDisabled && playAt(cell)}
+                                                    disabled={isDisabled}
+                                                    title={`(${cell.coords.x},${cell.coords.y},${cell.coords.z})`}
+                                                    style={{
+                                                        width: cellSize,
+                                                        height: cellSize,
+                                                        borderRadius: '50%',
+                                                        border: `2px solid ${borderColor}`,
+                                                        backgroundColor: bgColor,
+                                                        marginRight: cellGap,
+                                                        cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                                        padding: 0,
+                                                        flexShrink: 0,
+                                                        animation: !isEmpty ? 'popIn 0.3s ease forwards' : 'none',
+                                                        transition: 'transform 0.15s, box-shadow 0.15s, background-color 0.15s',
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        if (!isDisabled && isEmpty) {
+                                                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.25)';
+                                                            (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 8px ${activeColor}`;
+                                                            (e.currentTarget as HTMLButtonElement).style.backgroundColor = `${activeColor}50`;
+                                                        }
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+                                                        (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+                                                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = bgColor;
+                                                    }}
+                                                />
+                                            );
+                                        })}
+                                    </Box>
+                                );
+                            })}
+                        </Box>
                     </Box>
                 </Box>
             </Box>
-        </Box>
         </>
     );
 }

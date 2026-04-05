@@ -14,6 +14,8 @@ import {
     EmojiEvents,
     GpsFixed,
     PowerSettingsNew,
+    History,
+    Leaderboard,
 } from '@mui/icons-material';
 import type { GameMode } from '../GameBoard';
 
@@ -24,6 +26,7 @@ type MenuProps = {
     initialUsername: string;
     onJugar: (username: string, mode: GameMode, boardSize: number) => void;
     onVerHistorial: () => void;
+    onVerRanking: () => void;
 };
 
 const CARDS = [
@@ -61,7 +64,7 @@ const CARDS = [
     },
 ];
 
-export default function Menu({ onLogout, onJugar, initialUsername, onVerHistorial }: MenuProps) {
+export default function Menu({ onLogout, onJugar, initialUsername, onVerHistorial, onVerRanking }: MenuProps) {
     const [boardSize, setBoardSize] = useState<number>(7);
 
     const launch = (mode: GameMode) => {
@@ -148,6 +151,7 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
                     display: 'grid',
                     gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
                     gap: 2,
+                    mb: 4,
                 }}
             >
                 {CARDS.map((card) => (
@@ -183,9 +187,11 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
                 ))}
             </Box>
 
-            <Stack direction="row" justifyContent="center" mt={4}>
+            {/* Footer buttons */}
+            <Stack direction="row" justifyContent="center" gap={2}>
                 <Button
                     variant="outlined"
+                    startIcon={<History />}
                     onClick={onVerHistorial}
                     sx={{
                         borderColor: 'rgba(255,255,255,0.2)',
@@ -193,7 +199,19 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
                         '&:hover': { borderColor: '#7c4dff', color: '#7c4dff' },
                     }}
                 >
-                    Ver historial de partidas
+                    Historial
+                </Button>
+                <Button
+                    variant="outlined"
+                    startIcon={<Leaderboard />}
+                    onClick={onVerRanking}
+                    sx={{
+                        borderColor: 'rgba(255,255,255,0.2)',
+                        color: 'rgba(255,255,255,0.7)',
+                        '&:hover': { borderColor: '#ffd54f', color: '#ffd54f' },
+                    }}
+                >
+                    Ranking
                 </Button>
             </Stack>
         </Box>

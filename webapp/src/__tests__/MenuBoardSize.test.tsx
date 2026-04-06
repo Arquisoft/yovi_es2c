@@ -15,6 +15,7 @@ describe('Menu board size selection', () => {
         onJugar={() => {}}
         initialUsername="Ana"
         onVerHistorial={() => {}}
+        onVerRanking={() => {}}
       />,
     );
 
@@ -36,6 +37,7 @@ describe('Menu board size selection', () => {
         onJugar={() => {}}
         initialUsername="Ana"
         onVerHistorial={() => {}}
+        onVerRanking={() => {}}
       />,
     );
 
@@ -68,6 +70,7 @@ describe('Menu board size selection', () => {
         onJugar={onJugar}
         initialUsername="Ana"
         onVerHistorial={() => {}}
+        onVerRanking={() => {}}
       />,
     );
 
@@ -97,6 +100,7 @@ describe('Menu board size selection', () => {
         onJugar={onJugar}
         initialUsername="Ana"
         onVerHistorial={() => {}}
+        onVerRanking={() => {}}
       />,
     );
 
@@ -126,6 +130,7 @@ describe('Menu board size selection', () => {
         onJugar={onJugar}
         initialUsername="Ana"
         onVerHistorial={() => {}}
+        onVerRanking={() => {}}
       />,
     );
 

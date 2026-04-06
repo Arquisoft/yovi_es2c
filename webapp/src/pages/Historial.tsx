@@ -8,7 +8,7 @@ import {
     CircularProgress,
     Alert,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, SportsEsports } from '@mui/icons-material';
 import { fetchGameHistory, type HistoryGame } from '../GameyApi';
 
 type HistorialProps = {
@@ -29,7 +29,7 @@ function formatWinner(winner: string | null): string {
 
 export default function Historial({ username, onBack }: HistorialProps) {
     const [games, setGames] = useState<HistoryGame[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true); // true desde el inicio
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -41,41 +41,35 @@ export default function Historial({ username, onBack }: HistorialProps) {
                 const data = await fetchGameHistory();
                 if (!cancelled) setGames(data);
             } catch (e) {
-                if (!cancelled) {
+                if (!cancelled)
                     setError(e instanceof Error ? e.message : 'Error de red');
-                }
             } finally {
                 if (!cancelled) setLoading(false);
             }
         };
         load();
-        return () => {
-            cancelled = true;
-        };
+        return () => { cancelled = true; };
     }, []);
 
     return (
-        <Box
-            sx={{
-                minHeight: '100vh',
-                background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
-                color: 'white',
-                p: 2,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 2,
-            }}
-        >
+        <Box sx={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
+            color: 'white',
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+        }}>
             <Box sx={{ width: '100%', maxWidth: 700 }}>
+
+                {/* Header */}
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
                     <Typography variant="h6" fontWeight={800}>
                         Historial de partidas
-                        <Typography
-                            component="span"
-                            variant="caption"
-                            sx={{ ml: 1, color: 'rgba(255,255,255,0.4)', letterSpacing: 2 }}
-                        >
+                        <Typography component="span" variant="caption"
+                                    sx={{ ml: 1, color: 'rgba(255,255,255,0.4)', letterSpacing: 2 }}>
                             {username}
                         </Typography>
                     </Typography>
@@ -90,58 +84,78 @@ export default function Historial({ username, onBack }: HistorialProps) {
                     </Button>
                 </Stack>
 
+                {/* Loading */}
                 {loading && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-                        <CircularProgress />
+                        <CircularProgress sx={{ color: '#4fc3f7' }} />
                     </Box>
                 )}
 
-                {error && (
-                    <Alert severity="error" sx={{ mb: 2 }}>
+                {/* Error */}
+                {!loading && error && (
+                    <Alert severity="error"
+                           sx={{ bgcolor: 'rgba(211,47,47,0.15)', color: '#ff6b6b', mb: 2 }}>
                         {error}
                     </Alert>
                 )}
 
+                {/* Empty state */}
                 {!loading && !error && games.length === 0 && (
-                    <Typography variant="body1" sx={{ opacity: 0.7 }}>
-                        Todavía no hay partidas registradas.
-                    </Typography>
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 2,
+                        mt: 8,
+                        opacity: 0.5,
+                    }}>
+                        <SportsEsports sx={{ fontSize: 64 }} />
+                        <Typography variant="h6" fontWeight={700}>
+                            Sin partidas todavía
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                            Juega tu primera partida para verla aquí.
+                        </Typography>
+                    </Box>
                 )}
 
-                <Stack spacing={1.5}>
-                    {games.map((g, idx) => (
-                        <Paper
-                            key={idx}
-                            elevation={2}
-                            sx={{
-                                p: 1.5,
-                                backgroundColor: 'rgba(255,255,255,0.03)',
-                                border: '1px solid rgba(255,255,255,0.06)',
-                            }}
-                        >
-                            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                <Box>
-                                    <Typography variant="subtitle2" sx={{ opacity: 0.8 }}>
-                                        {formatDate(g.timestamp)}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        Ganador: {formatWinner(g.winner)}
-                                    </Typography>
-                                </Box>
-                                <Box textAlign="right">
-                                    <Typography variant="body2">
-                                        Tamaño: {g.board_size}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        Duración: {g.duration_seconds}s
-                                    </Typography>
-                                </Box>
-                            </Stack>
-                        </Paper>
-                    ))}
-                </Stack>
+                {/* Game list */}
+                {!loading && !error && games.length > 0 && (
+                    <Stack spacing={1.5}>
+                        {games.map((g, idx) => (
+                            <Paper
+                                key={idx}
+                                elevation={2}
+                                sx={{
+                                    p: 1.5,
+                                    backgroundColor: 'rgba(255,255,255,0.03)',
+                                    border: '1px solid rgba(255,255,255,0.06)',
+                                    borderRadius: 2,
+                                }}
+                            >
+                                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                    <Box>
+                                        <Typography variant="subtitle2" sx={{ opacity: 0.8 }}>
+                                            {formatDate(g.timestamp)}
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            Ganador: {formatWinner(g.winner)}
+                                        </Typography>
+                                    </Box>
+                                    <Box textAlign="right">
+                                        <Typography variant="body2">
+                                            Tamaño: {g.board_size}
+                                        </Typography>
+                                        <Typography variant="body2">
+                                            Duración: {g.duration_seconds}s
+                                        </Typography>
+                                    </Box>
+                                </Stack>
+                            </Paper>
+                        ))}
+                    </Stack>
+                )}
             </Box>
         </Box>
     );
 }
-

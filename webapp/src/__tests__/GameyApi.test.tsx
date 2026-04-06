@@ -44,7 +44,7 @@ describe('GameApi', () => {
                 json: async () => mockResponse,
             } as Response);
 
-            const result = await applyMove(sampleYen, { x: 4, y: 0, z: 0 });
+            const result = await applyMove(sampleYen, { x: 4, y: 0, z: 0 }, 'test_user', 0);
 
             expect(fetch).toHaveBeenCalledTimes(1);
             expect(fetch).toHaveBeenCalledWith(
@@ -57,6 +57,8 @@ describe('GameApi', () => {
                         x: 4,
                         y: 0,
                         z: 0,
+                        username: 'test_user',
+                        duration_seconds: 0,
                     }),
                 }
             );
@@ -72,7 +74,7 @@ describe('GameApi', () => {
             } as Response);
 
             await expect(
-                applyMove(sampleYen, { x: 1, y: 1, z: 2 })
+                applyMove(sampleYen, { x: 1, y: 1, z: 2 }, 'test_user', 0)
             ).rejects.toThrow('Invalid move');
         });
 
@@ -84,7 +86,7 @@ describe('GameApi', () => {
             } as Response);
 
             await expect(
-                applyMove(sampleYen, { x: 1, y: 1, z: 2 })
+                applyMove(sampleYen, { x: 1, y: 1, z: 2 }, 'test_user', 0)
             ).rejects.toThrow('HTTP 500');
         });
     });

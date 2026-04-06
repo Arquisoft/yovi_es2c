@@ -6,10 +6,11 @@ import Menu from './pages/Menu';
 import Historial from './pages/Historial';
 import GameBoard, { type GameMode } from './GameBoard';
 import FadeView from './FadeView';
+import Ranking from './pages/Ranking';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
-type View = 'inicio' | 'menu' | 'game' | 'historial';
+type View = 'inicio' | 'menu' | 'game' | 'historial' | 'ranking';
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
@@ -87,6 +88,7 @@ export default function App() {
                   initialUsername={username}
                   onJugar={startGame}
                   onVerHistorial={() => setView('historial')}
+                  onVerRanking={() => setView('ranking')}
               />
           )}
 
@@ -102,6 +104,13 @@ export default function App() {
 
           {view === 'historial' && (
               <Historial
+                  username={username}
+                  onBack={() => setView('menu')}
+              />
+          )}
+
+          {view === 'ranking' && (
+              <Ranking
                   username={username}
                   onBack={() => setView('menu')}
               />

@@ -146,9 +146,83 @@ async function loginHandler(req, res) {
   }
 }
 
+//Metodos para el ranking
+// ── Registrar resultado de partida ──────────────────────────────────────────
+
+async function gameResultHandler(req, res) {
+  const { username, won } = req.body;
+
+  if (!username || typeof won !== 'boolean') {
+    return res.status(400).json({ error: 'username and won (boolean) are required' });
+  }
+
+  const usersCollection = req.app.locals.usersCollection;
+  if (!usersCollection) {
+    return res.status(500).json({ error: 'Database not initialized' });
+  }
+
+  try {
+    // Incrementa wins o losses según el resultado.
+    // $inc crea el campo si no existe, empezando desde 0.
+    const update = won
+        ? { $inc: { wins: 1 } }
+        : { $inc: { losses: 1 } };
+
+    const result = await usersCollection.updateOne({ username }, update);
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.status(200).json({ message: 'Result recorded' });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
+
+// ── Obtener ranking ──────────────────────────────────────────────────────────
+
+async function rankingHandler(req, res) {
+  const usersCollection = req.app.locals.usersCollection;
+  if (!usersCollection) {
+    return res.status(500).json({ error: 'Database not initialized' });
+  }
+
+  try {
+    const players = await usersCollection
+        .find(
+            {},
+            // Solo devolvemos los campos necesarios, nunca el hash ni la sal
+            { projection: { _id: 0, username: 1, wins: 1, losses: 1 } }
+        )
+        .sort({ wins: -1 }) // ordenados de más a menos victorias
+        .toArray();
+
+    // Normalizamos: si un jugador nunca ha jugado, wins y losses son 0
+    const ranking = players.map((p, index) => ({
+      position: index + 1,
+      username: p.username,
+      wins: p.wins ?? 0,
+      losses: p.losses ?? 0,
+      // Ratio de victorias: evitamos división por cero
+      winRate: (p.wins ?? 0) + (p.losses ?? 0) > 0
+          ? Math.round(((p.wins ?? 0) / ((p.wins ?? 0) + (p.losses ?? 0))) * 100)
+          : 0,
+    }));
+
+    return res.status(200).json({ ranking });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
+
 // ------------------- Rutas -------------------
 app.post('/register', registerHandler);
 app.post('/login', loginHandler);
+
+//Nuevas para el ranking
+app.post('/game/result', gameResultHandler);  // 👈 nuevo
+app.get('/ranking', rankingHandler);
 
 // Alias de compatibilidad con versiones previas del frontend.
 app.post('/createuser', registerHandler);

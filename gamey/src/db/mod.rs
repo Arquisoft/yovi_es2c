@@ -5,12 +5,13 @@ use mongodb::{
     Client, Database,
 };
 use serde::{Deserialize, Serialize};
-use std::env;
+use std::{env, io};
 
 /// Connects to the MongoDB database using the provided credentials.
 /// Reads the password from the `MONGODB_PASSWORD` environment variable.
 pub async fn connect() -> mongodb::error::Result<Database> {
-    let password = env::var("MONGODB_PASSWORD").expect("MONGODB_PASSWORD must be set");
+    let password = env::var("MONGODB_PASSWORD")
+        .map_err(|_| io::Error::new(io::ErrorKind::NotFound, "MONGODB_PASSWORD not set"))?;
     let uri = format!(
         "mongodb+srv://yovi2c_db_user:{}@yovi2c.yt6wilm.mongodb.net/?appName=Yovi2C&tls=true&tlsInsecure=true",
         password

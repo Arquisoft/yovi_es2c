@@ -7,8 +7,8 @@
 //! - Server: Run as an HTTP server for bot API
 
 use crate::{
-    Coordinates, GameAction, Movement, RandomBot, RenderOptions, SideBot, SideBotHard, YBot,
-    YBotRegistry, game, db,
+    CenterBot, Coordinates, CornerBot, GameAction, Movement, RandomBot, RenderOptions,
+    SideBot, SideBotHard, YBot, YBotRegistry, game, db,
 };
 use crate::{GameStatus, GameY, PlayerId};
 use anyhow::Result;
@@ -73,6 +73,8 @@ pub async fn run_cli_game() -> Result<()> {
     let mut render_options = crate::RenderOptions::default();
     let mut rl = DefaultEditor::new()?;
     let bots_registry = YBotRegistry::new()
+        .with_bot(Arc::new(CenterBot))
+        .with_bot(Arc::new(CornerBot))
         .with_bot(Arc::new(RandomBot))
         .with_bot(Arc::new(SideBot))
         .with_bot(Arc::new(SideBotHard));
@@ -102,7 +104,6 @@ pub async fn run_cli_game() -> Result<()> {
                 let total_cells = game.total_cells() as usize;
                 let moves_count = total_cells.saturating_sub(game.available_cells().len());
 
-                println!("Connecting to database...");
                 match db::connect().await {
                     Ok(database) => {
                         let record = db::GameRecord {
@@ -117,7 +118,7 @@ pub async fn run_cli_game() -> Result<()> {
                         }
                     }
                     Err(e) => {
-                        eprintln!("Failed to connect to database: {}", e);
+                        eprintln!("Skipping DB save: {}", e);
                     }
                 }
 
@@ -544,4 +545,3 @@ mod tests {
         assert!(debug.contains("5"));
     }
 }
-

@@ -56,6 +56,8 @@ const MIN_BOARD_SIZE = 5;
 
 type Cell = { index: number; row: number; col: number; coords: Coords };
 
+const BOT_THINK_MIN_MS = 500;
+
 function buildCells(size: number): Cell[] {
     const cells: Cell[] = [];
     let index = 0;
@@ -103,6 +105,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
         setLoading(true);
         setError(null);
         try {
+            await new Promise((resolve) => setTimeout(resolve, BOT_THINK_MIN_MS));
             const nowSeconds = Math.floor(Date.now() / 1000);
             const durationSeconds = Math.max(0, nowSeconds - startTimestamp);
             const botCoords = await chooseBotMove(currentYen, botId);

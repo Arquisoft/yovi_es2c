@@ -112,6 +112,8 @@ pub async fn make_move(
                     duration_seconds: req.duration_seconds.unwrap_or(0),
                 };
                 let _ = db::save_game_result(&database, record).await;
+            } else {
+                eprintln!("Skipping DB save: MONGODB_PASSWORD not set or DB unavailable");
             }
             ("finished".to_string(), Some(winner.id()), None)
         }

@@ -41,7 +41,12 @@ const CELL_STYLES = `
 `;
 
 export type GameMode = 'local' | 'bot';
-type BotId = 'random_bot' | 'side_bot' | 'side_bot_hard';
+type BotId =
+    | 'random_bot'
+    | 'side_bot'
+    | 'side_bot_hard'
+    | 'center_bot'
+    | 'corner_bot';
 
 interface GameBoardProps {
     username: string;
@@ -263,32 +268,52 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                         </ButtonGroup>
 
                         {mode === 'bot' && (
-                            <ButtonGroup size="small">
-                                <Button
-                                    onClick={() => setBotId('side_bot')}
-                                    variant={botId === 'side_bot' ? 'contained' : 'outlined'}
-                                    sx={botId === 'side_bot'
-                                        ? { bgcolor: '#26c6da', color: '#000' }
-                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                    Bot fácil
-                                </Button>
-                                <Button
-                                    onClick={() => setBotId('side_bot_hard')}
-                                    variant={botId === 'side_bot_hard' ? 'contained' : 'outlined'}
-                                    sx={botId === 'side_bot_hard'
-                                        ? { bgcolor: '#ffb74d', color: '#000' }
-                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                    Bot difícil
-                                </Button>
-                                <Button
-                                    onClick={() => setBotId('random_bot')}
-                                    variant={botId === 'random_bot' ? 'contained' : 'outlined'}
-                                    sx={botId === 'random_bot'
-                                        ? { bgcolor: '#8bc34a', color: '#000' }
-                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                    Aleatorio
-                                </Button>
-                            </ButtonGroup>
+                            <>
+                                <ButtonGroup size="small">
+                                    <Button
+                                        onClick={() => setBotId('side_bot')}
+                                        variant={botId === 'side_bot' ? 'contained' : 'outlined'}
+                                        sx={botId === 'side_bot'
+                                            ? { bgcolor: '#26c6da', color: '#000' }
+                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                        Bot fácil
+                                    </Button>
+                                    <Button
+                                        onClick={() => setBotId('side_bot_hard')}
+                                        variant={botId === 'side_bot_hard' ? 'contained' : 'outlined'}
+                                        sx={botId === 'side_bot_hard'
+                                            ? { bgcolor: '#ffb74d', color: '#000' }
+                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                        Bot difícil
+                                    </Button>
+                                    <Button
+                                        onClick={() => setBotId('random_bot')}
+                                        variant={botId === 'random_bot' ? 'contained' : 'outlined'}
+                                        sx={botId === 'random_bot'
+                                            ? { bgcolor: '#8bc34a', color: '#000' }
+                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                        Aleatorio
+                                    </Button>
+                                </ButtonGroup>
+                                <ButtonGroup size="small">
+                                    <Button
+                                        onClick={() => setBotId('center_bot')}
+                                        variant={botId === 'center_bot' ? 'contained' : 'outlined'}
+                                        sx={botId === 'center_bot'
+                                            ? { bgcolor: '#9575cd', color: '#000' }
+                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                        Bot centro
+                                    </Button>
+                                    <Button
+                                        onClick={() => setBotId('corner_bot')}
+                                        variant={botId === 'corner_bot' ? 'contained' : 'outlined'}
+                                        sx={botId === 'corner_bot'
+                                            ? { bgcolor: '#4db6ac', color: '#000' }
+                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                        Bot esquinas
+                                    </Button>
+                                </ButtonGroup>
+                            </>
                         )}
                     </Stack>
 

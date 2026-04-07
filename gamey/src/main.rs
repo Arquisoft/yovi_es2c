@@ -30,6 +30,7 @@ use tracing_subscriber::prelude::*;
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry().init();
+    dotenvy::from_filename("env").ok();
     let args = CliArgs::parse();
 
     if args.mode == Mode::Server {

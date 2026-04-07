@@ -95,6 +95,14 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
     const currentVariant = yen.variant;
     const cells = useMemo(() => buildCells(safeBoardSize), [safeBoardSize]);
     const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
+    const movesMade = useMemo(() => {
+        let count = 0;
+        for (const ch of yen.layout) {
+            if (ch === 'B' || ch === 'R') count++;
+        }
+        return count;
+    }, [yen.layout]);
+    const disableBotSelection = mode === 'bot' && winner === null && movesMade > 0;
 
     // ── Bot turn ──────────────────────────────────────────────────────────────
     const runBotTurn = useCallback(async (currentYen: YEN) => {
@@ -247,6 +255,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
 
                         <ButtonGroup size="small">
                             <Button onClick={() => changeVariant('standard')}
+                                    disabled={mode === 'bot' && winner === null && movesMade > 0}
                                     variant={currentVariant === 'standard' ? 'contained' : 'outlined'}
                                     sx={currentVariant === 'standard'
                                         ? { bgcolor: '#7c4dff', color: '#fff' }
@@ -254,6 +263,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                 Estándar
                             </Button>
                             <Button onClick={() => changeVariant('why_not')}
+                                    disabled={mode === 'bot' && winner === null && movesMade > 0}
                                     variant={currentVariant === 'why_not' ? 'contained' : 'outlined'}
                                     sx={currentVariant === 'why_not'
                                         ? { bgcolor: '#7c4dff', color: '#fff' }
@@ -266,6 +276,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                             <ButtonGroup size="small">
                                 <Button
                                     onClick={() => setBotId('side_bot')}
+                                    disabled={disableBotSelection}
                                     variant={botId === 'side_bot' ? 'contained' : 'outlined'}
                                     sx={botId === 'side_bot'
                                         ? { bgcolor: '#26c6da', color: '#000' }
@@ -274,6 +285,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                 </Button>
                                 <Button
                                     onClick={() => setBotId('side_bot_hard')}
+                                    disabled={disableBotSelection}
                                     variant={botId === 'side_bot_hard' ? 'contained' : 'outlined'}
                                     sx={botId === 'side_bot_hard'
                                         ? { bgcolor: '#ffb74d', color: '#000' }
@@ -282,6 +294,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                 </Button>
                                 <Button
                                     onClick={() => setBotId('random_bot')}
+                                    disabled={disableBotSelection}
                                     variant={botId === 'random_bot' ? 'contained' : 'outlined'}
                                     sx={botId === 'random_bot'
                                         ? { bgcolor: '#8bc34a', color: '#000' }

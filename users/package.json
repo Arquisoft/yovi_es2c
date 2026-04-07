@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.15",
+    "jsdom": "^29.0.2",
     "supertest": "^7.1.4",
     "vitest": "^4.0.15"
   }

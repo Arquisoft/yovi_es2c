@@ -7,7 +7,6 @@ class GameYSimulation extends Simulation {
   val httpProtocol = http
     .baseUrl("http://localhost:4000")
     .acceptHeader("application/json")
-    .contentTypeHeader("application/json")
 
   val userFeeder = Array(
     Map("username" -> "alice"),
@@ -19,82 +18,95 @@ class GameYSimulation extends Simulation {
 
   val emptyYenJson: String =
     """{
-      "size": 5,
+      "size": 7,
       "turn": 0,
       "players": ["B", "R"],
-      "layout": "../.../.../..../.....",
+      "layout": "./../.../..../...../....../.......",
       "variant": "standard"
     }"""
 
   val scn = scenario("Partida_GameY")
     .feed(userFeeder)
+
     .exec(
       http("01_status")
         .get("/status")
         .check(status.is(200))
     )
+
     .pause(500.milliseconds, 1.second)
+
     .exec { session =>
       val startTs = System.currentTimeMillis() / 1000
       session
         .set("yenState", emptyYenJson)
         .set("startTs", startTs)
     }
+
     .exec(
       http("02_primer_movimiento")
         .post("/v1/game/move")
+        .header("Content-Type", "application/json")
         .body(StringBody(
           """{
-            "yen": ${yenState},
-            "x": 4,
+            "yen": #{yenState},
+            "x": 2,
             "y": 0,
-            "z": 0,
-            "username": "${username}",
-            "duration_seconds": 0
+            "z": 0
           }"""
-        )).asJson
+        ))
         .check(status.is(200))
+        .check(status.saveAs("status02"))
+        .check(bodyString.saveAs("respBody02"))
         .check(jsonPath("$.yen").saveAs("yenState"))
     )
-    .pause(1.second, 2.seconds)
+
+    .exec { session =>
+      println(s"[DEBUG] 02 status=${session("status02").asOption[Int]}")
+      println(s"[DEBUG] 02 body=${session("respBody02").asOption[String]}")
+      session
+    }
+
+    .pause(1.second, 3.seconds)
+
     .exec(
-      http("03_movimiento_intermedio")
+      http("03_movimiento_2")
         .post("/v1/game/move")
+        .header("Content-Type", "application/json")
         .body(StringBody(
           """{
-            "yen": ${yenState},
-            "x": 3,
+            "yen": #{yenState},
+            "x": 2,
             "y": 1,
-            "z": 0,
-            "username": "${username}",
-            "duration_seconds": 5
+            "z": 0
           }"""
-        )).asJson
+        ))
         .check(status.is(200))
         .check(jsonPath("$.yen").saveAs("yenState"))
     )
+
     .pause(1.second, 3.seconds)
+
     .exec(
       http("04_movimiento_final")
         .post("/v1/game/move")
+        .header("Content-Type", "application/json")
         .body(StringBody(
           """{
-            "yen": ${yenState},
+            "yen": #{yenState},
             "x": 2,
             "y": 2,
-            "z": 0,
-            "username": "${username}",
-            "duration_seconds": 10
+            "z": 0
           }"""
-        )).asJson
+        ))
         .check(status.in(200, 400, 409))
     )
+
     .pause(1.second)
 
   setUp(
     scn.inject(
-      atOnceUsers(5),
-      rampUsers(5) during (30.seconds)
+      atOnceUsers(1)
     )
   ).protocols(httpProtocol)
    .assertions(

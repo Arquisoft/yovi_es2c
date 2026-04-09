@@ -13,6 +13,7 @@ The project is divided into three main components, each in its own directory:
 - `webapp/`: A frontend application built with React, Vite, and TypeScript.
 - `users/`: A backend service for managing users, built with Node.js and Express.
 - `gamey/`: A Rust game engine and bot service.
+- `gatling/`: A performance testing suite to simulate multiple users and measure system load and response times.
 - `docs/`: Architecture documentation sources following Arc42 template
 
 Each component has its own `package.json` file with the necessary scripts to run and test the application.

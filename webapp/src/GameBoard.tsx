@@ -102,6 +102,11 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
     const currentVariant = yen.variant;
     const cells = useMemo(() => buildCells(safeBoardSize), [safeBoardSize]);
     const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
+    const hasGameStarted = useMemo(
+        () => Array.from(indexMap.values()).some((value) => value !== '.'),
+        [indexMap],
+    );
+    const lockBotMatchSettings = mode === 'bot' && hasGameStarted;
 
     // ── Bot turn ──────────────────────────────────────────────────────────────
     const runBotTurn = useCallback(async (currentYen: YEN) => {
@@ -255,6 +260,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
 
                         <ButtonGroup size="small">
                             <Button onClick={() => changeVariant('standard')}
+                                    disabled={lockBotMatchSettings}
                                     variant={currentVariant === 'standard' ? 'contained' : 'outlined'}
                                     sx={currentVariant === 'standard'
                                         ? { bgcolor: '#7c4dff', color: '#fff' }
@@ -262,6 +268,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                 Estándar
                             </Button>
                             <Button onClick={() => changeVariant('why_not')}
+                                    disabled={lockBotMatchSettings}
                                     variant={currentVariant === 'why_not' ? 'contained' : 'outlined'}
                                     sx={currentVariant === 'why_not'
                                         ? { bgcolor: '#7c4dff', color: '#fff' }
@@ -275,6 +282,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                 <ButtonGroup size="small">
                                     <Button
                                         onClick={() => setBotId('side_bot')}
+                                        disabled={lockBotMatchSettings}
                                         variant={botId === 'side_bot' ? 'contained' : 'outlined'}
                                         sx={botId === 'side_bot'
                                             ? { bgcolor: '#26c6da', color: '#000' }
@@ -283,6 +291,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                     </Button>
                                     <Button
                                         onClick={() => setBotId('side_bot_hard')}
+                                        disabled={lockBotMatchSettings}
                                         variant={botId === 'side_bot_hard' ? 'contained' : 'outlined'}
                                         sx={botId === 'side_bot_hard'
                                             ? { bgcolor: '#ffb74d', color: '#000' }
@@ -291,6 +300,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                     </Button>
                                     <Button
                                         onClick={() => setBotId('random_bot')}
+                                        disabled={lockBotMatchSettings}
                                         variant={botId === 'random_bot' ? 'contained' : 'outlined'}
                                         sx={botId === 'random_bot'
                                             ? { bgcolor: '#8bc34a', color: '#000' }
@@ -301,6 +311,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                 <ButtonGroup size="small">
                                     <Button
                                         onClick={() => setBotId('center_bot')}
+                                        disabled={lockBotMatchSettings}
                                         variant={botId === 'center_bot' ? 'contained' : 'outlined'}
                                         sx={botId === 'center_bot'
                                             ? { bgcolor: '#9575cd', color: '#000' }
@@ -309,6 +320,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                     </Button>
                                     <Button
                                         onClick={() => setBotId('corner_bot')}
+                                        disabled={lockBotMatchSettings}
                                         variant={botId === 'corner_bot' ? 'contained' : 'outlined'}
                                         sx={botId === 'corner_bot'
                                             ? { bgcolor: '#4db6ac', color: '#000' }

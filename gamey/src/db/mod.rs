@@ -67,12 +67,7 @@ pub async fn list_recent_games(
     while let Some(doc) = cursor.try_next().await? {
         games.push(doc);
     }
-    games.sort_by_key(|g| g.timestamp);
-    games.reverse();
-    if games.len() as i64 > limit {
-        games.truncate(limit as usize);
-    }
-    Ok(games)
+    Ok(sort_and_truncate(games, limit))
 }
 
 /// Generic function to save a document to a specific collection.
@@ -80,4 +75,83 @@ pub async fn save_document(db: &Database, collection_name: &str, doc: Document) 
     let collection = db.collection::<Document>(collection_name);
     collection.insert_one(doc).await?;
     Ok(())
+}
+
+fn sort_and_truncate(mut games: Vec<GameRecord>, limit: i64) -> Vec<GameRecord> {
+    games.sort_by_key(|g| g.timestamp);
+    games.reverse();
+    if limit >= 0 && games.len() as i64 > limit {
+        games.truncate(limit as usize);
+    }
+    games
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_record(ts: i64, winner: Option<&str>) -> GameRecord {
+        GameRecord {
+            winner: winner.map(|w| w.to_string()),
+            board_size: 7,
+            moves_count: 10,
+            timestamp: ts,
+            duration_seconds: 30,
+        }
+    }
+
+    #[test]
+    fn sort_and_truncate_keeps_order_desc_by_timestamp() {
+        let r1 = make_record(100, Some("A"));
+        let r2 = make_record(200, Some("B"));
+        let r3 = make_record(150, Some("C"));
+
+        let sorted = sort_and_truncate(vec![r1, r2, r3], 10);
+
+        assert_eq!(sorted.len(), 3);
+        assert!(sorted[0].timestamp >= sorted[1].timestamp);
+        assert!(sorted[1].timestamp >= sorted[2].timestamp);
+    }
+
+    #[test]
+    fn sort_and_truncate_applies_limit() {
+        let r1 = make_record(100, None);
+        let r2 = make_record(200, None);
+        let r3 = make_record(300, None);
+
+        let limited = sort_and_truncate(vec![r1, r2, r3], 2);
+
+        assert_eq!(limited.len(), 2);
+        assert!(limited[0].timestamp >= limited[1].timestamp);
+    }
+
+    #[test]
+    fn sort_and_truncate_with_negative_limit_keeps_all() {
+        let r1 = make_record(100, None);
+        let r2 = make_record(200, None);
+
+        let all = sort_and_truncate(vec![r1, r2], -1);
+
+        assert_eq!(all.len(), 2);
+    }
+
+    #[test]
+    fn game_record_serde_roundtrip() {
+        let original = GameRecord {
+            winner: Some("Player 1".to_string()),
+            board_size: 9,
+            moves_count: 42,
+            timestamp: 1_700_000_000,
+            duration_seconds: 120,
+        };
+
+        let json = serde_json::to_string(&original).unwrap();
+        let restored: GameRecord = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(restored.winner, original.winner);
+        assert_eq!(restored.board_size, original.board_size);
+        assert_eq!(restored.moves_count, original.moves_count);
+        assert_eq!(restored.timestamp, original.timestamp);
+        assert_eq!(restored.duration_seconds, original.duration_seconds);
+    }
 }

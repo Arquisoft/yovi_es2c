@@ -8,11 +8,13 @@
 //! - [`RandomBot`] - A simple bot that makes random valid moves
 
 pub mod random;
+pub mod blocker_bot;
 pub mod positional_bots;
 pub mod side_bot;
 pub mod ybot;
 pub mod ybot_registry;
 pub use random::*;
+pub use blocker_bot::*;
 pub use positional_bots::*;
 pub use side_bot::*;
 pub use ybot::*;

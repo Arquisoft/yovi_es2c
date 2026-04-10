@@ -5,7 +5,8 @@
  * Covers both the bot-choose endpoint and the new game-move endpoint.
  */
 
-const GAMEY_URL = import.meta.env.VITE_GAMEY_URL ?? "http://{{ secrets.DEPLOY_HOST }}:4000";
+// Default to localhost for local development; production should override via VITE_GAMEY_URL.
+const GAMEY_URL = import.meta.env.VITE_GAMEY_URL ?? "http://localhost:4000";
 const API_VERSION = "v1";
 const MIN_BOARD_SIZE = 5;
 

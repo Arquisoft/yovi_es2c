@@ -46,6 +46,7 @@ type BotId =
     | 'side_bot'
     | 'side_bot_hard'
     | 'blocker_bot'
+    | 'bridge_bot'
     | 'center_bot'
     | 'corner_bot';
 
@@ -318,6 +319,15 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                             ? { bgcolor: '#ffd54f', color: '#000' }
                                             : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
                                         Bot bloqueador
+                                    </Button>
+                                    <Button
+                                        onClick={() => setBotId('bridge_bot')}
+                                        disabled={lockBotMatchSettings}
+                                        variant={botId === 'bridge_bot' ? 'contained' : 'outlined'}
+                                        sx={botId === 'bridge_bot'
+                                            ? { bgcolor: '#81c784', color: '#000' }
+                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
+                                        Bot puente
                                     </Button>
                                     <Button
                                         onClick={() => setBotId('center_bot')}

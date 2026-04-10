@@ -28,7 +28,7 @@ pub use error::ErrorResponse;
 pub use version::*;
 
 use crate::{
-    BlockerBot, CenterBot, CornerBot, GameYError, RandomBot, SideBot, SideBotHard, YBotRegistry,
+    BlockerBot, BridgeBot, CenterBot, CornerBot, GameYError, RandomBot, SideBot, SideBotHard, YBotRegistry,
     state::AppState,
 };
 use axum::response::IntoResponse;
@@ -62,6 +62,7 @@ pub fn create_default_state() -> AppState {
         .with_bot(Arc::new(CenterBot))
         .with_bot(Arc::new(CornerBot))
         .with_bot(Arc::new(BlockerBot))
+        .with_bot(Arc::new(BridgeBot))
         .with_bot(Arc::new(RandomBot))
         .with_bot(Arc::new(SideBot))
         .with_bot(Arc::new(SideBotHard));

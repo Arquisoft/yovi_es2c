@@ -7,7 +7,7 @@
 //! - Server: Run as an HTTP server for bot API
 
 use crate::{
-    BlockerBot, CenterBot, Coordinates, CornerBot, GameAction, Movement, RandomBot, RenderOptions,
+    BlockerBot, BridgeBot, CenterBot, Coordinates, CornerBot, GameAction, Movement, RandomBot, RenderOptions,
     SideBot, SideBotHard, YBot, YBotRegistry, game, db,
 };
 use crate::{GameStatus, GameY, PlayerId};
@@ -76,6 +76,7 @@ pub async fn run_cli_game() -> Result<()> {
         .with_bot(Arc::new(CenterBot))
         .with_bot(Arc::new(CornerBot))
         .with_bot(Arc::new(BlockerBot))
+        .with_bot(Arc::new(BridgeBot))
         .with_bot(Arc::new(RandomBot))
         .with_bot(Arc::new(SideBot))
         .with_bot(Arc::new(SideBotHard));

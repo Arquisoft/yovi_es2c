@@ -58,7 +58,6 @@
         <version>${gatling.plugin.version}</version>
         <configuration>
           <simulationsFolder>${project.basedir}/src/test/scala</simulationsFolder>
-          <simulationClass>io.gatling.demo.RecordedSimulation</simulationClass>
         </configuration>
       </plugin>
     </plugins>

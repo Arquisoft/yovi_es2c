@@ -18,6 +18,7 @@ pub mod game_move;
 pub mod history;
 pub mod state;
 pub mod version;
+pub mod session;
 
 use axum::http::Method;
 use std::sync::Arc;
@@ -35,7 +36,6 @@ use axum::response::IntoResponse;
 
 /// Creates the Axum router with all routes and CORS middleware.
 pub fn create_router(state: AppState) -> axum::Router {
-    // Allow the webapp origin to call the gamey server
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods([Method::GET, Method::POST, Method::OPTIONS])
@@ -51,6 +51,18 @@ pub fn create_router(state: AppState) -> axum::Router {
         .route(
             "/{api_version}/game/history",
             axum::routing::get(history::history),
+        )
+        .route(
+            "/{api_version}/game/session",
+            axum::routing::post(session::create_session),
+        )
+        .route(
+            "/{api_version}/game/session/{session_id}",
+            axum::routing::get(session::get_session),
+        )
+        .route(
+            "/{api_version}/game/session/{session_id}/move",
+            axum::routing::post(session::session_move),
         )
         .with_state(state)
         .layer(cors)

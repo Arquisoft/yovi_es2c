@@ -86,6 +86,64 @@ fn sort_and_truncate(mut games: Vec<GameRecord>, limit: i64) -> Vec<GameRecord> 
     games
 }
 
+//Para la API
+use uuid::Uuid;
+
+/// A game session between an external bot and an internal bot.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SessionRecord {
+    /// Unique session identifier.
+    pub session_id: String,
+    /// Current game state in YEN format (serialized as JSON string).
+    pub yen_json: String,
+    /// Which player (0 or 1) the external bot controls.
+    pub external_player: u32,
+    /// Which internal bot to play against.
+    pub internal_bot_id: String,
+    /// "ongoing" or "finished".
+    pub status: String,
+    /// Winner player id if finished.
+    pub winner: Option<u32>,
+    /// Unix timestamp when the session was created.
+    pub created_at: i64,
+}
+
+/// Creates a new session in the database and returns its ID.
+pub async fn create_session(db: &Database, record: SessionRecord) -> mongodb::error::Result<String> {
+    let collection = db.collection::<SessionRecord>("sessions");
+    collection.insert_one(record.clone()).await?;
+    Ok(record.session_id)
+}
+
+/// Retrieves a session by its ID.
+pub async fn get_session(db: &Database, session_id: &str) -> mongodb::error::Result<Option<SessionRecord>> {
+    let collection = db.collection::<SessionRecord>("sessions");
+    let result = collection.find_one(doc! { "session_id": session_id }).await?;
+    Ok(result)
+}
+
+/// Updates an existing session.
+pub async fn update_session(db: &Database, record: &SessionRecord) -> mongodb::error::Result<()> {
+    let collection = db.collection::<SessionRecord>("sessions");
+    let yen_json = record.yen_json.clone();
+    let status = record.status.clone();
+    let winner = record.winner;
+    collection.update_one(
+        doc! { "session_id": &record.session_id },
+        doc! { "$set": {
+            "yen_json": yen_json,
+            "status": status,
+            "winner": winner.map(|w| w as i64),
+        }},
+    ).await?;
+    Ok(())
+}
+
+/// Generates a new unique session ID.
+pub fn new_session_id() -> String {
+    Uuid::new_v4().to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -154,4 +212,6 @@ mod tests {
         assert_eq!(restored.timestamp, original.timestamp);
         assert_eq!(restored.duration_seconds, original.duration_seconds);
     }
+
+
 }

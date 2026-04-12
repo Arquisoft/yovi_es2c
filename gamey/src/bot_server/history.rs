@@ -49,3 +49,38 @@ pub async fn history(
     }))
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::extract::Path;
+
+    #[test]
+    fn history_response_serialization() {
+        let game = HistoryGame {
+            winner: Some("Alice".to_string()),
+            board_size: 7,
+            moves_count: 42,
+            timestamp: 1_700_000_000,
+            duration_seconds: 120,
+        };
+
+        let response = HistoryResponse {
+            api_version: "v1".to_string(),
+            games: vec![game],
+        };
+
+        let json = serde_json::to_string(&response).unwrap();
+        assert!(json.contains("\"api_version\":\"v1\""));
+        assert!(json.contains("\"winner\":\"Alice\""));
+        assert!(json.contains("\"board_size\":7"));
+        assert!(json.contains("\"moves_count\":42"));
+        assert!(json.contains("\"duration_seconds\":120"));
+    }
+
+    #[tokio::test]
+    async fn history_rejects_invalid_version() {
+        let result = history(Path("v0".to_string())).await;
+        assert!(result.is_err());
+    }
+}
+

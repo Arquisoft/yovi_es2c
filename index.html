@@ -468,9 +468,9 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#section-solution-strategy">4. Solution Strategy</a>
 <ul class="sectlevel2">
-<li><a href="#_resumen_de_decisiones_arquitectonicas">4.1. Resumen de decisiones arquitectonicas</a></li>
-<li><a href="#_decisiones_tecnologicas_clave">4.2. Decisiones tecnologicas clave</a></li>
-<li><a href="#_descomposicion_y_patron_arquitectonico">4.3. Descomposicion y patron arquitectonico</a></li>
+<li><a href="#_resumen_de_decisiones_arquitectónicas">4.1. Resumen de decisiones arquitectónicas</a></li>
+<li><a href="#_decisiones_tecnológicas_clave">4.2. Decisiones tecnológicas clave</a></li>
+<li><a href="#_descomposición_y_patrón_arquitectónico">4.3. Descomposición y patrón arquitectónico</a></li>
 <li><a href="#_estrategias_para_alcanzar_los_objetivos_de_calidad">4.4. Estrategias para alcanzar los objetivos de calidad</a></li>
 <li><a href="#_decisiones_organizativas_y_de_desarrollo">4.5. Decisiones organizativas y de desarrollo</a></li>
 </ul>
@@ -497,9 +497,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#section-concepts">8. Cross-cutting Concepts</a>
 <ul class="sectlevel2">
-<li><a href="#_concept_1">8.1. <em>&lt;Concept 1&gt;</em></a></li>
-<li><a href="#_concept_2">8.2. <em>&lt;Concept 2&gt;</em></a></li>
-<li><a href="#_concept_n">8.3. <em>&lt;Concept n&gt;</em></a></li>
+<li><a href="#_domain_model">8.1. Domain Model</a></li>
+<li><a href="#_architecture_pattern_microservices">8.2. Architecture Pattern: Microservices</a></li>
+<li><a href="#_api_design_rest_con_versionado">8.3. API Design: REST con versionado</a></li>
+<li><a href="#_security_autenticación_y_almacenamiento_de_contraseñas">8.4. Security: Autenticación y almacenamiento de contraseñas</a></li>
+<li><a href="#_observability_métricas_y_monitorización">8.5. Observability: Métricas y monitorización</a></li>
+<li><a href="#_persistence_acceso_a_mongodb">8.6. Persistence: Acceso a MongoDB</a></li>
+<li><a href="#_frontend_architecture_single_page_application">8.7. Frontend Architecture: Single Page Application</a></li>
+<li><a href="#_bot_architecture_registry_pattern">8.8. Bot Architecture: Registry Pattern</a></li>
+<li><a href="#_testing_strategy">8.9. Testing Strategy</a></li>
+<li><a href="#_error_handling">8.10. Error Handling</a></li>
 </ul>
 </li>
 <li><a href="#section-design-decisions">9. Architecture Decisions</a>
@@ -519,7 +526,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_quality_scenarios">10.2. Quality Scenarios</a></li>
 </ul>
 </li>
-<li><a href="#section-technical-risks">11. Risks and Technical Debts</a></li>
+<li><a href="#section-technical-risks">11. Risks and Technical Debts</a>
+<ul class="sectlevel2">
+<li><a href="#_seguimiento_y_revisión">11.1. Seguimiento y revisión</a></li>
+</ul>
+</li>
 <li><a href="#section-glossary">12. Glossary</a></li>
 </ul>
 </div>
@@ -944,24 +955,18 @@ conventions (e.g. programming or versioning guidelines, documentation or naming 
 <h2 id="section-context-and-scope">3. Context and Scope</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Esta sección describe el contexto del sistema YOVI: su entorno,
-los actores externos con los que interactúa y las interfaces que delimitan
-su alcance.</p>
+<p>Esta seccion describe el contexto del sistema YOVI: su entorno, los actores externos con los que interactua y las interfaces que delimitan su alcance.</p>
 </div>
 <div class="paragraph">
-<p>A diferencia de <strong>Introduction and Goals</strong>, aquí no se detallan requisitos
-ni objetivos de calidad, sino las fronteras del sistema y su relación con el entorno.</p>
+<p>A diferencia de <strong>Introduction and Goals</strong>, aqui no se detallan requisitos ni objetivos de calidad, sino las fronteras del sistema y su relacion con el entorno.</p>
 </div>
 <div class="sect2">
 <h3 id="_business_context">3.1. Business Context</h3>
 <div class="paragraph">
-<p>YOVI es una plataforma web para jugar al juego de tablero Y en modo local
-(dos jugadores en la misma pantalla) o contra un bot. El sistema integra
-interfaz de usuario, autenticación básica y la lógica del motor GameY.</p>
+<p>YOVI es una plataforma web para jugar al juego de tablero Y en modo local (dos jugadores en la misma pantalla) o contra un bot. El sistema integra interfaz de usuario, autenticacion basica y la logica del motor GameY.</p>
 </div>
 <div class="paragraph">
-<p>Desde el punto de vista del negocio, YOVI se considera una <strong>caja negra</strong> que
-ofrece una experiencia de juego sencilla con registro y login.</p>
+<p>Desde el punto de vista del negocio, YOVI se considera una <strong>caja negra</strong> que ofrece una experiencia de juego sencilla con registro y login.</p>
 </div>
 <div class="paragraph">
 <p>Actores externos principales:</p>
@@ -982,39 +987,34 @@ ofrece una experiencia de juego sencilla con registro y login.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Jugador</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Credenciales (username y password), selección de modo/tamaño, movimientos</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Credenciales (username y password), seleccion de modo/tamano, movimientos</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Mensajes de login/registro, estado del tablero, resultado</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Motor GameY</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Estado del tablero en notación YEN y movimiento humano</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Estado del tablero en notacion YEN y movimiento humano</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Movimiento del bot y estado actualizado</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Base de Datos (Users)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Usuarios registrados (username + hash)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Confirmación de alta o rechazo</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Confirmacion de alta o rechazo, ranking basico (victorias/derrotas)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Base de Datos (GameY)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Resultado final de la partida (winner, board_size, etc.)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Confirmación de persistencia</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resultado final de la partida (winner, board_size, etc.) y sesiones de juego para bots</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Confirmacion de persistencia</p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
-<p>El jugador interactúa únicamente con la aplicación web.
-GameY no conoce al usuario ni a la interfaz gráfica; se limita a validar
-jugadas, calcular el movimiento del bot y devolver el nuevo estado.
-Las bases de datos almacenan usuarios y resultados finales, sin rankings ni
-estadísticas avanzadas en esta versión.</p>
+<p>El jugador interactua unicamente con la aplicacion web. GameY no conoce al usuario ni a la interfaz grafica; se limita a validar jugadas, calcular el movimiento del bot y devolver el nuevo estado. Las bases de datos almacenan usuarios y resultados finales. Existe un ranking basico (victorias/derrotas) pero no estadisticas avanzadas en esta version.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_context_diagram">3.2. Context Diagram</h3>
 <div class="paragraph">
-<p>El siguiente diagrama muestra el contexto del sistema YOVI y sus relaciones
-con los actores y sistemas externos:</p>
+<p>El siguiente diagrama muestra el contexto del sistema YOVI y sus relaciones con los actores y sistemas externos:</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -1025,8 +1025,7 @@ con los actores y sistemas externos:</p>
 <div class="sect2">
 <h3 id="_technical_context">3.3. Technical Context</h3>
 <div class="paragraph">
-<p>Desde el punto de vista técnico, el sistema se compone de tres subsistemas
-independientes que se comunican por REST con mensajes JSON.</p>
+<p>Desde el punto de vista tecnico, el sistema se compone de tres subsistemas independientes que se comunican por REST con mensajes JSON.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1036,40 +1035,39 @@ independientes que se comunican por REST con mensajes JSON.</p>
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">Comunicación</th>
+<th class="tableblock halign-left valign-top">Comunicacion</th>
 <th class="tableblock halign-left valign-top">Canal / Protocolo</th>
 <th class="tableblock halign-left valign-top">Formato</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Webapp ↔ Users Service</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Webapp &lt;&#8594; Users Service</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">HTTP REST (puerto 3000)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">JSON</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Webapp ↔ GameY</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Webapp &lt;&#8594; GameY</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">HTTP REST (puerto 4000)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JSON (notación YEN)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">JSON (notacion YEN)</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Users Service ↔ MongoDB</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Conexión directa (driver de BD)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Users Service &lt;&#8594; MongoDB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Conexion directa (driver de BD)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Documentos (users)</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GameY ↔ MongoDB</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Conexión directa (driver de BD)</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Documentos (games)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GameY &lt;&#8594; MongoDB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Conexion directa (driver de BD)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Documentos (games, sessions)</p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
-<p>La webapp corre en el navegador y es el punto de entrada único.
-Los servicios backend no exponen interfaz gráfica y se consumen por API.</p>
+<p>La webapp corre en el navegador y es el punto de entrada unico. Los servicios backend no exponen interfaz grafica y se consumen por API.</p>
 </div>
 <div class="paragraph">
-<p>Endpoints de GameY:</p>
+<p>Endpoints de GameY (API versionada, p.ej. <code>v1</code>):</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -1084,16 +1082,32 @@ Los servicios backend no exponen interfaz gráfica y se consumen por API.</p>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/status</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GET /status</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Health check del servicio</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/v1/ybot/choose/{bot_id}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">POST /v1/ybot/choose/{bot_id}</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Devuelve la jugada del bot</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">/v1/game/move</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">POST /v1/game/move</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Aplica una jugada humana y devuelve el nuevo estado</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GET /v1/game/history</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Devuelve el historico de movimientos de una partida (si aplica segun modo)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">POST /v1/game/session</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Crea una sesion de juego para integracion con bots externos</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GET /v1/game/session/{session_id}</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Recupera el estado actual de una sesion</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">POST /v1/game/session/{session_id}/move</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aplica un movimiento en una sesion y devuelve el estado actualizado</p></td>
 </tr>
 </tbody>
 </table>
@@ -1130,8 +1144,7 @@ Los servicios backend no exponen interfaz gráfica y se consumen por API.</p>
 <div class="sect2">
 <h3 id="_scope_alcance">3.4. Scope (Alcance)</h3>
 <div class="paragraph">
-<p>El alcance de esta entrega es una <strong>prueba de concepto funcional</strong>
-para validar arquitectura e integración entre subsistemas.</p>
+<p>El alcance de esta entrega es una <strong>prueba de concepto funcional</strong> para validar arquitectura e integracion entre subsistemas.</p>
 </div>
 <div class="paragraph">
 <p><strong>Dentro del alcance:</strong></p>
@@ -1139,22 +1152,28 @@ para validar arquitectura e integración entre subsistemas.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Registro y login con validación básica (usuarios guardados como username + hash).</p>
+<p>Registro y login con validacion basica (usuarios guardados como username + hash).</p>
 </li>
 <li>
 <p>Modo local y modo contra bot.</p>
 </li>
 <li>
-<p>Selección de tamaño de tablero y variante (standard / why_not).</p>
+<p>Seleccion de tamano de tablero y variante (standard / why_not).</p>
 </li>
 <li>
-<p>Comunicación funcional Webapp ↔ Users Service y Webapp ↔ GameY.</p>
+<p>Comunicacion funcional Webapp &lt;&#8594; Users Service y Webapp &lt;&#8594; GameY.</p>
 </li>
 <li>
-<p>Almacenamiento en BD del <strong>resultado final de la partida</strong> (persistido por GameY).</p>
+<p>Almacenamiento en BD del resultado final de la partida (persistido por GameY).</p>
 </li>
 <li>
-<p>Aplicación accesible vía web.</p>
+<p>Registro de resultados y ranking basico (victorias/derrotas) en Users Service.</p>
+</li>
+<li>
+<p>API de sesiones para permitir integracion de bots externos con GameY.</p>
+</li>
+<li>
+<p>Aplicacion accesible via web.</p>
 </li>
 </ul>
 </div>
@@ -1164,13 +1183,13 @@ para validar arquitectura e integración entre subsistemas.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>Rankings y estadísticas agregadas.</p>
+<p>Estadisticas avanzadas (ELO, rachas, filtros por variante/tamano, etc.) y rankings complejos.</p>
 </li>
 <li>
-<p>Histórico completo de movimientos y replays.</p>
+<p>Replays completos con UI dedicada y exportacion/comparticion.</p>
 </li>
 <li>
-<p>Múltiples niveles de dificultad del bot.</p>
+<p>Multiples niveles de dificultad del bot (p.ej. busqueda, heuristicas avanzadas, aprendizaje).</p>
 </li>
 <li>
 <p>Multijugador en red entre personas.</p>
@@ -1178,8 +1197,7 @@ para validar arquitectura e integración entre subsistemas.</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>Este alcance permite demostrar la viabilidad técnica y servir como base
-para futuras extensiones.</p>
+<p>Este alcance permite demostrar la viabilidad tecnica y servir como base para futuras extensiones.</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -1230,13 +1248,13 @@ Refer to details in the following sections.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>La estrategia de solucion de YOVI prioriza una arquitectura sencilla, modular y facil de evolucionar. La idea principal es separar claramente la interfaz de usuario, la gestion de usuarios y la logica del juego, de forma que cada parte pueda desarrollarse, probarse y desplegarse con bajo acoplamiento.</p>
+<p>La estrategia de solución de YOVI prioriza una arquitectura sencilla, modular y fácil de evolucionar. La idea central es separar claramente la interfaz de usuario, la gestión de usuarios y la lógica del juego para que cada parte pueda desarrollarse, probarse y desplegarse con bajo acoplamiento.</p>
 </div>
 <div class="paragraph">
-<p>Esta decision responde a los objetivos de calidad definidos para el proyecto: una experiencia de uso directa para el jugador, tiempos de respuesta bajos en las operaciones del motor, facilidad para introducir cambios en nuevas funcionalidades y una base tecnica suficientemente flexible para crecer sin redisenar el sistema por completo.</p>
+<p>Esta decisión responde a los objetivos de calidad del proyecto: una experiencia directa para el jugador, tiempos de respuesta bajos en el motor, facilidad para introducir nuevas funcionalidades y una base técnica lo bastante flexible para crecer sin rediseñar el sistema.</p>
 </div>
 <div class="sect2">
-<h3 id="_resumen_de_decisiones_arquitectonicas">4.1. Resumen de decisiones arquitectonicas</h3>
+<h3 id="_resumen_de_decisiones_arquitectónicas">4.1. Resumen de decisiones arquitectónicas</h3>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
 <col style="width: 22.2222%;">
@@ -1245,87 +1263,87 @@ Refer to details in the following sections.</p>
 </colgroup>
 <thead>
 <tr>
-<th class="tableblock halign-left valign-top">Decision</th>
-<th class="tableblock halign-left valign-top">Motivacion</th>
+<th class="tableblock halign-left valign-top">Decisión</th>
+<th class="tableblock halign-left valign-top">Motivación</th>
 <th class="tableblock halign-left valign-top">Impacto esperado</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Separar interfaz, usuarios y motor de juego en subsistemas independientes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Evitar acoplamiento excesivo entre presentacion, gestion de cuentas y reglas del dominio</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Mejora la mantenibilidad y facilita el despliegue y evolucion independientes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Evitar acoplamiento excesivo entre presentación, gestión de cuentas y reglas del dominio</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mejora la mantenibilidad y facilita el despliegue y la evolución independientes</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Implementar la webapp con React, Vite y TypeScript</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Necesidad de una interfaz rapida de desarrollar, con buena experiencia interactiva y menor riesgo de errores de integracion</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Necesidad de una interfaz rápida de desarrollar, con buena experiencia interactiva y menor riesgo de errores de integración</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Mayor productividad en frontend y mejor robustez en el contrato con las APIs</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Implementar el servicio de usuarios con Node.js y Express</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Resolver de forma sencilla la autenticacion y la exposicion de una API REST</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Backend ligero, comprensible y facil de integrar con la webapp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Resolver de forma sencilla la autenticación y la exposición de una API REST</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Backend ligero, comprensible y fácil de integrar con la webapp</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Implementar GameY en Rust</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Aislar la logica critica del juego en un componente eficiente y fiable</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Mejor rendimiento y menor probabilidad de errores en la validacion de reglas</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aislar la lógica crítica del juego en un componente eficiente y fiable</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Mejor rendimiento y menor probabilidad de errores en la validación de reglas</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Comunicar subsistemas mediante HTTP/REST y JSON</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Usar un contrato simple, interoperable y facil de depurar</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Menor acoplamiento tecnico y facilidad para probar integraciones</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usar un contrato simple, interoperable y fácil de depurar</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Menor acoplamiento técnico y facilidad para probar integraciones</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Representar tableros con notacion YEN</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Disponer de un formato comun y compacto para intercambiar estados del juego</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Homogeneidad en la comunicacion entre cliente y motor</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Representar tableros con notación YEN</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Disponer de un formato común y compacto para intercambiar estados del juego</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Homogeneidad en la comunicación entre cliente y motor</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Desplegar el sistema con Docker Compose</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Reducir diferencias entre entornos de desarrollo, prueba y demostracion</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Ejecucion reproducible y puesta en marcha mas simple para el equipo</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reducir diferencias entre entornos de desarrollo, prueba y demostración</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ejecución reproducible y puesta en marcha más simple para el equipo</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <div class="sect2">
-<h3 id="_decisiones_tecnologicas_clave">4.2. Decisiones tecnologicas clave</h3>
+<h3 id="_decisiones_tecnológicas_clave">4.2. Decisiones tecnológicas clave</h3>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Webapp con React, Vite y TypeScript.</strong> Se elige una SPA ligera para ofrecer una interfaz rapida, con recarga agil durante el desarrollo y tipado estatico para reducir errores en la integracion con los servicios.</p>
+<p><strong>Webapp con React, Vite y TypeScript.</strong> Se elige una SPA ligera para ofrecer una interfaz rápida, con recarga ágil durante el desarrollo y tipado estático para reducir errores en la integración con los servicios.</p>
 </li>
 <li>
-<p><strong>Servicio de usuarios con Node.js y Express.</strong> Esta tecnologia permite implementar una API REST pequena y comprensible, adecuada para operaciones CRUD, autenticacion basica e integracion rapida con la webapp.</p>
+<p><strong>Servicio de usuarios con Node.js y Express.</strong> Esta tecnología permite implementar una API REST pequeña y comprensible, adecuada para operaciones CRUD, autenticación básica e integración rápida con la webapp.</p>
 </li>
 <li>
-<p><strong>Motor de juego en Rust.</strong> La logica de validacion de partidas y calculo de movimientos se aisla en un componente de alto rendimiento y comportamiento predecible, reduciendo el riesgo de errores en la parte mas sensible del dominio.</p>
+<p><strong>Motor de juego en Rust.</strong> La lógica de validación de partidas y cálculo de movimientos se aísla en un componente de alto rendimiento y comportamiento predecible, reduciendo el riesgo de errores en la parte más sensible del dominio.</p>
 </li>
 <li>
-<p><strong>Intercambio de datos mediante JSON y notacion YEN.</strong> Se adopta un formato legible, portable y facil de depurar, que simplifica la comunicacion entre subsistemas y desacopla las implementaciones internas.</p>
+<p><strong>Intercambio de datos mediante JSON y notación YEN.</strong> Se adopta un formato legible, portable y fácil de depurar, que simplifica la comunicación entre subsistemas y desacopla las implementaciones internas.</p>
 </li>
 <li>
 <p><strong>Despliegue local con Docker Compose.</strong> Se busca reproducibilidad del entorno y facilidad de puesta en marcha para desarrollo, pruebas y demostraciones.</p>
 </li>
 <li>
-<p><strong>Observabilidad basica con Prometheus y Grafana.</strong> Se introduce una base minima para inspeccionar el estado del sistema y detectar problemas de rendimiento o disponibilidad.</p>
+<p><strong>Observabilidad básica con Prometheus y Grafana.</strong> Se introduce una base mínima para inspeccionar el estado del sistema y detectar problemas de rendimiento o disponibilidad.</p>
 </li>
 </ul>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_descomposicion_y_patron_arquitectonico">4.3. Descomposicion y patron arquitectonico</h3>
+<h3 id="_descomposición_y_patrón_arquitectónico">4.3. Descomposición y patrón arquitectónico</h3>
 <div class="paragraph">
-<p>YOVI sigue una descomposicion por subsistemas con responsabilidades claras:</p>
+<p>YOVI sigue una descomposición por subsistemas con responsabilidades bien definidas:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Webapp</strong>: punto de entrada del usuario, gestion de vistas, interaccion de juego y consumo de APIs.</p>
+<p><strong>Webapp</strong>: punto de entrada del usuario, gestión de vistas, interacción de juego y consumo de APIs.</p>
 </li>
 <li>
-<p><strong>Users service</strong>: gestion de registro, autenticacion y persistencia de informacion de usuarios.</p>
+<p><strong>Users service</strong>: gestión de registro, autenticación y persistencia de información de usuarios.</p>
 </li>
 <li>
 <p><strong>GameY</strong>: motor encargado de aplicar reglas, validar estados y calcular jugadas.</p>
@@ -1333,10 +1351,10 @@ Refer to details in the following sections.</p>
 </ul>
 </div>
 <div class="paragraph">
-<p>La comunicacion entre componentes se realiza mediante HTTP/REST y mensajes JSON. Esta estrategia favorece el desacoplamiento, hace visibles los contratos entre modulos y permite sustituir o evolucionar un subsistema sin afectar de forma directa a los demas mientras se mantenga la interfaz publica.</p>
+<p>La comunicación entre componentes se realiza mediante HTTP/REST y mensajes JSON. Esta estrategia favorece el desacoplamiento, hace visibles los contratos entre módulos y permite sustituir o evolucionar un subsistema sin afectar directamente a los demás mientras se mantenga la interfaz pública.</p>
 </div>
 <div class="paragraph">
-<p>Ademas, la persistencia se delega en los servicios backend en lugar de en la interfaz. Con ello, la webapp queda centrada en la experiencia de usuario y la logica de negocio permanece en los componentes que pueden validarla y protegerla mejor.</p>
+<p>Además, la persistencia se delega en los servicios backend en lugar de en la interfaz. Con ello, la webapp se centra en la experiencia de usuario y la lógica de negocio permanece en los componentes que pueden validarla y protegerla mejor.</p>
 </div>
 </div>
 <div class="sect2">
@@ -1344,19 +1362,19 @@ Refer to details in the following sections.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Usabilidad.</strong> La webapp concentra todo el flujo de interaccion en una unica entrada, con navegacion sencilla y operaciones directas para registrarse, iniciar sesion y jugar.</p>
+<p><strong>Usabilidad.</strong> La webapp concentra el flujo de interacción en una única entrada, con navegación sencilla y operaciones directas para registrarse, iniciar sesión y jugar.</p>
 </li>
 <li>
-<p><strong>Rendimiento.</strong> La logica computacional del juego se concentra en Rust y se expone mediante endpoints pequenos, minimizando procesamiento innecesario en la capa web.</p>
+<p><strong>Rendimiento.</strong> La lógica computacional del juego se concentra en Rust y se expone mediante endpoints pequeños, minimizando procesamiento innecesario en la capa web.</p>
 </li>
 <li>
-<p><strong>Mantenibilidad.</strong> La separacion por responsabilidades evita mezclar interfaz, autenticacion y reglas del juego, lo que facilita localizar cambios y ampliar el sistema.</p>
+<p><strong>Mantenibilidad.</strong> La separación por responsabilidades evita mezclar interfaz, autenticación y reglas del juego, lo que facilita localizar cambios y ampliar el sistema.</p>
 </li>
 <li>
-<p><strong>Escalabilidad.</strong> La independencia de despliegue permite dimensionar por separado los subsistemas que reciban mas carga, especialmente el motor de juego o los servicios de usuario.</p>
+<p><strong>Escalabilidad.</strong> La independencia de despliegue permite dimensionar por separado los subsistemas con mayor carga, especialmente el motor de juego o los servicios de usuario.</p>
 </li>
 <li>
-<p><strong>Fiabilidad.</strong> La validacion de reglas se centraliza en un unico motor, evitando inconsistencias derivadas de duplicar logica entre cliente y servidor.</p>
+<p><strong>Fiabilidad.</strong> La validación de reglas se centraliza en un único motor, evitando inconsistencias derivadas de duplicar lógica entre cliente y servidor.</p>
 </li>
 </ul>
 </div>
@@ -1366,16 +1384,16 @@ Refer to details in the following sections.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Mono-repo por subsistemas.</strong> El repositorio agrupa codigo y documentacion en una unica estructura, lo que simplifica la coordinacion del equipo y la trazabilidad entre decisiones de arquitectura e implementacion.</p>
+<p><strong>Mono-repo por subsistemas.</strong> El repositorio agrupa código y documentación en una única estructura, lo que simplifica la coordinación del equipo y la trazabilidad entre decisiones de arquitectura e implementación.</p>
 </li>
 <li>
-<p><strong>Documentacion arc42.</strong> Se utiliza una estructura documental estandar para justificar decisiones y mantener alineados requisitos, contexto, estrategia y despliegue.</p>
+<p><strong>Documentación arc42.</strong> Se utiliza una estructura documental estándar para justificar decisiones y mantener alineados requisitos, contexto, estrategia y despliegue.</p>
 </li>
 <li>
-<p><strong>Integracion continua y pruebas automatizadas.</strong> La estrategia de desarrollo busca validar cambios de forma temprana mediante builds, tests y comprobaciones de integracion.</p>
+<p><strong>Integración continua y pruebas automatizadas.</strong> La estrategia de desarrollo busca validar cambios de forma temprana mediante builds, tests y comprobaciones de integración.</p>
 </li>
 <li>
-<p><strong>Contenerizacion como base comun de trabajo.</strong> Todos los miembros del equipo comparten una forma consistente de ejecutar el sistema, reduciendo diferencias entre entornos.</p>
+<p><strong>Contenerización como base común de trabajo.</strong> Todos los miembros del equipo comparten una forma consistente de ejecutar el sistema, reduciendo diferencias entre entornos.</p>
 </li>
 </ul>
 </div>
@@ -1400,9 +1418,7 @@ Refer to details in the following sections.</p>
 <dl>
 <dt class="hdlist1">Motivation</dt>
 <dd>
-<p>La descomposición separa claramente interfaz, servicios y persistencia.
-Esto facilita mantener el sistema, probar cada parte por separado y evolucionar
-cada bloque sin afectar al resto.</p>
+<p>La descomposicion separa claramente interfaz, servicios y persistencia. Esto facilita mantener el sistema, probar cada parte por separado y evolucionar cada bloque sin afectar al resto.</p>
 </dd>
 <dt class="hdlist1">Contained Building Blocks</dt>
 </dl>
@@ -1421,19 +1437,19 @@ cada bloque sin afectar al resto.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Webapp</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Aplicación SPA. Gestiona pantallas, estado de juego en cliente y coordinación de llamadas a APIs.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aplicacion SPA. Gestiona pantallas, estado de juego en cliente y coordinacion de llamadas a APIs.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Users Service</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Servicio de autenticación. Registra usuarios, valida credenciales y devuelve respuestas de login/registro.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Servicio de autenticacion y ranking basico. Registra usuarios, valida credenciales, registra resultados (victorias/derrotas) y expone el ranking.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">GameY Engine</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Motor del juego Y. Aplica reglas, valida jugadas y ofrece endpoints de bot y movimiento.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Motor del juego Y. Aplica reglas, valida jugadas y expone endpoints de bot, movimiento humano, historico y sesiones para integracion con bots externos.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MongoDB</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Persistencia común con dos colecciones: <code>users</code> (usuarios) y <code>games</code> (resultados de partidas).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Persistencia comun con colecciones: <code>users</code> (usuarios), <code>games</code> (resultados de partidas) y <code>sessions</code> (sesiones de juego para la API).</p></td>
 </tr>
 </tbody>
 </table>
@@ -1462,8 +1478,7 @@ cada bloque sin afectar al resto.</p>
 <dl>
 <dt class="hdlist1">Responsibility</dt>
 <dd>
-<p>Controla el flujo de usuario (inicio → menú → partida), renderiza el tablero
-y coordina la comunicación con los servicios.</p>
+<p>Controla el flujo de usuario (inicio &#8594; menu &#8594; partida), renderiza el tablero y coordina la comunicacion con los servicios.</p>
 </dd>
 <dt class="hdlist1">Contained Building Blocks</dt>
 </dl>
@@ -1490,7 +1505,7 @@ y coordina la comunicación con los servicios.</p>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Menu.tsx</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Selección de modo, tamaño y variante.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Seleccion de modo, tamano y variante.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">GameBoard.tsx</p></td>
@@ -1517,8 +1532,7 @@ y coordina la comunicación con los servicios.</p>
 <dl>
 <dt class="hdlist1">Responsibility</dt>
 <dd>
-<p>API de autenticación. Verifica entradas, genera hash de contraseñas y
-persiste usuarios en MongoDB.</p>
+<p>API de autenticacion y ranking basico. Verifica entradas, genera hash de contrasenas (scrypt) para operaciones de login/registro, persiste usuarios en MongoDB y expone endpoints de ranking/resultados.</p>
 </dd>
 <dt class="hdlist1">Contained Building Blocks</dt>
 </dl>
@@ -1537,11 +1551,11 @@ persiste usuarios en MongoDB.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">users-service.js</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Endpoints <code>/register</code>, <code>/login</code>, <code>/createuser</code> y lógica principal.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Endpoints <code>/register</code>, <code>/login</code>, <code>/createuser</code>, <code>/game/result</code>, <code>/ranking</code> y logica principal.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">openapi.yaml</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Contrato de API.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Contrato de API (Swagger UI en <code>/api-docs</code>).</p></td>
 </tr>
 </tbody>
 </table>
@@ -1560,8 +1574,7 @@ persiste usuarios en MongoDB.</p>
 <dl>
 <dt class="hdlist1">Responsibility</dt>
 <dd>
-<p>Motor de reglas del juego. Recibe el estado (YEN), valida jugadas y
-devuelve el nuevo estado, además del movimiento del bot.</p>
+<p>Motor de reglas del juego. Recibe el estado (YEN), valida jugadas y devuelve el nuevo estado, ademas del movimiento del bot. Incluye endpoints para historico y sesiones de juego orientadas a la integracion con bots externos.</p>
 </dd>
 <dt class="hdlist1">Contained Building Blocks</dt>
 </dl>
@@ -1580,23 +1593,23 @@ devuelve el nuevo estado, además del movimiento del bot.</p>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">core/</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Estado del juego, reglas y validación.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Estado del juego, reglas y validacion (variantes: standard, why_not).</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">notation/</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Conversión a/desde YEN.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Conversion a/desde YEN.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">bot/</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Estrategias de bot (random).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Estrategias de bot (random, center, corner, side, side_hard, bridge, blocker). Implementadas como modulos intercambiables.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">bot_server/</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Endpoints HTTP.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Endpoints HTTP (move/choose/history/session).</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">db/</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Persistencia de resultados finales.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Persistencia de resultados finales y sesiones.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1605,7 +1618,7 @@ devuelve el nuevo estado, además del movimiento del bot.</p>
 <div class="sect2">
 <h3 id="_level_3">5.3. Level 3</h3>
 <div class="paragraph">
-<p>No se requiere más detalle en esta versión.</p>
+<p>No se requiere mas detalle en esta version.</p>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -1674,140 +1687,239 @@ devuelve el nuevo estado, además del movimiento del bot.</p>
 <div class="sect1">
 <h2 id="section-deployment-view">7. Deployment View</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
-<div class="content">
-<div class="paragraph">
-<div class="title">Content</div>
-<p>The deployment view describes:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>technical infrastructure used to execute your system, with infrastructure elements like geographical locations, environments, computers, processors, channels and net topologies as well as other infrastructure elements and</p>
-</li>
-<li>
-<p>mapping of (software) building blocks to that infrastructure elements.</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p>Often systems are executed in different environments, e.g. development environment, test environment, production environment. In such cases you should document all relevant environments.</p>
-</div>
-<div class="paragraph">
-<p>Especially document a deployment view if your software is executed as distributed system with more than one computer, processor, server or container or when you design and construct your own hardware processors and chips.</p>
-</div>
-<div class="paragraph">
-<p>From a software perspective it is sufficient to capture only those elements of an infrastructure that are needed to show a deployment of your building blocks. Hardware architects can go beyond that and describe an infrastructure to any level of detail they need to capture.</p>
-</div>
-<div class="paragraph">
-<div class="title">Motivation</div>
-<p>Software does not run without hardware.
-This underlying infrastructure can and will influence a system and/or some
-cross-cutting concepts. Therefore, there is a need to know the infrastructure.</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>Maybe a highest level deployment diagram is already contained in section 3.2. as
-technical context with your own infrastructure as ONE black box. In this section one can
-zoom into this black box using additional deployment diagrams:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>UML offers deployment diagrams to express that view. Use it, probably with nested diagrams,
-when your infrastructure is more complex.</p>
-</li>
-<li>
-<p>When your (hardware) stakeholders prefer other kinds of diagrams rather than a deployment diagram, let them use any kind that is able to show nodes and channels of the infrastructure.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-7/">Deployment View</a> in the arc42 documentation.</p>
-</div>
-</div>
-</div>
 <div class="sect2">
 <h3 id="_infrastructure_level_1">7.1. Infrastructure Level 1</h3>
-<div class="sidebarblock arc42help">
+<div class="paragraph">
+<p>El sistema se despliega en una instancia <strong>AWS EC2</strong> (Ubuntu 24.04) con una
+<strong>Elastic IP</strong> fija, usando <strong>Docker Compose</strong> para orquestar todos los
+contenedores. Las imágenes se publican automáticamente en
+<strong>GitHub Container Registry (ghcr.io)</strong> mediante GitHub Actions al crear una
+release.</p>
+</div>
+<div class="imageblock kroki">
 <div class="content">
-<div class="paragraph">
-<p>Describe (usually in a combination of diagrams, tables, and text):</p>
+<img src="https://kroki.io/plantuml/png/eNp1kr1OwzAUhXc_xVWmMjSkIVKpB6TQIjoAQm0qFhYnMWkgsaPYFkWo747_0nYInpz73eNzdBTGSwpB-raFh2UMk12umFQQJ2GUXAXwi0AfZndWvPiiPSx523FBB2ZOYUaMMgnBN81J172zCatqdsC3kX6ECHDjMYEStBd6_0V7hJ8C30SR11gyJqlIS3-0ZKOEvE4PqsXJSWTZmKjlrOJlrmX2huN5NJs7jUdjqq7nLZV7qkxEvIgW3uY8Hw3Ykw_CiJfMfDI3tPtHdESoaLgqIXg27qt7SGVDhN0k5jbgx1quVa5bZ5LUTPe_oVUtZG8KqPZFH9bcv68_EHJFw3R65_oDDOssewXb6yW1RZ2oKRA5gYE2gYbZ0xZcU8jt_we1t2XeAEPpfpZONc2ZDolG4RDoEv4B8CrLEA==" alt="deployment-level1">
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>distribution of a system to multiple locations, environments, computers, processors, .., as well as physical connections between them</p>
-</li>
-<li>
-<p>important justifications or motivations for this deployment structure</p>
-</li>
-<li>
-<p>quality and/or performance features of this infrastructure</p>
-</li>
-<li>
-<p>mapping of software artifacts to elements of this infrastructure</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>For multiple environments or alternative deployments please copy and adapt this section of arc42 for all relevant environments.</p>
-</div>
-</div>
-</div>
-<div class="paragraph">
-<p><em><strong>&lt;Overview Diagram&gt;</strong></em></p>
 </div>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Motivation</dt>
 <dd>
-<p><em>&lt;explanation in text form&gt;</em></p>
+<p>Se eligió AWS EC2 porque proporciona una máquina virtual con IP pública
+configurable. La Elastic IP garantiza que la dirección no cambia al reiniciar
+la instancia, lo que evita tener que actualizar los secrets de GitHub Actions
+y reconstruir las imágenes cada vez. Docker Compose simplifica el despliegue
+al gestionar todos los servicios como una unidad.</p>
 </dd>
 <dt class="hdlist1">Quality and/or Performance Features</dt>
 <dd>
-<p><em>&lt;explanation in text form&gt;</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Disponibilidad</strong>: los contenedores se configuran con <code>restart: always</code>
+para que arranquen automáticamente si la instancia se reinicia.</p>
+</li>
+<li>
+<p><strong>Seguridad</strong>: las contraseñas y URIs sensibles se inyectan como variables
+de entorno en tiempo de ejecución, nunca se incluyen en las imágenes.</p>
+</li>
+<li>
+<p><strong>Escalabilidad</strong>: la arquitectura de microservicios permite escalar cada
+servicio de forma independiente si fuera necesario.</p>
+</li>
+<li>
+<p><strong>Observabilidad</strong>: Prometheus recoge métricas del servicio <code>users</code> y
+Grafana las visualiza en dashboards.</p>
+</li>
+</ul>
+</div>
 </dd>
 <dt class="hdlist1">Mapping of Building Blocks to Infrastructure</dt>
-<dd>
-<p><em>&lt;description of the mapping&gt;</em></p>
-</dd>
 </dl>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 12.5%;">
+<col style="width: 37.5%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Componente</th>
+<th class="tableblock halign-left valign-top">Imagen Docker</th>
+<th class="tableblock halign-left valign-top">Puerto</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">webapp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ghcr.io/&#8230;&#8203;/yovi_es2c-webapp</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">80</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SPA React servida por nginx. Las URLs de la API se inyectan en el build
+mediante <code>VITE_API_URL</code> y <code>VITE_GAMEY_URL</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">users</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ghcr.io/&#8230;&#8203;/yovi_es2c-users</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">API REST Node.js/Express. Gestiona registro, login y ranking.
+Lee <code>DB_URI</code> y <code>DB_PASSWORD</code> del entorno.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gamey</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ghcr.io/&#8230;&#8203;/yovi_es2c-gamey</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4000</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Motor de juego y servidor de bots en Rust/Axum.
+Lee <code>MONGODB_PASSWORD</code> del entorno.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mongodb</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">mongo:latest</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">27017</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base de datos local usada en desarrollo.
+En producción se usa MongoDB Atlas.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">prometheus</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">prom/prometheus</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9090</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Recoge métricas HTTP del servicio <code>users</code>.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">grafana</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">grafana/grafana</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">9091</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Visualización de métricas. Monta la configuración desde
+<code>./users/monitoring/grafana/provisioning</code>.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect2">
 <h3 id="_infrastructure_level_2">7.2. Infrastructure Level 2</h3>
-<div class="sidebarblock arc42help">
+<div class="sect3">
+<h4 id="_pipeline_cicd_github_actions">7.2.1. Pipeline CI/CD (GitHub Actions)</h4>
+<div class="paragraph">
+<p>El despliegue se activa automáticamente al publicar una <strong>release</strong> en GitHub.
+El workflow <code>.github/workflows/release-deploy.yml</code> ejecuta las siguientes fases
+en orden:</p>
+</div>
+<div class="imageblock kroki">
 <div class="content">
-<div class="paragraph">
-<p>Here you can include the internal structure of (some) infrastructure elements from level 1.</p>
-</div>
-<div class="paragraph">
-<p>Please copy the structure from level 1 for each selected element.</p>
+<img src="https://kroki.io/plantuml/png/eNqN0LFOwzAQBuA9T3EjFUqGjulUStROqCJILFkc-3BMHZ_lsxVZ6swD8Ig8CaaFAbEw3v9_w6877008pBG2MhpyfK44ihCr9gk5MiRnymmIB3fzQAqbV4ZbeEwcV5sf06270u6STPOIodRHK_ISjJ6-0AuFUwXQ3iVjFWTwiafBLTgK7-Hj7R30JENj6CpBaGHcX58YA_-fazFj_s3RKbhsae_RW8rQ94eL2D730O3WZZPGCIrkCUMtafbE2OTZDu6awXcGyUOtoK59shaEXUTmTfka-eoTCqd1YQ==" alt="deployment-cicd">
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Paso</th>
+<th class="tableblock halign-left valign-top">Detalle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tests unitarios</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cargo test</code> para gamey, <code>npm test</code> para webapp y users en paralelo.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tests E2E</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cucumber-js</code> con Playwright arrancando <code>users</code> y <code>webapp</code> concurrentemente.
+Se ejecuta con <code>continue-on-error: true</code> para no bloquear el despliegue.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Build imágenes</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">El Dockerfile de webapp recibe <code>VITE_API_URL</code> y <code>VITE_GAMEY_URL</code> como
+<code>ARG</code> en tiempo de build para incrustar la IP pública de la instancia.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Deploy SSH</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GitHub Actions conecta por SSH a la instancia EC2 usando la clave privada
+almacenada en el secret <code>DEPLOY_KEY</code>. Descarga el <code>docker-compose.yml</code> desde
+el repositorio y levanta los contenedores con <code>--pull always</code> para usar
+siempre las imágenes recién publicadas.</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
-<h4 id="_infrastructure_element_1">7.2.1. <em>&lt;Infrastructure Element 1&gt;</em></h4>
+<h4 id="_mongodb_atlas">7.2.2. MongoDB Atlas</h4>
 <div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
+<p>La base de datos de producción es un cluster de <strong>MongoDB Atlas</strong> con
+replicación en tres shards. La conexión usa TLS y autenticación por usuario
+y contraseña.</p>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parámetro</th>
+<th class="tableblock halign-left valign-top">Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Host</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>ac-mybgnhh-shard-00-0{0,1,2}.yt6wilm.mongodb.net:27017</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base de datos (users)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>yovi2c_db</code>, colección <code>users</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Base de datos (gamey)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>yovi2c_db</code>, colecciones <code>games</code> y <code>sessions</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Autenticación</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usuario <code>yovi2c_db_user</code>, contraseña inyectada via variable de entorno</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">TLS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Activado (<code>tls=true</code>)</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="sect3">
-<h4 id="_infrastructure_element_2">7.2.2. <em>&lt;Infrastructure Element 2&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
-</div>
-<div class="paragraph">
-<p>&#8230;&#8203;</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_infrastructure_element_n">7.2.3. <em>&lt;Infrastructure Element n&gt;</em></h4>
-<div class="paragraph">
-<p><em>&lt;diagram + explanation&gt;</em></p>
-</div>
+<h4 id="_entornos">7.2.3. Entornos</h4>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Entorno</th>
+<th class="tableblock halign-left valign-top">Base de datos</th>
+<th class="tableblock halign-left valign-top">URLs de la API</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Desarrollo local</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MongoDB local en <code>mongodb://mongodb:27017</code> (Docker Compose)
+o <code>mongodb://localhost:27017</code> (sin Docker)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="http://localhost:3000" class="bare">http://localhost:3000</a></code> y <code><a href="http://localhost:4000" class="bare">http://localhost:4000</a></code>
+definidas en <code>webapp/.env.local</code></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Producción (AWS EC2)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MongoDB Atlas con URI completa inyectada via <code>DB_URI</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code><a href="http://&lt;ELASTIC_IP&gt;:3000" class="bare">http://&lt;ELASTIC_IP&gt;:3000</a></code> y <code><a href="http://&lt;ELASTIC_IP&gt;:4000" class="bare">http://&lt;ELASTIC_IP&gt;:4000</a></code>
+incrustadas en el build de la imagen Docker</p></td>
+</tr>
+</tbody>
+</table>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -1816,124 +1928,340 @@ when your infrastructure is more complex.</p>
 <div class="sect1">
 <h2 id="section-concepts">8. Cross-cutting Concepts</h2>
 <div class="sectionbody">
-<div class="sidebarblock arc42help">
+<div class="sect2">
+<h3 id="_domain_model">8.1. Domain Model</h3>
+<div class="paragraph">
+<p>El dominio central del sistema es el <strong>Juego Y</strong>, un juego de tablero abstracto
+para dos jugadores en un tablero triangular. Los conceptos clave del dominio son:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 75%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Concepto</th>
+<th class="tableblock halign-left valign-top">Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>YEN</strong> (Y Exchange Notation)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Formato de serialización inspirado en FEN del ajedrez. Representa el estado
+completo de una partida en JSON: tamaño del tablero, turno, jugadores y layout.
+Es el contrato de comunicación entre todos los componentes del sistema.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Coordenadas baricéntricas</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sistema de tres componentes <code>(x, y, z)</code> donde <code>x + y + z = n - 1</code> siendo <code>n</code>
+el tamaño del tablero. Identifica unívocamente cada casilla del tablero triangular.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Variantes</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">El juego soporta dos variantes: <code>standard</code> (gana quien conecta los tres lados)
+y <code>why_not</code> (gana el rival de quien conecta los tres lados).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>GameStatus</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Estado de la partida: <code>Ongoing</code> (en curso, con el siguiente jugador) o
+<code>Finished</code> (terminada, con el ganador).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Sesión</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Abstracción que permite a un bot externo jugar contra un bot interno.
+Persiste en MongoDB y mantiene el estado entre peticiones HTTP.</p></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_architecture_pattern_microservices">8.2. Architecture Pattern: Microservices</h3>
+<div class="paragraph">
+<p>El sistema se divide en tres microservicios independientes con responsabilidades
+bien definidas:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Servicio</th>
+<th class="tableblock halign-left valign-top">Responsabilidad</th>
+<th class="tableblock halign-left valign-top">Tecnología</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>webapp</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Interfaz de usuario, navegación entre vistas, comunicación con los otros servicios</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">React, TypeScript, Vite, MUI</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>users</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Autenticación, registro, ranking de jugadores</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Node.js, Express, MongoDB</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>gamey</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Motor de juego, bots, historial de partidas, API para bots externos</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Rust, Axum, MongoDB</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Cada servicio tiene su propio <code>Dockerfile</code> y se despliega de forma independiente.
+La comunicación entre servicios se hace exclusivamente mediante HTTP/REST.</p>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_api_design_rest_con_versionado">8.3. API Design: REST con versionado</h3>
+<div class="paragraph">
+<p>Todos los endpoints de <code>gamey</code> incluyen la versión de la API en la ruta:
+POST /v1/game/move
+POST /v1/game/session
+GET  /v1/game/session/{session_id}
+POST /v1/game/session/{session_id}/move
+GET  /v1/game/history
+POST /v1/ybot/choose/{bot_id}
+La versión se valida en cada handler mediante <code>check_api_version</code>. Si se recibe
+una versión no soportada, se devuelve un error estructurado con el mensaje
+<code>"Unsupported API version"</code>. Esto permite evolucionar la API sin romper clientes
+existentes.</p>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_security_autenticación_y_almacenamiento_de_contraseñas">8.4. Security: Autenticación y almacenamiento de contraseñas</h3>
+<div class="paragraph">
+<p>Las contraseñas nunca se almacenan en texto plano. El servicio <code>users</code> aplica:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>scrypt</strong> como algoritmo de derivación de claves, resistente a ataques de
+fuerza bruta y de diccionario.</p>
+</li>
+<li>
+<p><strong>Salt aleatorio</strong> por usuario (16 bytes), generado con <code>crypto.randomBytes</code>.
+Impide ataques con rainbow tables.</p>
+</li>
+<li>
+<p><strong><code>timingSafeEqual</code></strong> para comparar hashes, evitando ataques de tiempo.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Los secretos de producción (URI de MongoDB, clave SSH, etc.) se gestionan
+como <strong>GitHub Actions Secrets</strong> y se inyectan como variables de entorno en
+tiempo de ejecución, nunca se incluyen en el código ni en las imágenes Docker.</p>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_observability_métricas_y_monitorización">8.5. Observability: Métricas y monitorización</h3>
+<div class="paragraph">
+<p>El sistema incluye un stack de observabilidad completo:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Prometheus</strong> recoge métricas HTTP del servicio <code>users</code> mediante el middleware
+<code>express-prom-bundle</code>, que expone automáticamente métricas de latencia,
+conteo de peticiones y códigos de respuesta por método y ruta.</p>
+</li>
+<li>
+<p><strong>Grafana</strong> visualiza esas métricas en dashboards configurados mediante
+provisioning automático desde <code>./users/monitoring/grafana/provisioning</code>.</p>
+</li>
+<li>
+<p>Ambos servicios se despliegan como contenedores Docker dentro del mismo
+<code>docker-compose.yml</code>.</p>
+</li>
+</ul>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_persistence_acceso_a_mongodb">8.6. Persistence: Acceso a MongoDB</h3>
+<div class="paragraph">
+<p>Tanto <code>users</code> (Node.js) como <code>gamey</code> (Rust) acceden a <strong>MongoDB Atlas</strong> en
+producción y a un MongoDB local en desarrollo. El patrón de acceso es el mismo
+en ambos:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>La URI de conexión se lee de variables de entorno (<code>DB_URI</code> en Node.js,
+<code>MONGODB_PASSWORD</code> en Rust).</p>
+</li>
+<li>
+<p>Si la variable no está disponible, el servicio arranca igualmente pero
+registra un warning y omite las operaciones de base de datos.</p>
+</li>
+<li>
+<p>Las colecciones usadas son:</p>
+</li>
+</ul>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Servicio</th>
+<th class="tableblock halign-left valign-top">Colección</th>
+<th class="tableblock halign-left valign-top">Contenido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">users</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>users</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usuarios registrados con hash y salt de contraseña, wins y losses</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gamey</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>games</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Historial de partidas finalizadas</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">gamey</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>sessions</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sesiones activas para bots externos</p></td>
+</tr>
+</tbody>
+</table>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_frontend_architecture_single_page_application">8.7. Frontend Architecture: Single Page Application</h3>
+<div class="paragraph">
+<p>La webapp es una <strong>SPA</strong> (Single Page Application) construida con React y Vite.
+La navegación entre vistas (<code>inicio</code>, <code>menu</code>, <code>game</code>, <code>historial</code>, <code>ranking</code>)
+se gestiona con estado local en <code>App.tsx</code>, sin router externo.</p>
+</div>
+<div class="paragraph">
+<p>Las transiciones entre vistas se implementan con el componente <code>FadeView</code>,
+que controla el ciclo de vida de la animación en 4 fases: <code>leaving → hidden
+→ entering → visible</code>. Los <code>children</code> no se intercambian hasta que la
+animación de salida ha terminado, evitando flashes de contenido.</p>
+</div>
+<div class="paragraph">
+<p>Las URLs de los servicios backend se inyectan en tiempo de build mediante
+variables de entorno de Vite (<code>VITE_API_URL</code>, <code>VITE_GAMEY_URL</code>), con fallback
+a <code>localhost</code> para desarrollo local.</p>
+</div>
+<hr>
+</div>
+<div class="sect2">
+<h3 id="_bot_architecture_registry_pattern">8.8. Bot Architecture: Registry Pattern</h3>
+<div class="paragraph">
+<p>Los bots internos de <code>gamey</code> siguen el <strong>patrón Registry</strong>. Todos implementan
+el trait <code>YBot</code>:</p>
+</div>
+<div class="listingblock">
 <div class="content">
-<div class="paragraph">
-<div class="title">Content</div>
-<p>This section describes overall, principal regulations and solution ideas that are relevant in multiple parts (= cross-cutting) of your system.
-Such concepts are often related to multiple building blocks.
-They can include many different topics, such as</p>
+<pre class="highlight"><code class="language-rust" data-lang="rust">pub trait YBot {
+    fn name(&amp;self) -&gt; &amp;str;
+    fn choose_move(&amp;self, board: &amp;GameY) -&gt; Option&lt;Coordinates&gt;;
+}</code></pre>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>models, especially domain models</p>
-</li>
-<li>
-<p>architecture or design patterns</p>
-</li>
-<li>
-<p>rules for using specific technology</p>
-</li>
-<li>
-<p>principal, often technical decisions of an overarching (= cross-cutting) nature</p>
-</li>
-<li>
-<p>implementation rules</p>
-</li>
-</ul>
 </div>
 <div class="paragraph">
-<div class="title">Motivation</div>
-<p>Concepts form the basis for <em>conceptual integrity</em> (consistency, homogeneity) of the architecture.
-Thus, they are an important contribution to achieve inner qualities of your system.</p>
+<p>Los bots disponibles se registran en <code>YBotRegistry</code> al arrancar el servidor:</p>
 </div>
-<div class="paragraph">
-<p>Some of these concepts cannot be assigned to individual building blocks, e.g. security or safety.</p>
-</div>
-<div class="paragraph">
-<div class="title">Form</div>
-<p>The form can be varied:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>concept papers with any kind of structure</p>
-</li>
-<li>
-<p>cross-cutting model excerpts or scenarios using notations of the architecture views</p>
-</li>
-<li>
-<p>sample implementations, especially for technical concepts</p>
-</li>
-<li>
-<p>reference to typical usage of standard frameworks (e.g. using Hibernate for object/relational mapping)</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<div class="title">Structure</div>
-<p>A potential (but not mandatory) structure for this section could be:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Domain concepts</p>
-</li>
-<li>
-<p>User Experience concepts (UX)</p>
-</li>
-<li>
-<p>Safety and security concepts</p>
-</li>
-<li>
-<p>Architecture and design patterns</p>
-</li>
-<li>
-<p>"Under-the-hood"</p>
-</li>
-<li>
-<p>development concepts</p>
-</li>
-<li>
-<p>operational concepts</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Note: it might be difficult to assign individual concepts to one specific topic
-on this list.</p>
-</div>
-<div class="imageblock">
+<div class="listingblock">
 <div class="content">
-<img src="./images/08-concepts-EN.drawio.png" alt="Possible topics for crosscutting concepts">
+<pre class="highlight"><code class="language-rust" data-lang="rust">YBotRegistry::new()
+    .with_bot(Arc::new(RandomBot))
+    .with_bot(Arc::new(SideBot))
+    .with_bot(Arc::new(SideBotHard))
+    // ...</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<div class="title">Further Information</div>
-<p>See <a href="https://docs.arc42.org/section-8/">Concepts</a> in the arc42 documentation.</p>
+<p>El registro se comparte entre todos los handlers mediante <code>AppState</code> con <code>Arc</code>,
+lo que permite acceso concurrente sin bloqueos. Los bots externos pueden
+conectarse a través de la API de sesiones sin necesidad de estar registrados
+en el servidor.</p>
 </div>
-</div>
+<hr>
 </div>
 <div class="sect2">
-<h3 id="_concept_1">8.1. <em>&lt;Concept 1&gt;</em></h3>
+<h3 id="_testing_strategy">8.9. Testing Strategy</h3>
 <div class="paragraph">
-<p><em>&lt;explanation&gt;</em></p>
+<p>El sistema aplica una estrategia de testing en tres niveles:</p>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 20%;">
+<col style="width: 40%;">
+<col style="width: 40%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Nivel</th>
+<th class="tableblock halign-left valign-top">Herramienta</th>
+<th class="tableblock halign-left valign-top">Qué cubre</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Unitarios (Rust)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>cargo test</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Lógica del juego, coordenadas, bots, serialización YEN, endpoints HTTP</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>Unitarios (Node.js/TypeScript)</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Vitest + Testing Library</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Servicios de usuarios, componentes React, API clients</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><strong>E2E</strong></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cucumber + Playwright</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Flujos completos de usuario a través del navegador</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>La cobertura de código se mide con <strong>SonarCloud</strong>, integrado en el pipeline
+de CI/CD. Se exige un mínimo del 80% de cobertura en el código de la webapp.
+Los tests E2E se ejecutan con <code>continue-on-error: true</code> para no bloquear
+el despliegue si fallan.</p>
+</div>
+<hr>
 </div>
 <div class="sect2">
-<h3 id="_concept_2">8.2. <em>&lt;Concept 2&gt;</em></h3>
+<h3 id="_error_handling">8.10. Error Handling</h3>
 <div class="paragraph">
-<p><em>&lt;explanation&gt;</em></p>
+<p>Todos los servicios siguen un patrón consistente de manejo de errores:</p>
 </div>
-<div class="paragraph">
-<p>&#8230;&#8203;</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_concept_n">8.3. <em>&lt;Concept n&gt;</em></h3>
-<div class="paragraph">
-<p><em>&lt;explanation&gt;</em></p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>gamey (Rust)</strong>: los errores se devuelven como <code>Json&lt;ErrorResponse&gt;</code> con
+campos <code>message</code>, <code>api_version</code> y <code>bot_id</code>. Los handlers usan <code>?</code> con
+<code>map_err</code> para propagar errores de forma uniforme.</p>
+</li>
+<li>
+<p><strong>users (Node.js)</strong>: los errores se devuelven como <code>{ error: string }</code> con
+el código HTTP apropiado (400, 401, 404, 409, 500).</p>
+</li>
+<li>
+<p><strong>webapp (React)</strong>: los errores de red se capturan en bloques <code>try/catch</code>
+y se muestran al usuario mediante componentes <code>Alert</code> de MUI. Las llamadas
+a <code>recordGameResult</code> fallan de forma silenciosa para no interrumpir el juego.</p>
+</li>
+</ul>
 </div>
 <div style="page-break-after: always;"></div>
 </div>
@@ -2664,6 +2992,9 @@ concrete and measurable.</p>
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p>Los requisitos de calidad de YOVI se derivan de los objetivos definidos en la sección 1.2 y se concretan aquí con escenarios verificables sobre la arquitectura actual: <code>webapp</code> (React/Vite), <code>users</code> (Node/Express) y <code>gamey</code> (Rust), desplegados con Docker Compose.</p>
+</div>
 <div class="sect2">
 <h3 id="_quality_tree">10.1. Quality Tree</h3>
 <div class="sidebarblock arc42help">
@@ -2694,6 +3025,93 @@ concrete and measurable.</p>
 <p>In any case the tree should include links to the scenarios of the following section.</p>
 </div>
 </div>
+</div>
+<div class="paragraph">
+<p>Raíz de calidad: <strong>Utilidad del sistema YOVI</strong></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Usabilidad (Prioridad 1)</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Flujo de inicio de partida simple para usuario nuevo</p>
+</li>
+<li>
+<p>Mensajes claros ante errores de autenticación o red</p>
+</li>
+<li>
+<p>Escenarios: <a href="#qr-us-01">[qr-us-01]</a>, <a href="#qr-us-02">[qr-us-02]</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Rendimiento (Prioridad 2)</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Respuesta rápida en operaciones críticas de juego (<code>/v1/game/move</code>, <code>/v1/ybot/choose/{bot_id}</code>)</p>
+</li>
+<li>
+<p>Latencia acotada en login/registro en <code>users</code></p>
+</li>
+<li>
+<p>Escenarios: <a href="#qr-perf-01">[qr-perf-01]</a>, <a href="#qr-perf-02">[qr-perf-02]</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Escalabilidad (Prioridad 3)</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Posibilidad de escalar horizontalmente servicios backend sin cambiar contratos HTTP/JSON</p>
+</li>
+<li>
+<p>Degradación controlada con carga concurrente moderada</p>
+</li>
+<li>
+<p>Escenarios: <a href="#qr-scal-01">[qr-scal-01]</a>, <a href="#qr-scal-02">[qr-scal-02]</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Mantenibilidad (Prioridad 4)</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Añadir nuevas estrategias de bot en <code>gamey</code> sin romper endpoints existentes</p>
+</li>
+<li>
+<p>Evolución segura por cobertura y CI en los tres subsistemas</p>
+</li>
+<li>
+<p>Escenarios: <a href="#qr-main-01">[qr-main-01]</a>, <a href="#qr-main-02">[qr-main-02]</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Fiabilidad (Prioridad 5)</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Validación consistente de reglas del juego y persistencia básica de resultados</p>
+</li>
+<li>
+<p>Disponibilidad mínima de endpoints de estado y APIs principales</p>
+</li>
+<li>
+<p>Escenarios: <a href="#qr-rel-01">[qr-rel-01]</a>, <a href="#qr-rel-02">[qr-rel-02]</a></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect2">
@@ -2736,6 +3154,109 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 </div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 12.5%;">
+<col style="width: 12.5%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+<col style="width: 25%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">ID</th>
+<th class="tableblock halign-left valign-top">Tipo</th>
+<th class="tableblock halign-left valign-top">Estímulo</th>
+<th class="tableblock halign-left valign-top">Respuesta esperada</th>
+<th class="tableblock halign-left valign-top">Medida / criterio de aceptación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="qr-us-01"></a>qr-us-01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Uso</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usuario nuevo accede a la webapp y quiere registrarse e iniciar partida contra bot.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Completa registro/login y comienza partida desde la interfaz principal sin pasos ocultos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tiempo total &#8656; 2 minutos en una prueba guiada con usuario no entrenado.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="qr-us-02"></a>qr-us-02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Uso</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Usuario introduce credenciales inválidas o falla conexión con <code>users</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">La webapp muestra mensaje de error entendible y permite reintentar sin recargar manualmente.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">100% de errores de autenticación y red muestran feedback visible en pantalla.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="qr-perf-01"></a>qr-perf-01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Uso</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Petición de jugada a <code>gamey</code> (<code>/v1/game/move</code> o <code>/v1/ybot/choose/{bot_id}</code>) con tablero válido.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gamey</code> devuelve estado actualizado/jugada en JSON.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">p95 de latencia &#8656; 1s en condiciones normales de laboratorio.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="qr-perf-02"></a>qr-perf-02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Uso</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Operaciones de autenticación en <code>users</code> (<code>/createuser</code>, login) bajo carga baja-media.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Respuesta HTTP correcta sin bloqueo del servicio.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">p95 &#8656; 500ms con hasta 30 solicitudes concurrentes.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="qr-scal-01"></a>qr-scal-01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cambio</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aumento de demanda sobre cálculo de jugadas del bot.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Se incrementan réplicas de <code>gamey</code> detrás de balanceador manteniendo contratos API.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Sin cambios en <code>webapp</code> ni en formato JSON/YEN; solo ajustes de despliegue.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="qr-scal-02"></a>qr-scal-02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Uso</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Ejecución concurrente de sesiones de juego y autenticación.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">El sistema sigue atendiendo sin caída total y con errores controlados.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Tasa de error &lt; 2% en ventana de prueba con 50 usuarios virtuales.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="qr-main-01"></a>qr-main-01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cambio</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Se añade una nueva estrategia de bot en <code>gamey/src/bot</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">La estrategia se registra y expone sin modificar contratos externos.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cambio localizado en módulo de bots + pruebas asociadas pasando en CI.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="qr-main-02"></a>qr-main-02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cambio</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Se modifica una API de <code>users</code> o <code>gamey</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Los tests de <code>users</code>, <code>webapp</code> y <code>gamey</code> detectan regresiones antes del merge.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Pipeline de GitHub Actions en verde (tests + cobertura + análisis estático).</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="qr-rel-01"></a>qr-rel-01</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Uso</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Se procesa un movimiento válido/no válido durante una partida.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>gamey</code> aplica reglas de forma determinista y devuelve resultado coherente.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Casos de prueba unitarios/integración del motor sin discrepancias en CI.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><a id="qr-rel-02"></a>qr-rel-02</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Uso</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Se despliegan los contenedores con Docker Compose y se consulta estado.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Servicios críticos quedan accesibles (<code>webapp</code>, <code>users</code>, <code>gamey</code>, <code>/status</code>).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Disponibilidad de endpoints críticos &gt;= 99% durante sesión de demostración/pruebas.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Notas de verificación:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Las métricas de mantenibilidad y fiabilidad se apoyan en los tests existentes (<code>webapp/src/<em>tests</em></code>, <code>users/<em>tests</em></code>, <code>gamey/tests</code>) y en el pipeline de CI definido en <code>.github/workflows/build.yml</code>.</p>
+</li>
+<li>
+<p>Las métricas de rendimiento y escalabilidad deben validarse con pruebas de carga específicas (pendiente de automatización en esta versión).</p>
+</li>
+</ul>
+</div>
 <div style="page-break-after: always;"></div>
 </div>
 </div>
@@ -2766,7 +3287,102 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </div>
 </div>
 </div>
+<div class="paragraph">
+<p>Los siguientes riesgos y deudas técnicas están priorizados según impacto potencial sobre los objetivos de calidad (usabilidad, rendimiento, escalabilidad, mantenibilidad y fiabilidad) definidos en la sección 1.2.</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 10%;">
+<col style="width: 30%;">
+<col style="width: 30%;">
+<col style="width: 20%;">
+<col style="width: 10%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Prioridad</th>
+<th class="tableblock halign-left valign-top">Riesgo / deuda técnica</th>
+<th class="tableblock halign-left valign-top">Impacto potencial</th>
+<th class="tableblock halign-left valign-top">Mitigación propuesta</th>
+<th class="tableblock halign-left valign-top">Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Seguridad de autenticación básica en <code>users</code> (riesgo de controles insuficientes en login/registro, gestión de secretos y endurecimiento de API).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Acceso no autorizado, fuga de datos de usuario y pérdida de confianza en el sistema.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aplicar hashing robusto con sal, validación estricta de entrada, rate limiting, gestión segura de variables de entorno y revisión periódica de dependencias.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Abierto</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Punto único de fallo en despliegue mononodo con Docker Compose (sin alta disponibilidad).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Caída total del sistema ante fallo de contenedor/host.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Definir estrategia de despliegue con réplicas y balanceo para <code>users</code>/<code>gamey</code>, health checks activos y reinicio automático.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Abierto</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Cobertura desigual de pruebas de integración extremo a extremo entre <code>webapp</code>, <code>users</code> y <code>gamey</code>.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Regresiones funcionales no detectadas en flujos críticos de partida/autenticación.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Incrementar tests de integración y E2E sobre flujos completos; incluir casos de error y contratos API.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">En progreso</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">4</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Riesgo de rendimiento en operaciones de juego bajo concurrencia (cálculo de jugadas y validación).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Latencia elevada en <code>/v1/game/move</code> y <code>/v1/ybot/choose/{bot_id}</code>, degradando experiencia de usuario.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Definir presupuesto de rendimiento (p95), ejecutar pruebas de carga periódicas y perfilar <code>gamey</code> en escenarios de estrés.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Abierto</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Modelo de datos aún limitado para histórico/estadísticas avanzadas.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Dificultad para evolucionar funcionalidades de analítica sin migraciones cuidadosas.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Versionar esquemas, definir contratos de persistencia y plan de migraciones.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Abierto</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">6</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Acoplamiento operativo a configuración manual de entorno (<code>DB_URI</code>, secretos, variables de build).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Errores de despliegue entre entornos y fallos difíciles de reproducir.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Plantillas de configuración por entorno, validación al arranque y documentación operativa mínima.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">En progreso</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">7</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Observabilidad parcial (Prometheus/Grafana básicos, métricas de negocio limitadas).</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Detección tardía de incidencias y diagnóstico más lento.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Añadir métricas de negocio (latencia por endpoint, tasa de error, partidas iniciadas/finalizadas) y alertas mínimas.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Abierto</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">8</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Deuda técnica documental: partes de runtime/deployment aún en plantilla o con detalle desigual.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Menor trazabilidad entre arquitectura real y documentación; dificulta mantenimiento futuro.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Completar secciones pendientes (runtime/deployment) con diagramas y métricas consistentes con implementación.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">En progreso</p></td>
+</tr>
+</tbody>
+</table>
+<div class="sect2">
+<h3 id="_seguimiento_y_revisión">11.1. Seguimiento y revisión</h3>
+<div class="ulist">
+<ul>
+<li>
+<p>Frecuencia de revisión: al cierre de cada iteración y antes de cada release.</p>
+</li>
+<li>
+<p>Criterio de escalado: cualquier riesgo con impacto alto y probabilidad media/alta debe tener tarea de mitigación planificada.</p>
+</li>
+<li>
+<p>Evidencias: resultados de CI, cobertura, pruebas de carga y paneles de monitorización.</p>
+</li>
+</ul>
+</div>
 <div style="page-break-after: always;"></div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -2821,12 +3437,44 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Term-1&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;definition-1&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>YOVI</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Plataforma web que integra la interfaz de usuario y los servicios backend para jugar al juego de tablero Y, gestionar usuarios y exponer una API pública.</em></p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;Term-2&gt;</em></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><em>&lt;definition-2&gt;</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Juego Y</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Juego de tablero de conexión en el que dos jugadores compiten por unir lados opuestos del tablero siguiendo sus propias fichas.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>GameY</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Motor de juego en Rust encargado de validar jugadas, determinar ganadores y calcular el siguiente movimiento del bot.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Webapp</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Aplicación frontend (React + Vite + TypeScript) que ofrece la interfaz de usuario y consume las APIs de usuarios y juego.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Users Service</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Servicio backend (Node.js + Express) responsable del registro, autenticación y persistencia de usuarios.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Bot</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Jugador automático que elige movimientos mediante estrategias implementadas en GameY.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Notación YEN</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Formato JSON acordado para representar el estado del tablero y las jugadas intercambiadas entre la webapp y GameY.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Tablero</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Superficie de juego del Y con un tamaño configurable (board_size) y posiciones ocupadas por las fichas de cada jugador.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Partida</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Sesión completa de juego desde el inicio hasta el resultado final, con un estado de tablero asociado.</em></p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>API pública</em></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><em>Interfaz HTTP/REST expuesta por YOVI para que clientes externos o bots inicien partidas y consulten el estado.</em></p></td>
 </tr>
 </tbody>
 </table>

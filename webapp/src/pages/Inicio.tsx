@@ -4,9 +4,10 @@ import RegisterForm from '../RegisterForm';
 
 type InicioProps = {
     onEntrar: (username: string) => void;
+    initialAuthMode?: 'login' | 'register';
 };
 
-export default function Inicio({ onEntrar }: InicioProps) {
+export default function Inicio({ onEntrar, initialAuthMode = 'login' }: InicioProps) {
     return (
         <Box
             sx={{
@@ -87,7 +88,7 @@ export default function Inicio({ onEntrar }: InicioProps) {
                 </Stack>
 
                 {/* Form */}
-                <RegisterForm onAuthSuccess={onEntrar} />
+                <RegisterForm onAuthSuccess={onEntrar} initialMode={initialAuthMode} />
             </Paper>
         </Box>
     );

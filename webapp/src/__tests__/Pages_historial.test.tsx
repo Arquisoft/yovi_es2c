@@ -41,7 +41,7 @@ describe('Historial', () => {
 
         render(<Historial username="Manuel" onBack={mockOnBack} />);
 
-        expect(await screen.findByText('Sin partidas todavía')).toBeInTheDocument();
+        expect(await screen.findByText('Todavía no hay partidas registradas.')).toBeInTheDocument();
         expect(
             screen.getByText('Juega tu primera partida para verla aquí.')
         ).toBeInTheDocument();

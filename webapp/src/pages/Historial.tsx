@@ -111,7 +111,7 @@ export default function Historial({ username, onBack }: HistorialProps) {
                     }}>
                         <SportsEsports sx={{ fontSize: 64 }} />
                         <Typography variant="h6" fontWeight={700}>
-                            Sin partidas todavía
+                            Todavía no hay partidas registradas.
                         </Typography>
                         <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>
                             Juega tu primera partida para verla aquí.

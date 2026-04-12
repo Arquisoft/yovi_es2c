@@ -10,18 +10,16 @@ _**Overview Diagram**_
 image::Level1-Building-Blocks-Overview.png["Building Block View (Level 1)"]
 
 Motivation::
-La descomposición separa claramente interfaz, servicios y persistencia.
-Esto facilita mantener el sistema, probar cada parte por separado y evolucionar
-cada bloque sin afectar al resto.
+La descomposicion separa claramente interfaz, servicios y persistencia. Esto facilita mantener el sistema, probar cada parte por separado y evolucionar cada bloque sin afectar al resto.
 
 Contained Building Blocks::
 [cols="1,3" options="header"]
 |===
 | Name | Responsibility
-| Webapp | Aplicación SPA. Gestiona pantallas, estado de juego en cliente y coordinación de llamadas a APIs.
-| Users Service | Servicio de autenticación. Registra usuarios, valida credenciales y devuelve respuestas de login/registro.
-| GameY Engine | Motor del juego Y. Aplica reglas, valida jugadas y ofrece endpoints de bot y movimiento.
-| MongoDB | Persistencia común con dos colecciones: `users` (usuarios) y `games` (resultados de partidas).
+| Webapp | Aplicacion SPA. Gestiona pantallas, estado de juego en cliente y coordinacion de llamadas a APIs.
+| Users Service | Servicio de autenticacion y ranking basico. Registra usuarios, valida credenciales, registra resultados (victorias/derrotas) y expone el ranking.
+| GameY Engine | Motor del juego Y. Aplica reglas, valida jugadas y expone endpoints de bot, movimiento humano, historico y sesiones para integracion con bots externos.
+| MongoDB | Persistencia comun con colecciones: `users` (usuarios), `games` (resultados de partidas) y `sessions` (sesiones de juego para la API).
 |===
 
 Important Interfaces::
@@ -36,8 +34,7 @@ _**Diagram**_
 image::Level2-WebApp.png["Building Block View (Level 2 - Webapp)"]
 
 Responsibility::
-Controla el flujo de usuario (inicio → menú → partida), renderiza el tablero
-y coordina la comunicación con los servicios.
+Controla el flujo de usuario (inicio -> menu -> partida), renderiza el tablero y coordina la comunicacion con los servicios.
 
 Contained Building Blocks::
 [cols="1,3" options="header"]
@@ -45,7 +42,7 @@ Contained Building Blocks::
 | Component | Responsibility
 | App.tsx | Orquesta las vistas principales.
 | RegisterForm.tsx | Login/registro y validaciones en cliente.
-| Menu.tsx | Selección de modo, tamaño y variante.
+| Menu.tsx | Seleccion de modo, tamano y variante.
 | GameBoard.tsx | Render del tablero y control de turnos.
 | GameyApi.ts | Cliente HTTP hacia GameY.
 |===
@@ -57,15 +54,14 @@ _**Diagram**_
 image::Level2-UsersService.png["Building Block View (Level 2 - Users Service)"]
 
 Responsibility::
-API de autenticación. Verifica entradas, genera hash de contraseñas y
-persiste usuarios en MongoDB.
+API de autenticacion y ranking basico. Verifica entradas, genera hash de contrasenas (scrypt) para operaciones de login/registro, persiste usuarios en MongoDB y expone endpoints de ranking/resultados.
 
 Contained Building Blocks::
 [cols="1,3" options="header"]
 |===
 | Module | Responsibility
-| users-service.js | Endpoints `/register`, `/login`, `/createuser` y lógica principal.
-| openapi.yaml | Contrato de API.
+| users-service.js | Endpoints `/register`, `/login`, `/createuser`, `/game/result`, `/ranking` y logica principal.
+| openapi.yaml | Contrato de API (Swagger UI en `/api-docs`).
 |===
 
 ==== White Box GameY Engine
@@ -75,20 +71,20 @@ _**Diagram**_
 image::Level2-GameY.png["Building Block View (Level 2 - GameY)"]
 
 Responsibility::
-Motor de reglas del juego. Recibe el estado (YEN), valida jugadas y
-devuelve el nuevo estado, además del movimiento del bot.
+Motor de reglas del juego. Recibe el estado (YEN), valida jugadas y devuelve el nuevo estado, ademas del movimiento del bot. Incluye endpoints para historico y sesiones de juego orientadas a la integracion con bots externos.
 
 Contained Building Blocks::
 [cols="1,3" options="header"]
 |===
 | Module | Responsibility
-| core/ | Estado del juego, reglas y validación.
-| notation/ | Conversión a/desde YEN.
-| bot/ | Estrategias de bot (random).
-| bot_server/ | Endpoints HTTP.
-| db/ | Persistencia de resultados finales.
+| core/ | Estado del juego, reglas y validacion (variantes: standard, why_not).
+| notation/ | Conversion a/desde YEN.
+| bot/ | Estrategias de bot (random, center, corner, side, side_hard, bridge, blocker). Implementadas como modulos intercambiables.
+| bot_server/ | Endpoints HTTP (move/choose/history/session).
+| db/ | Persistencia de resultados finales y sesiones.
 |===
 
 === Level 3
 
-No se requiere más detalle en esta versión.
+No se requiere mas detalle en esta version.
+

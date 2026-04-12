@@ -3,21 +3,15 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-context-and-scope]]
 == Context and Scope
 
-Esta sección describe el contexto del sistema YOVI: su entorno,
-los actores externos con los que interactúa y las interfaces que delimitan
-su alcance.
+Esta seccion describe el contexto del sistema YOVI: su entorno, los actores externos con los que interactua y las interfaces que delimitan su alcance.
 
-A diferencia de *Introduction and Goals*, aquí no se detallan requisitos
-ni objetivos de calidad, sino las fronteras del sistema y su relación con el entorno.
+A diferencia de *Introduction and Goals*, aqui no se detallan requisitos ni objetivos de calidad, sino las fronteras del sistema y su relacion con el entorno.
 
 === Business Context
 
-YOVI es una plataforma web para jugar al juego de tablero Y en modo local
-(dos jugadores en la misma pantalla) o contra un bot. El sistema integra
-interfaz de usuario, autenticación básica y la lógica del motor GameY.
+YOVI es una plataforma web para jugar al juego de tablero Y en modo local (dos jugadores en la misma pantalla) o contra un bot. El sistema integra interfaz de usuario, autenticacion basica y la logica del motor GameY.
 
-Desde el punto de vista del negocio, YOVI se considera una *caja negra* que
-ofrece una experiencia de juego sencilla con registro y login.
+Desde el punto de vista del negocio, YOVI se considera una *caja negra* que ofrece una experiencia de juego sencilla con registro y login.
 
 Actores externos principales:
 
@@ -26,81 +20,83 @@ Actores externos principales:
 | Actor / Sistema externo | Inputs hacia YOVI | Outputs desde YOVI
 
 | Jugador
-| Credenciales (username y password), selección de modo/tamaño, movimientos
+| Credenciales (username y password), seleccion de modo/tamano, movimientos
 | Mensajes de login/registro, estado del tablero, resultado
 
 | Motor GameY
-| Estado del tablero en notación YEN y movimiento humano
+| Estado del tablero en notacion YEN y movimiento humano
 | Movimiento del bot y estado actualizado
 
 | Base de Datos (Users)
 | Usuarios registrados (username + hash)
-| Confirmación de alta o rechazo
+| Confirmacion de alta o rechazo, ranking basico (victorias/derrotas)
 
 | Base de Datos (GameY)
-| Resultado final de la partida (winner, board_size, etc.)
-| Confirmación de persistencia
+| Resultado final de la partida (winner, board_size, etc.) y sesiones de juego para bots
+| Confirmacion de persistencia
 |===
 
-El jugador interactúa únicamente con la aplicación web.
-GameY no conoce al usuario ni a la interfaz gráfica; se limita a validar
-jugadas, calcular el movimiento del bot y devolver el nuevo estado.
-Las bases de datos almacenan usuarios y resultados finales, sin rankings ni
-estadísticas avanzadas en esta versión.
+El jugador interactua unicamente con la aplicacion web. GameY no conoce al usuario ni a la interfaz grafica; se limita a validar jugadas, calcular el movimiento del bot y devolver el nuevo estado. Las bases de datos almacenan usuarios y resultados finales. Existe un ranking basico (victorias/derrotas) pero no estadisticas avanzadas en esta version.
 
 === Context Diagram
 
-El siguiente diagrama muestra el contexto del sistema YOVI y sus relaciones
-con los actores y sistemas externos:
+El siguiente diagrama muestra el contexto del sistema YOVI y sus relaciones con los actores y sistemas externos:
 
 image::contexto-diagrama.png["Diagrama de Contexto del Sistema"]
 
-
-
-
 === Technical Context
 
-Desde el punto de vista técnico, el sistema se compone de tres subsistemas
-independientes que se comunican por REST con mensajes JSON.
+Desde el punto de vista tecnico, el sistema se compone de tres subsistemas independientes que se comunican por REST con mensajes JSON.
 
 [options="header",cols="1,2,2"]
 |===
-| Comunicación | Canal / Protocolo | Formato
+| Comunicacion | Canal / Protocolo | Formato
 
-| Webapp ↔ Users Service
+| Webapp <-> Users Service
 | HTTP REST (puerto 3000)
 | JSON
 
-| Webapp ↔ GameY
+| Webapp <-> GameY
 | HTTP REST (puerto 4000)
-| JSON (notación YEN)
+| JSON (notacion YEN)
 
-| Users Service ↔ MongoDB
-| Conexión directa (driver de BD)
+| Users Service <-> MongoDB
+| Conexion directa (driver de BD)
 | Documentos (users)
 
-| GameY ↔ MongoDB
-| Conexión directa (driver de BD)
-| Documentos (games)
+| GameY <-> MongoDB
+| Conexion directa (driver de BD)
+| Documentos (games, sessions)
 |===
 
-La webapp corre en el navegador y es el punto de entrada único.
-Los servicios backend no exponen interfaz gráfica y se consumen por API.
+La webapp corre en el navegador y es el punto de entrada unico. Los servicios backend no exponen interfaz grafica y se consumen por API.
 
-Endpoints de GameY:
+Endpoints de GameY (API versionada, p.ej. `v1`):
 
 [options="header",cols="1,2"]
 |===
 | Endpoint | Uso
 
-| /status
+| GET /status
 | Health check del servicio
 
-| /v1/ybot/choose/{bot_id}
+| POST /v1/ybot/choose/{bot_id}
 | Devuelve la jugada del bot
 
-| /v1/game/move
+| POST /v1/game/move
 | Aplica una jugada humana y devuelve el nuevo estado
+
+| GET /v1/game/history
+| Devuelve el historico de movimientos de una partida (si aplica segun modo)
+
+| POST /v1/game/session
+| Crea una sesion de juego para integracion con bots externos
+
+| GET /v1/game/session/{session_id}
+| Recupera el estado actual de una sesion
+
+| POST /v1/game/session/{session_id}/move
+| Aplica un movimiento en una sesion y devuelve el estado actualizado
 |===
 
 Puertos de despliegue en Docker:
@@ -121,24 +117,25 @@ Puertos de despliegue en Docker:
 
 === Scope (Alcance)
 
-El alcance de esta entrega es una **prueba de concepto funcional**
-para validar arquitectura e integración entre subsistemas.
+El alcance de esta entrega es una **prueba de concepto funcional** para validar arquitectura e integracion entre subsistemas.
 
 **Dentro del alcance:**
 
-* Registro y login con validación básica (usuarios guardados como username + hash).
+* Registro y login con validacion basica (usuarios guardados como username + hash).
 * Modo local y modo contra bot.
-* Selección de tamaño de tablero y variante (standard / why_not).
-* Comunicación funcional Webapp ↔ Users Service y Webapp ↔ GameY.
-* Almacenamiento en BD del **resultado final de la partida** (persistido por GameY).
-* Aplicación accesible vía web.
+* Seleccion de tamano de tablero y variante (standard / why_not).
+* Comunicacion funcional Webapp <-> Users Service y Webapp <-> GameY.
+* Almacenamiento en BD del resultado final de la partida (persistido por GameY).
+* Registro de resultados y ranking basico (victorias/derrotas) en Users Service.
+* API de sesiones para permitir integracion de bots externos con GameY.
+* Aplicacion accesible via web.
 
 **Fuera del alcance (versiones futuras):**
 
-* Rankings y estadísticas agregadas.
-* Histórico completo de movimientos y replays.
-* Múltiples niveles de dificultad del bot.
+* Estadisticas avanzadas (ELO, rachas, filtros por variante/tamano, etc.) y rankings complejos.
+* Replays completos con UI dedicada y exportacion/comparticion.
+* Multiples niveles de dificultad del bot (p.ej. busqueda, heuristicas avanzadas, aprendizaje).
 * Multijugador en red entre personas.
 
-Este alcance permite demostrar la viabilidad técnica y servir como base
-para futuras extensiones.
+Este alcance permite demostrar la viabilidad tecnica y servir como base para futuras extensiones.
+

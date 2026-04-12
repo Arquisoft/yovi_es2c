@@ -6,6 +6,9 @@
 
 This project is a template with some basic functionality for the ASW labs.
 
+###URL
+-http://13.49.237.46/
+
 ## Project Structure
 
 The project is divided into three main components, each in its own directory:
@@ -183,5 +186,4 @@ This repository contains unit tests per component and E2E tests for the main web
 - `cargo run`: Runs the gamey application.
 - `cargo doc`: Generates documentation for the GameY engine application
 
-###URL
--http://13.49.237.46/
+

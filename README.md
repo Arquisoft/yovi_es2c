@@ -184,4 +184,4 @@ This repository contains unit tests per component and E2E tests for the main web
 - `cargo doc`: Generates documentation for the GameY engine application
 
 ###URL
--http://100.49.176.54
+-http://13.49.237.46/

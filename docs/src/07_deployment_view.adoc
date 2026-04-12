@@ -5,96 +5,189 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 == Deployment View
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Content
-The deployment view describes:
-
- 1. technical infrastructure used to execute your system, with infrastructure elements like geographical locations, environments, computers, processors, channels and net topologies as well as other infrastructure elements and
-
-2. mapping of (software) building blocks to that infrastructure elements.
-
-Often systems are executed in different environments, e.g. development environment, test environment, production environment. In such cases you should document all relevant environments.
-
-Especially document a deployment view if your software is executed as distributed system with more than one computer, processor, server or container or when you design and construct your own hardware processors and chips.
-
-From a software perspective it is sufficient to capture only those elements of an infrastructure that are needed to show a deployment of your building blocks. Hardware architects can go beyond that and describe an infrastructure to any level of detail they need to capture.
-
-.Motivation
-Software does not run without hardware.
-This underlying infrastructure can and will influence a system and/or some
-cross-cutting concepts. Therefore, there is a need to know the infrastructure.
-
-.Form
-
-Maybe a highest level deployment diagram is already contained in section 3.2. as
-technical context with your own infrastructure as ONE black box. In this section one can
-zoom into this black box using additional deployment diagrams:
-
-* UML offers deployment diagrams to express that view. Use it, probably with nested diagrams,
-when your infrastructure is more complex.
-* When your (hardware) stakeholders prefer other kinds of diagrams rather than a deployment diagram, let them use any kind that is able to show nodes and channels of the infrastructure.
-
-
-.Further Information
-
-See https://docs.arc42.org/section-7/[Deployment View] in the arc42 documentation.
-
-****
-endif::arc42help[]
-
 === Infrastructure Level 1
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Describe (usually in a combination of diagrams, tables, and text):
+El sistema se despliega en una instancia **AWS EC2** (Ubuntu 24.04) con una
+**Elastic IP** fija, usando **Docker Compose** para orquestar todos los
+contenedores. Las imágenes se publican automáticamente en
+**GitHub Container Registry (ghcr.io)** mediante GitHub Actions al crear una
+release.
 
-* distribution of a system to multiple locations, environments, computers, processors, .., as well as physical connections between them
-* important justifications or motivations for this deployment structure
-* quality and/or performance features of this infrastructure
-* mapping of software artifacts to elements of this infrastructure
+[plantuml, deployment-level1, png]
+----
+@startuml
+node "AWS EC2 (Ubuntu 24.04)" {
+    node "Docker Compose" {
+        component "webapp\n(nginx:80)" as webapp
+        component "users\n(Node.js:3000)" as users
+        component "gamey\n(Rust/Axum:4000)" as gamey
+        component "mongodb\n(mongo:27017)" as mongodb
+        component "prometheus\n(:9090)" as prometheus
+        component "grafana\n(:9091)" as grafana
+    }
+}
 
-For multiple environments or alternative deployments please copy and adapt this section of arc42 for all relevant environments.
-****
-endif::arc42help[]
+cloud "MongoDB Atlas" as atlas
+cloud "GitHub Container Registry\n(ghcr.io)" as ghcr
 
-_**<Overview Diagram>**_
+webapp --> users : HTTP :3000
+webapp --> gamey : HTTP :4000
+users --> atlas : TLS :27017
+gamey --> atlas : TLS :27017
+ghcr --> webapp : docker pull
+ghcr --> users : docker pull
+ghcr --> gamey : docker pull
+@enduml
+----
 
 Motivation::
-
-_<explanation in text form>_
+Se eligió AWS EC2 porque proporciona una máquina virtual con IP pública
+configurable. La Elastic IP garantiza que la dirección no cambia al reiniciar
+la instancia, lo que evita tener que actualizar los secrets de GitHub Actions
+y reconstruir las imágenes cada vez. Docker Compose simplifica el despliegue
+al gestionar todos los servicios como una unidad.
 
 Quality and/or Performance Features::
-
-_<explanation in text form>_
+* **Disponibilidad**: los contenedores se configuran con `restart: always`
+para que arranquen automáticamente si la instancia se reinicia.
+* **Seguridad**: las contraseñas y URIs sensibles se inyectan como variables
+de entorno en tiempo de ejecución, nunca se incluyen en las imágenes.
+* **Escalabilidad**: la arquitectura de microservicios permite escalar cada
+servicio de forma independiente si fuera necesario.
+* **Observabilidad**: Prometheus recoge métricas del servicio `users` y
+Grafana las visualiza en dashboards.
 
 Mapping of Building Blocks to Infrastructure::
-_<description of the mapping>_
+[cols="2,2,1,3"]
+|===
+|Componente |Imagen Docker |Puerto |Descripción
+
+|webapp
+|ghcr.io/.../yovi_es2c-webapp
+|80
+|SPA React servida por nginx. Las URLs de la API se inyectan en el build
+mediante `VITE_API_URL` y `VITE_GAMEY_URL`.
+
+|users
+|ghcr.io/.../yovi_es2c-users
+|3000
+|API REST Node.js/Express. Gestiona registro, login y ranking.
+Lee `DB_URI` y `DB_PASSWORD` del entorno.
+
+|gamey
+|ghcr.io/.../yovi_es2c-gamey
+|4000
+|Motor de juego y servidor de bots en Rust/Axum.
+Lee `MONGODB_PASSWORD` del entorno.
+
+|mongodb
+|mongo:latest
+|27017
+|Base de datos local usada en desarrollo.
+En producción se usa MongoDB Atlas.
+
+|prometheus
+|prom/prometheus
+|9090
+|Recoge métricas HTTP del servicio `users`.
+
+|grafana
+|grafana/grafana
+|9091
+|Visualización de métricas. Monta la configuración desde
+`./users/monitoring/grafana/provisioning`.
+|===
 
 
 === Infrastructure Level 2
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-Here you can include the internal structure of (some) infrastructure elements from level 1.
+==== Pipeline CI/CD (GitHub Actions)
 
-Please copy the structure from level 1 for each selected element.
-****
-endif::arc42help[]
+El despliegue se activa automáticamente al publicar una **release** en GitHub.
+El workflow `.github/workflows/release-deploy.yml` ejecuta las siguientes fases
+en orden:
 
-==== _<Infrastructure Element 1>_
+[plantuml, deployment-cicd, png]
+----
+@startuml
+|GitHub Actions|
+start
+:Tests unitarios\n(Node.js + Rust);
+:Tests E2E\n(Cucumber + Playwright);
+fork
+  :Build y push\nwebapp → ghcr.io;
+fork again
+  :Build y push\nusers → ghcr.io;
+fork again
+  :Build y push\ngamey → ghcr.io;
+end fork
+:Deploy SSH → AWS EC2\nwget docker-compose.yml\ndocker compose up -d --pull always;
+stop
+@enduml
+----
 
-_<diagram + explanation>_
+[cols="1,3"]
+|===
+|Paso |Detalle
 
-==== _<Infrastructure Element 2>_
+|Tests unitarios
+|`cargo test` para gamey, `npm test` para webapp y users en paralelo.
 
-_<diagram + explanation>_
+|Tests E2E
+|`cucumber-js` con Playwright arrancando `users` y `webapp` concurrentemente.
+Se ejecuta con `continue-on-error: true` para no bloquear el despliegue.
 
-...
+|Build imágenes
+|El Dockerfile de webapp recibe `VITE_API_URL` y `VITE_GAMEY_URL` como
+`ARG` en tiempo de build para incrustar la IP pública de la instancia.
 
-==== _<Infrastructure Element n>_
+|Deploy SSH
+|GitHub Actions conecta por SSH a la instancia EC2 usando la clave privada
+almacenada en el secret `DEPLOY_KEY`. Descarga el `docker-compose.yml` desde
+el repositorio y levanta los contenedores con `--pull always` para usar
+siempre las imágenes recién publicadas.
+|===
 
-_<diagram + explanation>_
+==== MongoDB Atlas
+
+La base de datos de producción es un cluster de **MongoDB Atlas** con
+replicación en tres shards. La conexión usa TLS y autenticación por usuario
+y contraseña.
+
+[cols="1,3"]
+|===
+|Parámetro |Valor
+
+|Host
+|`ac-mybgnhh-shard-00-0{0,1,2}.yt6wilm.mongodb.net:27017`
+
+|Base de datos (users)
+|`yovi2c_db`, colección `users`
+
+|Base de datos (gamey)
+|`yovi2c_db`, colecciones `games` y `sessions`
+
+|Autenticación
+|Usuario `yovi2c_db_user`, contraseña inyectada via variable de entorno
+
+|TLS
+|Activado (`tls=true`)
+|===
+
+==== Entornos
+
+[cols="1,2,2"]
+|===
+|Entorno |Base de datos |URLs de la API
+
+|Desarrollo local
+|MongoDB local en `mongodb://mongodb:27017` (Docker Compose)
+o `mongodb://localhost:27017` (sin Docker)
+|`http://localhost:3000` y `http://localhost:4000`
+definidas en `webapp/.env.local`
+
+|Producción (AWS EC2)
+|MongoDB Atlas con URI completa inyectada via `DB_URI`
+|`http://<ELASTIC_IP>:3000` y `http://<ELASTIC_IP>:4000`
+incrustadas en el build de la imagen Docker
+|===

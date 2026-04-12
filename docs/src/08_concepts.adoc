@@ -3,72 +3,221 @@ ifndef::imagesdir[:imagesdir: ../images]
 [[section-concepts]]
 == Cross-cutting Concepts
 
+=== Domain Model
 
-ifdef::arc42help[]
-[role="arc42help"]
-****
-.Content
-This section describes overall, principal regulations and solution ideas that are relevant in multiple parts (= cross-cutting) of your system.
-Such concepts are often related to multiple building blocks.
-They can include many different topics, such as
+El dominio central del sistema es el **Juego Y**, un juego de tablero abstracto
+para dos jugadores en un tablero triangular. Los conceptos clave del dominio son:
 
-* models, especially domain models
-* architecture or design patterns
-* rules for using specific technology
-* principal, often technical decisions of an overarching (= cross-cutting) nature
-* implementation rules
+[cols="1,3"]
+|===
+|Concepto |Descripción
 
+|**YEN** (Y Exchange Notation)
+|Formato de serialización inspirado en FEN del ajedrez. Representa el estado
+completo de una partida en JSON: tamaño del tablero, turno, jugadores y layout.
+Es el contrato de comunicación entre todos los componentes del sistema.
 
-.Motivation
-Concepts form the basis for _conceptual integrity_ (consistency, homogeneity) of the architecture. 
-Thus, they are an important contribution to achieve inner qualities of your system.
+|**Coordenadas baricéntricas**
+|Sistema de tres componentes `(x, y, z)` donde `x + y + z = n - 1` siendo `n`
+el tamaño del tablero. Identifica unívocamente cada casilla del tablero triangular.
 
-Some of these concepts cannot be assigned to individual building blocks, e.g. security or safety. 
+|**Variantes**
+|El juego soporta dos variantes: `standard` (gana quien conecta los tres lados)
+y `why_not` (gana el rival de quien conecta los tres lados).
 
+|**GameStatus**
+|Estado de la partida: `Ongoing` (en curso, con el siguiente jugador) o
+`Finished` (terminada, con el ganador).
 
-.Form
-The form can be varied:
+|**Sesión**
+|Abstracción que permite a un bot externo jugar contra un bot interno.
+Persiste en MongoDB y mantiene el estado entre peticiones HTTP.
+|===
 
-* concept papers with any kind of structure
-* cross-cutting model excerpts or scenarios using notations of the architecture views
-* sample implementations, especially for technical concepts
-* reference to typical usage of standard frameworks (e.g. using Hibernate for object/relational mapping)
+---
 
-.Structure
-A potential (but not mandatory) structure for this section could be:
+=== Architecture Pattern: Microservices
 
-* Domain concepts
-* User Experience concepts (UX)
-* Safety and security concepts
-* Architecture and design patterns
-* "Under-the-hood"
-* development concepts
-* operational concepts
+El sistema se divide en tres microservicios independientes con responsabilidades
+bien definidas:
 
-Note: it might be difficult to assign individual concepts to one specific topic
-on this list.
+[cols="1,2,2"]
+|===
+|Servicio |Responsabilidad |Tecnología
 
-image::08-concepts-EN.drawio.png["Possible topics for crosscutting concepts"]
+|**webapp**
+|Interfaz de usuario, navegación entre vistas, comunicación con los otros servicios
+|React, TypeScript, Vite, MUI
 
+|**users**
+|Autenticación, registro, ranking de jugadores
+|Node.js, Express, MongoDB
 
-.Further Information
+|**gamey**
+|Motor de juego, bots, historial de partidas, API para bots externos
+|Rust, Axum, MongoDB
+|===
 
-See https://docs.arc42.org/section-8/[Concepts] in the arc42 documentation.
-****
-endif::arc42help[]
+Cada servicio tiene su propio `Dockerfile` y se despliega de forma independiente.
+La comunicación entre servicios se hace exclusivamente mediante HTTP/REST.
 
-=== _<Concept 1>_
+---
 
-_<explanation>_
+=== API Design: REST con versionado
 
+Todos los endpoints de `gamey` incluyen la versión de la API en la ruta:
+POST /v1/game/move
+POST /v1/game/session
+GET  /v1/game/session/{session_id}
+POST /v1/game/session/{session_id}/move
+GET  /v1/game/history
+POST /v1/ybot/choose/{bot_id}
+La versión se valida en cada handler mediante `check_api_version`. Si se recibe
+una versión no soportada, se devuelve un error estructurado con el mensaje
+`"Unsupported API version"`. Esto permite evolucionar la API sin romper clientes
+existentes.
 
+---
 
-=== _<Concept 2>_
+=== Security: Autenticación y almacenamiento de contraseñas
 
-_<explanation>_
+Las contraseñas nunca se almacenan en texto plano. El servicio `users` aplica:
 
-...
+* **scrypt** como algoritmo de derivación de claves, resistente a ataques de
+fuerza bruta y de diccionario.
+* **Salt aleatorio** por usuario (16 bytes), generado con `crypto.randomBytes`.
+Impide ataques con rainbow tables.
+* **`timingSafeEqual`** para comparar hashes, evitando ataques de tiempo.
 
-=== _<Concept n>_
+Los secretos de producción (URI de MongoDB, clave SSH, etc.) se gestionan
+como **GitHub Actions Secrets** y se inyectan como variables de entorno en
+tiempo de ejecución, nunca se incluyen en el código ni en las imágenes Docker.
 
-_<explanation>_
+---
+
+=== Observability: Métricas y monitorización
+
+El sistema incluye un stack de observabilidad completo:
+
+* **Prometheus** recoge métricas HTTP del servicio `users` mediante el middleware
+`express-prom-bundle`, que expone automáticamente métricas de latencia,
+conteo de peticiones y códigos de respuesta por método y ruta.
+* **Grafana** visualiza esas métricas en dashboards configurados mediante
+provisioning automático desde `./users/monitoring/grafana/provisioning`.
+* Ambos servicios se despliegan como contenedores Docker dentro del mismo
+`docker-compose.yml`.
+
+---
+
+=== Persistence: Acceso a MongoDB
+
+Tanto `users` (Node.js) como `gamey` (Rust) acceden a **MongoDB Atlas** en
+producción y a un MongoDB local en desarrollo. El patrón de acceso es el mismo
+en ambos:
+
+* La URI de conexión se lee de variables de entorno (`DB_URI` en Node.js,
+`MONGODB_PASSWORD` en Rust).
+* Si la variable no está disponible, el servicio arranca igualmente pero
+registra un warning y omite las operaciones de base de datos.
+* Las colecciones usadas son:
+
+[cols="1,1,2"]
+|===
+|Servicio |Colección |Contenido
+
+|users |`users` |Usuarios registrados con hash y salt de contraseña, wins y losses
+|gamey |`games` |Historial de partidas finalizadas
+|gamey |`sessions` |Sesiones activas para bots externos
+|===
+
+---
+
+=== Frontend Architecture: Single Page Application
+
+La webapp es una **SPA** (Single Page Application) construida con React y Vite.
+La navegación entre vistas (`inicio`, `menu`, `game`, `historial`, `ranking`)
+se gestiona con estado local en `App.tsx`, sin router externo.
+
+Las transiciones entre vistas se implementan con el componente `FadeView`,
+que controla el ciclo de vida de la animación en 4 fases: `leaving → hidden
+→ entering → visible`. Los `children` no se intercambian hasta que la
+animación de salida ha terminado, evitando flashes de contenido.
+
+Las URLs de los servicios backend se inyectan en tiempo de build mediante
+variables de entorno de Vite (`VITE_API_URL`, `VITE_GAMEY_URL`), con fallback
+a `localhost` para desarrollo local.
+
+---
+
+=== Bot Architecture: Registry Pattern
+
+Los bots internos de `gamey` siguen el **patrón Registry**. Todos implementan
+el trait `YBot`:
+
+```rust
+pub trait YBot {
+    fn name(&self) -> &str;
+    fn choose_move(&self, board: &GameY) -> Option<Coordinates>;
+}
+```
+
+Los bots disponibles se registran en `YBotRegistry` al arrancar el servidor:
+
+```rust
+YBotRegistry::new()
+    .with_bot(Arc::new(RandomBot))
+    .with_bot(Arc::new(SideBot))
+    .with_bot(Arc::new(SideBotHard))
+    // ...
+```
+
+El registro se comparte entre todos los handlers mediante `AppState` con `Arc`,
+lo que permite acceso concurrente sin bloqueos. Los bots externos pueden
+conectarse a través de la API de sesiones sin necesidad de estar registrados
+en el servidor.
+
+---
+
+=== Testing Strategy
+
+El sistema aplica una estrategia de testing en tres niveles:
+
+[cols="1,2,2"]
+|===
+|Nivel |Herramienta |Qué cubre
+
+|**Unitarios (Rust)**
+|`cargo test`
+|Lógica del juego, coordenadas, bots, serialización YEN, endpoints HTTP
+
+|**Unitarios (Node.js/TypeScript)**
+|Vitest + Testing Library
+|Servicios de usuarios, componentes React, API clients
+
+|**E2E**
+|Cucumber + Playwright
+|Flujos completos de usuario a través del navegador
+
+|===
+
+La cobertura de código se mide con **SonarCloud**, integrado en el pipeline
+de CI/CD. Se exige un mínimo del 80% de cobertura en el código de la webapp.
+Los tests E2E se ejecutan con `continue-on-error: true` para no bloquear
+el despliegue si fallan.
+
+---
+
+=== Error Handling
+
+Todos los servicios siguen un patrón consistente de manejo de errores:
+
+* **gamey (Rust)**: los errores se devuelven como `Json<ErrorResponse>` con
+campos `message`, `api_version` y `bot_id`. Los handlers usan `?` con
+`map_err` para propagar errores de forma uniforme.
+
+* **users (Node.js)**: los errores se devuelven como `{ error: string }` con
+el código HTTP apropiado (400, 401, 404, 409, 500).
+
+* **webapp (React)**: los errores de red se capturan en bloques `try/catch`
+y se muestran al usuario mediante componentes `Alert` de MUI. Las llamadas
+a `recordGameResult` fallan de forma silenciosa para no interrumpir el juego.

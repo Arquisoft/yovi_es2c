@@ -212,6 +212,183 @@ mod tests {
         assert_eq!(restored.timestamp, original.timestamp);
         assert_eq!(restored.duration_seconds, original.duration_seconds);
     }
+    #[test]
+    fn sort_and_truncate_with_zero_limit_returns_empty() {
+        let r1 = make_record(100, Some("A"));
+        let r2 = make_record(200, Some("B"));
 
+        let limited = sort_and_truncate(vec![r1, r2], 0);
+
+        assert!(limited.is_empty());
+    }
+
+    #[test]
+    fn sort_and_truncate_with_exact_limit_keeps_all() {
+        let r1 = make_record(100, Some("A"));
+        let r2 = make_record(200, Some("B"));
+
+        let limited = sort_and_truncate(vec![r1, r2], 2);
+
+        assert_eq!(limited.len(), 2);
+        assert_eq!(limited[0].timestamp, 200);
+        assert_eq!(limited[1].timestamp, 100);
+    }
+
+    #[test]
+    fn sort_and_truncate_with_empty_vec_returns_empty() {
+        let result = sort_and_truncate(Vec::new(), 5);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn sort_and_truncate_with_same_timestamps_does_not_crash() {
+        let r1 = make_record(100, Some("A"));
+        let r2 = make_record(100, Some("B"));
+        let r3 = make_record(100, Some("C"));
+
+        let result = sort_and_truncate(vec![r1, r2, r3], 10);
+
+        assert_eq!(result.len(), 3);
+        assert!(result.iter().all(|r| r.timestamp == 100));
+    }
+
+    #[test]
+    fn game_record_serde_roundtrip_with_none_winner() {
+        let original = GameRecord {
+            winner: None,
+            board_size: 5,
+            moves_count: 12,
+            timestamp: 123456789,
+            duration_seconds: 55,
+        };
+
+        let json = serde_json::to_string(&original).unwrap();
+        let restored: GameRecord = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(restored.winner, None);
+        assert_eq!(restored.board_size, 5);
+        assert_eq!(restored.moves_count, 12);
+        assert_eq!(restored.timestamp, 123456789);
+        assert_eq!(restored.duration_seconds, 55);
+    }
+
+    #[test]
+    fn session_record_serde_roundtrip_ongoing() {
+        let original = SessionRecord {
+            session_id: "session-123".to_string(),
+            yen_json: r#"{"size":3,"turn":0,"players":["B","R"],"layout":"./../...","variant":"standard"}"#.to_string(),
+            external_player: 1,
+            internal_bot_id: "random".to_string(),
+            status: "ongoing".to_string(),
+            winner: None,
+            created_at: 1_700_000_000,
+        };
+
+        let json = serde_json::to_string(&original).unwrap();
+        let restored: SessionRecord = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(restored.session_id, original.session_id);
+        assert_eq!(restored.yen_json, original.yen_json);
+        assert_eq!(restored.external_player, original.external_player);
+        assert_eq!(restored.internal_bot_id, original.internal_bot_id);
+        assert_eq!(restored.status, original.status);
+        assert_eq!(restored.winner, original.winner);
+        assert_eq!(restored.created_at, original.created_at);
+    }
+
+    #[test]
+    fn session_record_serde_roundtrip_finished_with_winner() {
+        let original = SessionRecord {
+            session_id: "session-finished".to_string(),
+            yen_json: "{}".to_string(),
+            external_player: 0,
+            internal_bot_id: "center".to_string(),
+            status: "finished".to_string(),
+            winner: Some(1),
+            created_at: 1_800_000_000,
+        };
+
+        let json = serde_json::to_string(&original).unwrap();
+        let restored: SessionRecord = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(restored.session_id, original.session_id);
+        assert_eq!(restored.yen_json, original.yen_json);
+        assert_eq!(restored.external_player, original.external_player);
+        assert_eq!(restored.internal_bot_id, original.internal_bot_id);
+        assert_eq!(restored.status, original.status);
+        assert_eq!(restored.winner, Some(1));
+        assert_eq!(restored.created_at, original.created_at);
+    }
+
+    #[test]
+    fn session_record_clone_preserves_fields() {
+        let original = SessionRecord {
+            session_id: "session-123".to_string(),
+            yen_json: "{}".to_string(),
+            external_player: 1,
+            internal_bot_id: "random".to_string(),
+            status: "ongoing".to_string(),
+            winner: None,
+            created_at: 1_700_000_000,
+        };
+
+        let cloned = original.clone();
+
+        assert_eq!(cloned.session_id, original.session_id);
+        assert_eq!(cloned.yen_json, original.yen_json);
+        assert_eq!(cloned.external_player, original.external_player);
+        assert_eq!(cloned.internal_bot_id, original.internal_bot_id);
+        assert_eq!(cloned.status, original.status);
+        assert_eq!(cloned.winner, original.winner);
+        assert_eq!(cloned.created_at, original.created_at);
+    }
+
+    #[test]
+    fn session_record_debug_contains_struct_name() {
+        let record = SessionRecord {
+            session_id: "session-123".to_string(),
+            yen_json: "{}".to_string(),
+            external_player: 1,
+            internal_bot_id: "random".to_string(),
+            status: "ongoing".to_string(),
+            winner: None,
+            created_at: 1_700_000_000,
+        };
+
+        let debug_text = format!("{:?}", record);
+
+        assert!(debug_text.contains("SessionRecord"));
+    }
+
+    #[test]
+    fn new_session_id_returns_non_empty_string() {
+        let id = new_session_id();
+        assert!(!id.is_empty());
+    }
+
+    #[test]
+    fn new_session_id_returns_valid_uuid() {
+        let id = new_session_id();
+        assert!(Uuid::parse_str(&id).is_ok());
+    }
+
+    #[test]
+    fn new_session_id_generates_different_values() {
+        let id1 = new_session_id();
+        let id2 = new_session_id();
+
+        assert_ne!(id1, id2);
+    }
+
+    #[test]
+    fn new_session_id_has_uuid_hyphenated_format() {
+        let id = new_session_id();
+
+        assert_eq!(id.len(), 36);
+        assert_eq!(id.chars().nth(8), Some('-'));
+        assert_eq!(id.chars().nth(13), Some('-'));
+        assert_eq!(id.chars().nth(18), Some('-'));
+        assert_eq!(id.chars().nth(23), Some('-'));
+    }
 
 }

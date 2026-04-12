@@ -6,10 +6,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      #- DB_URI=${DB_URI}
-      #- DB_PASSWORD=${DB_PASSWORD}
-      - DB_URI=mongodb://mongodb:27017
-      - DB_PASSWORD=
+      - DB_URI=${DB_URI}
+      - DB_PASSWORD=${DB_PASSWORD}
+      #- DB_URI=mongodb://mongodb:27017
+      #- DB_PASSWORD=
     networks:
       - monitor-net
 

@@ -203,7 +203,7 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
                         '&:hover': { borderColor: '#7c4dff', color: '#7c4dff' },
                     }}
                 >
-                    Historial
+                    Ver historial de partidas
                 </Button>
                 <Button
                     variant="outlined"

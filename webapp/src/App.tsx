@@ -32,6 +32,7 @@ export default function App() {
 
   // Tamaño del tablero seleccionado en el menú (5, 7 o 9)
   const [boardSize, setBoardSize] = useState(7);
+  const [inicioAuthMode, setInicioAuthMode] = useState<'login' | 'register'>('login');
 
   // ── Handlers de navegación ────────────────────────────────────────────────
 
@@ -41,6 +42,7 @@ export default function App() {
    */
   const logout = () => {
     setUsername('Jugador');
+    setInicioAuthMode('register');
     setView('inicio');
   };
 
@@ -50,6 +52,7 @@ export default function App() {
    */
   const enterFromInicio = (name: string) => {
     setUsername(name || 'Jugador');
+    setInicioAuthMode('login');
     setView('menu');
   };
 
@@ -78,7 +81,7 @@ export default function App() {
 
           {/* Pantalla de login/registro */}
           {view === 'inicio' && (
-              <Inicio onEntrar={enterFromInicio} />
+              <Inicio onEntrar={enterFromInicio} initialAuthMode={inicioAuthMode} />
           )}
 
           {/* Lobby de selección de modo */}

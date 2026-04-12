@@ -11,12 +11,13 @@ import {
 
 type RegisterFormProps = {
   onAuthSuccess: (username: string) => void;
+  initialMode?: AuthMode;
 };
 
 type AuthMode = 'login' | 'register';
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess }) => {
-  const [mode, setMode] = useState<AuthMode>('login');
+const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, initialMode = 'login' }) => {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -58,6 +59,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess }) => {
 
   return (
       <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box>
+          <Box component="h2" sx={{ m: 0, fontSize: '1.5rem', fontWeight: 700 }}>
+            {mode === 'register' ? 'Register' : 'Log in'}
+          </Box>
+        </Box>
         {/* Toggle login / register */}
         <ToggleButtonGroup
             value={mode}

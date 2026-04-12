@@ -400,7 +400,9 @@ fn game_status_tuple(status: &GameStatus) -> (String, Option<u32>) {
 #[cfg(test)]
     mod tests {
         use super::*;
-        use crate::{GameStatus, PlayerId, core::game::Variant};
+        use crate::{GameStatus, PlayerId, core::game::Variant, YBotRegistry, RandomBot, state::AppState};
+        use mongodb::Client;
+        use std::sync::Arc;
 
         // ── game_status_tuple ──────────────────────────────────────────────────
 
@@ -601,5 +603,62 @@ fn game_status_tuple(status: &GameStatus) -> (String, Option<u32>) {
                 _ => Variant::Standard,
             };
             assert_eq!(variant, Variant::Standard);
+        }
+
+        #[tokio::test]
+        async fn test_play_internal_bot_turn_bot_not_found() {
+            let registry = YBotRegistry::new();
+            let state = AppState::new(registry);
+
+            let client = Client::with_uri_str("mongodb://127.0.0.1:27017").await.unwrap();
+            let db = client.database("gamey_tests");
+
+            let game = GameY::new(5, Variant::Standard);
+            let yen: YEN = (&game).into();
+
+            let result = super::play_internal_bot_turn(
+                &state,
+                &db,
+                "session-missing",
+                yen,
+                "nonexistent_bot",
+                "v1",
+            )
+            .await;
+
+            assert!(result.is_err());
+            let err = result.err().unwrap().0;
+            assert!(err.message.contains("Internal bot not found"));
+            assert_eq!(err.api_version, Some("v1".to_string()));
+        }
+
+        #[tokio::test]
+        async fn test_play_internal_bot_turn_with_random_bot() {
+            let registry = YBotRegistry::new().with_bot(Arc::new(RandomBot));
+            let state = AppState::new(registry);
+
+            let client = Client::with_uri_str("mongodb://127.0.0.1:27017").await.unwrap();
+            let db = client.database("gamey_tests");
+
+            let game = GameY::new(5, Variant::Standard);
+            let yen: YEN = (&game).into();
+
+            let (updated_yen, status, winner, next_player) = super::play_internal_bot_turn(
+                &state,
+                &db,
+                "session-ok",
+                yen,
+                "random_bot",
+                "v1",
+            )
+            .await
+            .expect("play_internal_bot_turn should succeed");
+
+            assert!(status == "ongoing" || status == "finished");
+            assert!(updated_yen.size() == 5);
+            if status == "finished" {
+                assert!(winner.is_some());
+                assert!(next_player.is_none());
+            }
         }
 }

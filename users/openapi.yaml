@@ -1,105 +1,72 @@
-openapi: 3.0.0
-info:
-  title: User Service API
-  version: 1.0.0
-  description: API for authentication and user creation
-paths:
-  /register:
-    post:
-      summary: Register a new user
-      description: Creates a new user with username and hashed password.
-      requestBody:
-        required: true
+/game/result:
+  post:
+    summary: Record game result
+    description: Registers a win or loss for a user.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - username
+              - won
+            properties:
+              username:
+                type: string
+                example: testuser
+              won:
+                type: boolean
+                example: true
+    responses:
+      '200':
+        description: Result recorded successfully
         content:
           application/json:
             schema:
               type: object
-              required:
-                - username
-                - password
               properties:
-                username:
+                message:
                   type: string
-                  example: testuser
-                password:
-                  type: string
-                  format: password
-                  example: mySecret123
-      responses:
-        '201':
-          description: User registered successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: User registered successfully
-                  username:
-                    type: string
-                    example: testuser
-        '400':
-          description: Invalid input
-        '409':
-          description: Username already exists
-  /login:
-    post:
-      summary: Login with existing credentials
-      description: Authenticates a user by username and password.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - username
-                - password
-              properties:
-                username:
-                  type: string
-                  example: testuser
-                password:
-                  type: string
-                  format: password
-                  example: mySecret123
+                  example: Result recorded
+      '400':
+        description: Invalid input
+      '404':
+        description: User not found
+      '500':
+        description: Database not initialized
+
+  /ranking:
+    get:
+      summary: Get global ranking
+      description: Returns all players sorted by wins descending.
       responses:
         '200':
-          description: Login successful
+          description: Ranking retrieved successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  message:
-                    type: string
-                    example: Login successful
-                  username:
-                    type: string
-                    example: testuser
-        '400':
-          description: Invalid input
-        '401':
-          description: Invalid credentials
-  /createuser:
-    post:
-      summary: Backward compatible register alias
-      description: Same behavior as /register.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - username
-                - password
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-      responses:
-        '201':
-          description: User registered successfully
+                  ranking:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        position:
+                          type: integer
+                          example: 1
+                        username:
+                          type: string
+                          example: testuser
+                        wins:
+                          type: integer
+                          example: 10
+                        losses:
+                          type: integer
+                          example: 2
+                        winRate:
+                          type: integer
+                          example: 83
+        '500':
+          description: Database not initialized

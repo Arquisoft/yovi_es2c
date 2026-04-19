@@ -19,6 +19,7 @@ pub mod history;
 pub mod state;
 pub mod version;
 pub mod session;
+pub mod play;
 
 use axum::http::Method;
 use std::sync::Arc;
@@ -64,6 +65,7 @@ pub fn create_router(state: AppState) -> axum::Router {
             "/{api_version}/game/session/{session_id}/move",
             axum::routing::post(session::session_move),
         )
+        .route("/play", axum::routing::get(play::play))
         .with_state(state)
         .layer(cors)
 }

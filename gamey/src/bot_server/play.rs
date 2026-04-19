@@ -233,4 +233,179 @@ mod tests {
         let cloned = r.clone();
         assert_eq!(r, cloned);
     }
+
+    // ── PlayCoords serialization ──────────────────────────────────────────────
+
+    #[test]
+    fn test_play_coords_serialization() {
+        let coords = PlayCoords { x: 3, y: 1, z: 0 };
+        let json = serde_json::to_string(&coords).unwrap();
+        assert_eq!(json, r#"{"x":3,"y":1,"z":0}"#);
+    }
+
+    #[test]
+    fn test_play_coords_deserialization() {
+        let json = r#"{"x":0,"y":4,"z":0}"#;
+        let coords: PlayCoords = serde_json::from_str(json).unwrap();
+        assert_eq!(coords, PlayCoords { x: 0, y: 4, z: 0 });
+    }
+
+    #[test]
+    fn test_play_coords_zero() {
+        let coords = PlayCoords { x: 0, y: 0, z: 0 };
+        let json = serde_json::to_string(&coords).unwrap();
+        let decoded: PlayCoords = serde_json::from_str(&json).unwrap();
+        assert_eq!(coords, decoded);
+    }
+
+    // ── PlayResponse roundtrip ────────────────────────────────────────────────
+
+    #[test]
+    fn test_play_response_move_roundtrip() {
+        let original = PlayResponse::Move {
+            coords: PlayCoords { x: 4, y: 0, z: 0 },
+        };
+        let json = serde_json::to_string(&original).unwrap();
+        let decoded: PlayResponse = serde_json::from_str(&json).unwrap();
+        assert_eq!(original, decoded);
+    }
+
+    #[test]
+    fn test_play_response_action_roundtrip() {
+        let original = PlayResponse::Action {
+            action: "resign".to_string(),
+        };
+        let json = serde_json::to_string(&original).unwrap();
+        let decoded: PlayResponse = serde_json::from_str(&json).unwrap();
+        assert_eq!(original, decoded);
+    }
+
+    #[test]
+    fn test_play_response_action_clone() {
+        let r = PlayResponse::Action {
+            action: "swap".to_string(),
+        };
+        let cloned = r.clone();
+        assert_eq!(r, cloned);
+    }
+
+    #[test]
+    fn test_play_response_move_ne_action() {
+        let m = PlayResponse::Move {
+            coords: PlayCoords { x: 1, y: 1, z: 1 },
+        };
+        let a = PlayResponse::Action {
+            action: "swap".to_string(),
+        };
+        assert_ne!(m, a);
+    }
+
+    // ── YEN parsing edge cases ────────────────────────────────────────────────
+
+    #[test]
+    fn test_yen_size_5_parses() {
+        let yen_str = r#"{
+            "size": 5,
+            "turn": 0,
+            "players": ["B", "R"],
+            "layout": "./../.../..../.....",
+            "variant": "standard"
+        }"#;
+        let yen: YEN = serde_json::from_str(yen_str).unwrap();
+        assert_eq!(yen.size(), 5);
+        assert_eq!(yen.turn(), 0);
+    }
+
+    #[test]
+    fn test_yen_turn_1_parses() {
+        let yen_str = r#"{
+            "size": 3,
+            "turn": 1,
+            "players": ["B", "R"],
+            "layout": "../...",
+            "variant": "standard"
+        }"#;
+        let yen: YEN = serde_json::from_str(yen_str).unwrap();
+        assert_eq!(yen.turn(), 1);
+    }
+
+    #[test]
+    fn test_yen_why_not_variant_parses() {
+        let yen_str = r#"{
+            "size": 3,
+            "turn": 0,
+            "players": ["B", "R"],
+            "layout": "../...",
+            "variant": "why_not"
+        }"#;
+        let yen: YEN = serde_json::from_str(yen_str).unwrap();
+        assert_eq!(yen.size(), 3);
+    }
+
+    #[test]
+    fn test_empty_json_yen_fails() {
+        let result: Result<YEN, _> = serde_json::from_str("{}");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_yen_missing_layout_fails() {
+        let result: Result<YEN, _> = serde_json::from_str(
+            r#"{"size":3,"turn":0,"players":["B","R"],"variant":"standard"}"#
+        );
+        assert!(result.is_err());
+    }
+
+    // ── GameY::try_from YEN ───────────────────────────────────────────────────
+
+    #[test]
+    fn test_game_from_valid_yen() {
+        let yen_str = r#"{
+            "size": 5,
+            "turn": 0,
+            "players": ["B", "R"],
+            "layout": "./../.../..../.....",
+            "variant": "standard"
+        }"#;
+        let yen: YEN = serde_json::from_str(yen_str).unwrap();
+        let game = GameY::try_from(yen);
+        assert!(game.is_ok());
+    }
+
+    #[test]
+    fn test_game_from_yen_turn_preserved() {
+        let yen_str = r#"{
+            "size": 5,
+            "turn": 1,
+            "players": ["B", "R"],
+            "layout": "./../.../..../.....",
+            "variant": "standard"
+        }"#;
+        let yen: YEN = serde_json::from_str(yen_str).unwrap();
+        let game = GameY::try_from(yen).unwrap();
+        let next = game.next_player().map(|p| p.id());
+        assert_eq!(next, Some(1));
+    }
+
+    // ── PlayParams bot_id fallback ────────────────────────────────────────────
+
+    #[test]
+    fn test_bot_id_fallback_empty_string() {
+        let params = PlayParams {
+            position: "{}".to_string(),
+            bot_id: Some("".to_string()),
+        };
+        let bot_id = params.bot_id.as_deref().unwrap_or("side_bot");
+        assert_eq!(bot_id, "");
+    }
+
+    #[test]
+    fn test_bot_id_custom_value() {
+        let params = PlayParams {
+            position: "{}".to_string(),
+            bot_id: Some("side_bot_hard".to_string()),
+        };
+        let bot_id = params.bot_id.as_deref().unwrap_or("side_bot");
+        assert_eq!(bot_id, "side_bot_hard");
+    }
 }

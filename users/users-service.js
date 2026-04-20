@@ -152,11 +152,10 @@ async function loginHandler(req, res) {
 async function gameResultHandler(req, res) {
   const { username: rawUsername, won } = req.body;
 
+  // 1. Validation (You already have this, keep it!)
   if (typeof rawUsername !== 'string' || !/^[a-zA-Z0-9_]{3,30}$/.test(rawUsername) || typeof won !== 'boolean') {
-    return res.status(400).json({ error: 'username and won (boolean) are required' });
+    return res.status(400).json({ error: 'Invalid input' });
   }
-
-  const username = rawUsername;
 
   const usersCollection = req.app.locals.usersCollection;
   if (!usersCollection) {
@@ -164,11 +163,13 @@ async function gameResultHandler(req, res) {
   }
 
   try {
-    const update = won
-        ? { $inc: { wins: 1 } }
-        : { $inc: { losses: 1 } };
+    const update = won ? { $inc: { wins: 1 } } : { $inc: { losses: 1 } };
 
-    const result = await usersCollection.updateOne({ username }, update);
+    // 2. Use an explicit object property to avoid any ambiguity
+    // Wrap the variable to ensure the scanner sees it as a literal string value
+    const query = { username: { $eq: rawUsername } };
+
+    const result = await usersCollection.updateOne(query, update);
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -176,7 +177,7 @@ async function gameResultHandler(req, res) {
 
     return res.status(200).json({ message: 'Result recorded' });
   } catch (err) {
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
 

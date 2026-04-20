@@ -63,6 +63,7 @@ pub struct CreateSessionResponse {
     pub winner: Option<u32>,
     /// Whose turn it is next.
     pub next_player: Option<u32>,
+    
 }
 
 /// Creates a new game session between an external bot and an internal bot.

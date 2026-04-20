@@ -23,6 +23,11 @@ use serde::{Deserialize, Serialize};
 ///   "variant": "standard"
 /// }
 /// ```
+///
+fn default_variant() -> String {
+    "standard".to_string()
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct YEN {
     /// The board size (length of one side of the triangle).
@@ -37,6 +42,7 @@ pub struct YEN {
     /// or '.' for empty cells. Example: "B/..R/.B.R"
     layout: String,
     /// Game variant.
+    #[serde(default = "default_variant")]
     variant: String,
 }
 

@@ -4,6 +4,8 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
 
 This project is a template with some basic functionality for the ASW labs.
 

@@ -1,7 +1,7 @@
 # Yovi_es2c - Game Y at UniOvi
 
 <p align="center">
-  <img src=webapp/public/tri-billiard.svg" alt="YOVI Arena" width="360">
+  <img src="webapp/public/tri-billiard.svg" alt="YOVI Arena" width="360">
 </p>
 
 [![Release — Test, Build, Publish, Deploy](https://github.com/arquisoft/yovi_es2c/actions/workflows/release-deploy.yml/badge.svg)](https://github.com/arquisoft/yovi_es2c/actions/workflows/release-deploy.yml)

@@ -150,11 +150,13 @@ async function loginHandler(req, res) {
 // ── Registrar resultado de partida ──────────────────────────────────────────
 
 async function gameResultHandler(req, res) {
-  const { username, won } = req.body;
+  const { username: rawUsername, won } = req.body;
 
-  if (!username || typeof won !== 'boolean') {
+  if (typeof rawUsername !== 'string' || !/^[a-zA-Z0-9_]{3,30}$/.test(rawUsername) || typeof won !== 'boolean') {
     return res.status(400).json({ error: 'username and won (boolean) are required' });
   }
+
+  const username = rawUsername;
 
   const usersCollection = req.app.locals.usersCollection;
   if (!usersCollection) {
@@ -162,8 +164,6 @@ async function gameResultHandler(req, res) {
   }
 
   try {
-    // Incrementa wins o losses según el resultado.
-    // $inc crea el campo si no existe, empezando desde 0.
     const update = won
         ? { $inc: { wins: 1 } }
         : { $inc: { losses: 1 } };

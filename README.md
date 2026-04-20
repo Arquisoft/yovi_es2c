@@ -13,8 +13,16 @@
 
 This project is a template with some basic functionality for the ASW labs.
 
-## URL
--http://13.49.237.46/
+## Enlances de interes
+<p align="center">
+  <a href="http://13.49.237.46/">
+    <img src="https://img.shields.io/badge/Aplicación-Online-green?style=for-the-badge" alt="Aplicación"/>
+  </a>
+  &emsp;&emsp;
+  <a href="https://arquisoft.github.io/yovi_es2c/">
+    <img src="https://img.shields.io/badge/Documentación-GitHub_Pages-purple?style=for-the-badge" alt="Documentación"/>
+  </a>
+</p>
 
 ## Project Structure
 

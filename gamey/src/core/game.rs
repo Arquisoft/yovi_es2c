@@ -298,6 +298,36 @@ impl GameY {
             tracing::info!("Game is already over. Move at {} could be ignored", coords);
         }
 
+        // Validate coordinates range
+        if coords.x() >= self.board_size {
+            return Err(GameYError::CoordOutOfRange {
+                id_coord: 'x',
+                coord: coords.x(),
+                board_size: self.board_size,
+            });
+        }
+        if coords.y() >= self.board_size {
+            return Err(GameYError::CoordOutOfRange {
+                id_coord: 'y',
+                coord: coords.y(),
+                board_size: self.board_size,
+            });
+        }
+        if coords.z() >= self.board_size {
+            return Err(GameYError::CoordOutOfRange {
+                id_coord: 'z',
+                coord: coords.z(),
+                board_size: self.board_size,
+            });
+        }
+
+        // Validate barycentric sum: x + y + z = board_size - 1
+        let sum = coords.x() + coords.y() + coords.z();
+        let expected = self.board_size - 1;
+        if sum != expected {
+            return Err(GameYError::InvalidBarycentricSum { sum, expected });
+        }
+
         if self.board_map.contains_key(&coords) {
             return Err(GameYError::Occupied {
                 coordinates: coords,

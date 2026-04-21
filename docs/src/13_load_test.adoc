@@ -1,0 +1,82 @@
+ifndef::imagesdir[:imagesdir: ../images]
+
+[[section-load-test]]
+== Load Tests
+
+Este documento describe la estrategia, herramientas y escenarios de pruebas de carga implementados para el sistema YOVI. El objetivo principal es mitigar los riesgos de rendimiento identificados en la arquitectura (Sección 11, Riesgo 4).
+
+=== Herramientas y Entorno
+
+Para las pruebas de carga se ha seleccionado **Gatling**, una herramienta de código abierto basada en Scala que permite simular miles de usuarios concurrentes con una huella de memoria mínima.
+
+* **Framework:** Gatling (v3.x)
+* **Lenguaje:** Scala
+* **Gestor de dependencias:** Maven
+* **Objetivos de prueba:**
+    - `webapp`: Accesibilidad y carga de recursos estáticos.
+    - `users-service` (Puerto 3000): Registro y autenticación.
+    - `gamey-service` (Puerto 4000): Lógica de juego y movimientos.
+
+=== Escenarios de Prueba Detallados
+
+Se han implementado cuatro simulaciones que cubren los flujos de usuario más representativos. A continuación se describe el comportamiento de cada una:
+
+==== 1. RegisterSimulation
+Simula el flujo inicial de un nuevo usuario en la plataforma.
+* **Acciones:**
+    1. Carga de la página principal (`/`) y recursos estáticos (`index.js`, `index.css`, `tri-billiard.svg`).
+    2. Pausa de 10 segundos para emular la introducción de datos.
+    3. Petición POST a `users-service:3000/register` con credenciales de prueba.
+* **Objetivo:** Validar la capacidad de creación de nuevos usuarios y la persistencia inicial en la base de datos.
+
+==== 2. LoginSimulation
+Valida el proceso de autenticación de usuarios existentes de forma aislada.
+* **Acciones:**
+    1. Petición OPTIONS (CORS) y POST a `users-service:3000/login`.
+    2. Verificación de la respuesta del servidor.
+    3. Registro en consola del cuerpo de la respuesta para depuración.
+* **Objetivo:** Medir la latencia del servicio de autenticación bajo concurrencia.
+
+==== 3. LoginAndPlaySimulation
+Representa el escenario de uso más completo y crítico del sistema.
+* **Acciones:**
+    1. Carga de la aplicación web completa.
+    2. Inicio de sesión (Login) tras una pausa de 4 segundos.
+    3. Ejecución de una secuencia de movimientos de juego enviando el estado del tablero en formato YEN a `gamey-service:4000/v1/game/move`.
+    4. Pausas intercaladas de entre 4 y 5 segundos entre movimientos para simular el tiempo de reflexión del jugador.
+* **Objetivo:** Probar la integración de extremo a extremo entre la Webapp, el servicio de usuarios y el motor de juego GameY.
+
+==== 4. RecordedSimulation
+Una sesión capturada que combina registro y movimientos rápidos para estresar el sistema.
+* **Acciones:**
+    1. Registro de usuario inmediato.
+    2. Envío de múltiples jugadas consecutivas a `gamey-service`.
+    3. Incluye validación de pre-vuelo (OPTIONS) para asegurar que la configuración de CORS no penaliza el rendimiento.
+* **Objetivo:** Simular ráfagas de actividad y validar la robustez de las cabeceras de comunicación.
+
+=== Ejecución de Pruebas
+
+Las pruebas están integradas en el ciclo de vida de Maven dentro de la carpeta `gatling`.
+
+Para ejecutar todas las simulaciones:
+
+```bash
+cd gatling
+./mvnw gatling:test
+```
+
+Para ejecutar una simulación específica:
+
+```bash
+./mvnw gatling:test -Dgatling.simulationClass=io.gatling.demo.LoginAndPlaySimulation
+```
+
+=== Resultados y Métricas
+
+Tras cada ejecución, Gatling genera un informe detallado en formato HTML en la carpeta `target/gatling`. Las métricas clave analizadas son:
+
+* **Response Time (p95, p99):** Tiempo de respuesta para el 95% y 99% de las peticiones. Ayuda a detectar picos de latencia.
+* **Requests per Second (RPS):** Capacidad de procesamiento del sistema (Throughput).
+* **Success Ratio:** Porcentaje de peticiones finalizadas correctamente. Un valor inferior al 100% indica errores de servidor (5xx) o timeouts bajo carga.
+
+Estas pruebas permiten validar que la arquitectura propuesta soporta la concurrencia mínima requerida y establecen una línea base para optimizar el motor GameY.

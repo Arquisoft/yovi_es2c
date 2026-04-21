@@ -51,6 +51,15 @@ pub enum GameYError {
         board_size: u32,
     },
 
+    /// The sum of coordinates does not match the expected value for the board size.
+    #[error("Invalid barycentric coordinates sum: {sum}, expected {expected} (board_size - 1)")]
+    InvalidBarycentricSum {
+        /// The actual sum of coordinates.
+        sum: u32,
+        /// The expected sum (board_size - 1).
+        expected: u32,
+    },
+
     /// Attempted to place a piece on an already occupied cell.
     #[error("Player {player} tries to place a stone on an occupied position: {coordinates}")]
     Occupied {

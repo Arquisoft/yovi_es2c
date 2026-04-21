@@ -109,6 +109,7 @@ pub async fn run_cli_game() -> Result<()> {
                 match db::connect().await {
                     Ok(database) => {
                         let record = db::GameRecord {
+                            username: None,
                             winner: Some(winner.to_string()),
                             board_size: args.size,
                             moves_count,

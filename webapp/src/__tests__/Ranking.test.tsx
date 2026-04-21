@@ -9,11 +9,11 @@ vi.mock('../UsersApi', async () => {
     const actual = await vi.importActual<typeof import('../UsersApi')>('../UsersApi');
     return {
         ...actual,
-        fetchRanking: vi.fn(),
+        fetchPersonalStats: vi.fn(),
     };
 });
 
-const mockedFetchRanking = vi.mocked(UsersApi.fetchRanking);
+const mockedFetchPersonalStats = vi.mocked(UsersApi.fetchPersonalStats);
 
 describe('Ranking', () => {
     const onBack = vi.fn();
@@ -23,17 +23,31 @@ describe('Ranking', () => {
     });
 
     it('renderiza el header correctamente', async () => {
-        mockedFetchRanking.mockResolvedValue([]);
+        mockedFetchPersonalStats.mockResolvedValue({
+            username: 'Ana',
+            wins: 0,
+            losses: 0,
+            totalGames: 0,
+            winRate: 0,
+            rankingPosition: null,
+        });
 
         render(<Ranking username="Ana" onBack={onBack} />);
 
-        expect(screen.getByText(/Ranking/i)).toBeInTheDocument();
+        expect(screen.getByText(/Estadísticas personales/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Volver/i })).toBeInTheDocument();
     });
 
     it('llama a onBack al pulsar Volver', async () => {
         const user = userEvent.setup();
-        mockedFetchRanking.mockResolvedValue([]);
+        mockedFetchPersonalStats.mockResolvedValue({
+            username: 'Ana',
+            wins: 0,
+            losses: 0,
+            totalGames: 0,
+            winRate: 0,
+            rankingPosition: null,
+        });
 
         render(<Ranking username="Ana" onBack={onBack} />);
 
@@ -41,33 +55,47 @@ describe('Ranking', () => {
         expect(onBack).toHaveBeenCalledTimes(1);
     });
 
-    it('muestra mensaje de vacío cuando no hay jugadores', async () => {
-        mockedFetchRanking.mockResolvedValue([]);
+    it('muestra las estadísticas del usuario autenticado', async () => {
+        mockedFetchPersonalStats.mockResolvedValue({
+            username: 'Ana',
+            wins: 7,
+            losses: 3,
+            totalGames: 10,
+            winRate: 70,
+            rankingPosition: 2,
+        });
 
         render(<Ranking username="Ana" onBack={onBack} />);
 
         await waitFor(() => {
-            expect(screen.getByText(/Todavía no hay jugadores en el ranking/i)).toBeInTheDocument();
+            expect(screen.getByText('Ana')).toBeInTheDocument();
+            expect(screen.getByText('10')).toBeInTheDocument();
+            expect(screen.getByText('7')).toBeInTheDocument();
+            expect(screen.getByText('3')).toBeInTheDocument();
+            expect(screen.getByText('70%')).toBeInTheDocument();
+            expect(screen.getByText(/Puesto actual en el ranking global: #2/i)).toBeInTheDocument();
         });
     });
 
-    it('marca al usuario actual con el chip "Tú"', async () => {
-        mockedFetchRanking.mockResolvedValue([
-            { position: 1, username: 'Ana', wins: 0, losses: 0, winRate: 0 },
-        ]);
+    it('muestra mensaje cuando el usuario aún no aparece en ranking', async () => {
+        mockedFetchPersonalStats.mockResolvedValue({
+            username: 'Ana',
+            wins: 0,
+            losses: 0,
+            totalGames: 0,
+            winRate: 0,
+            rankingPosition: null,
+        });
 
         render(<Ranking username="Ana" onBack={onBack} />);
 
         await waitFor(() => {
-            // Ana aparece tanto en el header como en la lista
-            const anas = screen.getAllByText('Ana');
-            expect(anas.length).toBeGreaterThanOrEqual(1);
-            expect(screen.getByText('Tú')).toBeInTheDocument();
+            expect(screen.getByText(/Todavía no apareces en el ranking global/i)).toBeInTheDocument();
         });
     });
 
-    it('muestra error si fetchRanking falla', async () => {
-        mockedFetchRanking.mockRejectedValue(new Error('Could not fetch ranking'));
+    it('muestra error si fetchPersonalStats falla', async () => {
+        mockedFetchPersonalStats.mockRejectedValue(new Error('Could not fetch ranking'));
 
         render(<Ranking username="Ana" onBack={onBack} />);
 
@@ -77,7 +105,7 @@ describe('Ranking', () => {
     });
 
     it('muestra el spinner mientras carga', () => {
-        mockedFetchRanking.mockReturnValue(new Promise(() => {}));
+        mockedFetchPersonalStats.mockReturnValue(new Promise(() => {}));
 
         render(<Ranking username="Ana" onBack={onBack} />);
 

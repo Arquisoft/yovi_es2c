@@ -215,7 +215,7 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
                         '&:hover': { borderColor: '#ffd54f', color: '#ffd54f' },
                     }}
                 >
-                    Ranking
+                    Estadísticas personales
                 </Button>
             </Stack>
         </Box>

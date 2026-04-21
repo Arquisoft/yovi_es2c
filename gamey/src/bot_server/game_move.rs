@@ -105,6 +105,7 @@ pub async fn make_move(
                 };
 
                 let record = db::GameRecord {
+                    username: req.username.clone(),
                     winner: Some(winner_name),
                     board_size: game.board_size(),
                     moves_count,

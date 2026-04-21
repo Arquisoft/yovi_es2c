@@ -25,6 +25,7 @@ describe('Historial', () => {
 
         await waitFor(() => {
             expect(fetchGameHistory).toHaveBeenCalledTimes(1);
+            expect(fetchGameHistory).toHaveBeenCalledWith('Manuel');
         });
     });
 

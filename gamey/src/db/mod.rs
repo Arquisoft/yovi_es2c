@@ -42,6 +42,7 @@ pub async fn connect() -> mongodb::error::Result<Database> {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GameRecord {
+    pub username: Option<String>,
     pub winner: Option<String>, // "Player 1", "Player 2", or None (Draw)
     pub board_size: u32,
     pub moves_count: usize,
@@ -63,6 +64,20 @@ pub async fn list_recent_games(
 ) -> mongodb::error::Result<Vec<GameRecord>> {
     let collection = db.collection::<GameRecord>("games");
     let mut cursor = collection.find(doc! {}).await?;
+    let mut games = Vec::new();
+    while let Some(doc) = cursor.try_next().await? {
+        games.push(doc);
+    }
+    Ok(sort_and_truncate(games, limit))
+}
+
+pub async fn list_recent_games_by_username(
+    db: &Database,
+    username: &str,
+    limit: i64,
+) -> mongodb::error::Result<Vec<GameRecord>> {
+    let collection = db.collection::<GameRecord>("games");
+    let mut cursor = collection.find(doc! { "username": username }).await?;
     let mut games = Vec::new();
     while let Some(doc) = cursor.try_next().await? {
         games.push(doc);
@@ -150,6 +165,7 @@ mod tests {
 
     fn make_record(ts: i64, winner: Option<&str>) -> GameRecord {
         GameRecord {
+            username: Some("alice".to_string()),
             winner: winner.map(|w| w.to_string()),
             board_size: 7,
             moves_count: 10,
@@ -196,6 +212,7 @@ mod tests {
     #[test]
     fn game_record_serde_roundtrip() {
         let original = GameRecord {
+            username: Some("alice".to_string()),
             winner: Some("Player 1".to_string()),
             board_size: 9,
             moves_count: 42,
@@ -206,6 +223,7 @@ mod tests {
         let json = serde_json::to_string(&original).unwrap();
         let restored: GameRecord = serde_json::from_str(&json).unwrap();
 
+        assert_eq!(restored.username, original.username);
         assert_eq!(restored.winner, original.winner);
         assert_eq!(restored.board_size, original.board_size);
         assert_eq!(restored.moves_count, original.moves_count);
@@ -255,6 +273,7 @@ mod tests {
     #[test]
     fn game_record_serde_roundtrip_with_none_winner() {
         let original = GameRecord {
+            username: Some("alice".to_string()),
             winner: None,
             board_size: 5,
             moves_count: 12,
@@ -265,6 +284,7 @@ mod tests {
         let json = serde_json::to_string(&original).unwrap();
         let restored: GameRecord = serde_json::from_str(&json).unwrap();
 
+        assert_eq!(restored.username, original.username);
         assert_eq!(restored.winner, None);
         assert_eq!(restored.board_size, 5);
         assert_eq!(restored.moves_count, 12);

@@ -31,6 +31,15 @@ export interface RankingEntry {
     winRate: number;
 }
 
+export interface PersonalStats {
+    username: string;
+    wins: number;
+    losses: number;
+    totalGames: number;
+    winRate: number;
+    rankingPosition: number | null;
+}
+
 /**
  * Obtiene el ranking global de jugadores ordenado por victorias.
  */
@@ -39,4 +48,29 @@ export async function fetchRanking(): Promise<RankingEntry[]> {
     if (!res.ok) throw new Error('Could not fetch ranking');
     const data = await res.json();
     return data.ranking as RankingEntry[];
+}
+
+export async function fetchPersonalStats(username: string): Promise<PersonalStats> {
+    const ranking = await fetchRanking();
+    const entry = ranking.find((player) => player.username === username);
+
+    if (!entry) {
+        return {
+            username,
+            wins: 0,
+            losses: 0,
+            totalGames: 0,
+            winRate: 0,
+            rankingPosition: null,
+        };
+    }
+
+    return {
+        username: entry.username,
+        wins: entry.wins,
+        losses: entry.losses,
+        totalGames: entry.wins + entry.losses,
+        winRate: entry.winRate,
+        rankingPosition: entry.position,
+    };
 }

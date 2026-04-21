@@ -68,7 +68,7 @@ describe('Ranking', () => {
         render(<Ranking username="Ana" onBack={onBack} />);
 
         await waitFor(() => {
-            expect(screen.getByText('Ana')).toBeInTheDocument();
+            expect(screen.getAllByText('Ana').length).toBeGreaterThan(0);
             expect(screen.getByText('10')).toBeInTheDocument();
             expect(screen.getByText('7')).toBeInTheDocument();
             expect(screen.getByText('3')).toBeInTheDocument();

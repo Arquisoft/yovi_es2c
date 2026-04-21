@@ -1,205 +1,196 @@
-# Yovi_es2c - Game Y at UniOvi
+# Yovi ES2C
 
 <p align="center">
-  <img src="webapp/public/tri-billiard.svg" alt="YOVI Arena" width="360">
+  <img src="webapp/public/tri-billiard.svg" alt="Yovi logo" width="220">
 </p>
 
-[![Release — Test, Build, Publish, Deploy](https://github.com/arquisoft/yovi_es2c/actions/workflows/release-deploy.yml/badge.svg)](https://github.com/arquisoft/yovi_es2c/actions/workflows/release-deploy.yml)
+<p align="center">
+  Yovi es una plataforma web para jugar al juego Y con autenticacion de usuarios,
+  historial personal de partidas y estadisticas personales.
+</p>
+
+<p align="center">
+  <a href="http://13.49.237.46/"><img src="https://img.shields.io/badge/App-Online-2ea44f?style=for-the-badge" alt="Aplicacion online"></a>
+  <a href="https://arquisoft.github.io/yovi_es2c/"><img src="https://img.shields.io/badge/Docs-Arc42-0366d6?style=for-the-badge" alt="Documentacion"></a>
+</p>
+
+[![Release](https://github.com/arquisoft/yovi_es2c/actions/workflows/release-deploy.yml/badge.svg)](https://github.com/arquisoft/yovi_es2c/actions/workflows/release-deploy.yml)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
 
-This project is a template with some basic functionality for the ASW labs.
+## Que incluye
 
-## Enlances de interes
-<p align="center">
-  <a href="http://13.49.237.46/">
-    <img src="https://img.shields.io/badge/Aplicación-Online-green?style=for-the-badge" alt="Aplicación"/>
-  </a>
-  &emsp;&emsp;
-  <a href="https://arquisoft.github.io/yovi_es2c/">
-    <img src="https://img.shields.io/badge/Documentación-GitHub_Pages-purple?style=for-the-badge" alt="Documentación"/>
-  </a>
-</p>
+- Registro e inicio de sesion de usuarios.
+- Juego local y contra bot.
+- Historial de partidas asociado al usuario autenticado.
+- Estadisticas personales por cuenta.
+- Ranking global.
+- Documentacion de arquitectura con Arc42.
 
-## Project Structure
+## Arquitectura del repositorio
 
-The project is divided into three main components, each in its own directory:
+El proyecto esta dividido en varios modulos:
 
-- `webapp/`: A frontend application built with React, Vite, and TypeScript.
-- `users/`: A backend service for managing users, built with Node.js and Express.
-- `gamey/`: A Rust game engine and bot service.
-- `gatling/`: A performance testing suite to simulate multiple users and measure system load and response times.
-- `docs/`: Architecture documentation sources following Arc42 template
+- `webapp/`: frontend en React, Vite y TypeScript.
+- `users/`: servicio de usuarios en Node.js y Express.
+- `gamey/`: motor del juego y servicio de bots en Rust.
+- `docs/`: documentacion de arquitectura y despliegue.
+- `gatling/`: pruebas de carga.
 
-Each component has its own `package.json` file with the necessary scripts to run and test the application.
+## Enlaces utiles
 
-## Basic Features
+- Aplicacion desplegada: `http://13.49.237.46/`
+- Documentacion: `https://arquisoft.github.io/yovi_es2c/`
+- API docs de usuarios: `http://localhost:3000/api-docs`
+- API de Gamey: `http://localhost:4000`
 
-- **User Registration**: The web application provides a simple form to register new users.
-- **User Service**: The user service receives the registration request, simulates some processing, and returns a welcome message.
-- **GameY**: A basic Game engine which only chooses a random piece.
+## Requisitos
 
-## Components
+Para desarrollo local:
 
-### Webapp
+- Node.js y npm
+- Rust y Cargo
+- Docker Desktop si quieres levantarlo con contenedores
 
-The `webapp` is a single-page application (SPA) created with [Vite](https://vitejs.dev/) and [React](https://reactjs.org/).
+## Puesta en marcha
 
-- `src/App.tsx`: The main component of the application.
-- `src/RegisterForm.tsx`: The component that renders the user registration form.
-- `package.json`: Contains scripts to run, build, and test the webapp.
-- `vite.config.ts`: Configuration file for Vite.
-- `Dockerfile`: Defines the Docker image for the webapp.
+### Opcion 1: con Docker
 
-### Users Service
-
-The `users` service is a simple REST API built with [Node.js](https://nodejs.org/) and [Express](https://expressjs.com/).
-
-- `users-service.js`: The main file for the user service. It defines an endpoint `/createuser` to handle user creation.
-- `users-service.js`: To see the api-docs we need to put  :3000 after the url and before /api-docs/.
-- `package.json`: Contains scripts to start the service.
-- `Dockerfile`: Defines the Docker image for the user service.
-
-### Gamey
-
-The `gamey` component is a Rust-based game engine with bot support, built with [Rust](https://www.rust-lang.org/) and [Cargo](https://doc.rust-lang.org/cargo/).
-
-- `src/main.rs`: Entry point for the application.
-- `src/lib.rs`: Library exports for the gamey engine.
-- `src/bot/`: Bot implementation and registry.
-- `src/core/`: Core game logic including actions, coordinates, game state, and player management.
-- `src/notation/`: Game notation support (YEN, YGN).
-- `src/web/`: Web interface components.
-- `Cargo.toml`: Project manifest with dependencies and metadata.
-- `Dockerfile`: Defines the Docker image for the gamey service.
-
-## Running the Project
-
-You can run this project using Docker (recommended) or locally without Docker.
-
-### With Docker
-
-This is the easiest way to get the project running. You need to have [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) installed.
-
-1. **Build and run the containers:**
-    From the root directory of the project, run:
+Desde la raiz del proyecto:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
-This command will build the Docker images for both the `webapp` and `users` services and start them.
+Servicios esperados:
 
-2.**Access the application:**
-- Web application: [http://localhost](http://localhost)
-- User service API: [http://localhost:3000](http://localhost:3000)
-- Gamey API: [http://localhost:4000](http://localhost:4000)
+- `webapp`: `http://localhost`
+- `users`: `http://localhost:3000`
+- `gamey`: `http://localhost:4000`
+- `mongodb`: `mongodb://localhost:27017`
 
-### Without Docker
+Variables usadas por `docker compose`:
 
-To run the project locally without Docker, you will need to run each component in a separate terminal.
+- `DB_URI`
+- `DB_PASSWORD`
 
-#### Prerequisites
+### Opcion 2: en local
 
-* [Node.js](https://nodejs.org/) and npm installed.
+Arranca cada modulo en una terminal distinta.
 
-#### 1. Running the User Service
-
-Navigate to the `users` directory:
+#### 1. Users
 
 ```bash
 cd users
-```
-
-Install dependencies:
-
-```bash
 npm install
-```
-
-Run the service:
-
-```bash
 npm start
 ```
 
-The user service will be available at `http://localhost:3000`.
+#### 2. Gamey
 
-#### 2. Running the Web Application
+```bash
+cd gamey
+cargo run
+```
 
-Navigate to the `webapp` directory:
+#### 3. Webapp
 
 ```bash
 cd webapp
-```
-
-Install dependencies:
-
-```bash
 npm install
-```
-
-Run the application:
-
-```bash
 npm run dev
 ```
 
-The web application will be available at `http://localhost:5173`.
+El frontend suele quedar disponible en:
 
-#### 3. Running the GameY application
+```text
+http://localhost:5173
+```
 
-At this moment the GameY application is not needed but once it is needed you should also start it from the command line.
+## Como probar la funcionalidad principal
 
-## Available Scripts
+1. Registra una cuenta nueva.
+2. Inicia sesion.
+3. Juega una o varias partidas.
+4. Entra en `Historial de partidas` y comprueba que ves solo tus partidas.
+5. Entra en `Estadisticas personales` y revisa victorias, derrotas y ratio.
+6. Cierra sesion y repite el proceso con otro usuario para verificar que no se mezclan los datos.
 
-Each component has its own set of scripts defined in its `package.json`. Here are some of the most important ones:
-
-## Tests Overview
-
-This repository contains unit tests per component and E2E tests for the main web flow.
+## Testing
 
 ### Webapp
 
-- Unit tests live in `webapp/src/__tests__` (Register form and board size components).
-- E2E tests live in `webapp/test/e2e` and use Playwright + Cucumber.
-- Execution:
-  - `npm test` (unit)
-  - `npm run test:e2e` (E2E, starts dev servers automatically)
-  - See `webapp/E2E.md` for details.
+```bash
+cd webapp
+npm test
+```
+
+Cobertura:
+
+```bash
+npm run test:coverage
+```
+
+E2E:
+
+```bash
+npm run test:e2e
+```
 
 ### Users
 
-- Tests live in `users/__tests__` (DB and service tests).
-- Execution:
-  - `npm test`
+```bash
+cd users
+npm test
+```
 
 ### Gamey
 
-- Tests live in `gamey/tests` (core, CLI, bot server).
-- Execution:
-  - `cargo test`
+```bash
+cd gamey
+cargo test
+```
 
-### Webapp (`webapp/package.json`)
+## Scripts utiles
 
-- `npm run dev`: Starts the development server for the webapp.
-- `npm test`: Runs the unit tests.
-- `npm run test:e2e`: Runs the end-to-end tests.
-- `npm run start:all`: A convenience script to start both the `webapp` and the `users` service concurrently.
+### `webapp`
 
-### Users (`users/package.json`)
+- `npm run dev`: arranca Vite en desarrollo.
+- `npm run build`: genera el build de produccion.
+- `npm test`: ejecuta tests unitarios.
+- `npm run test:coverage`: ejecuta tests con cobertura.
+- `npm run test:e2e`: ejecuta pruebas end-to-end.
 
-- `npm start`: Starts the user service.
-- `npm test`: Runs the tests for the service.
+### `users`
 
-### Gamey (`gamey/Cargo.toml`)
+- `npm start`: arranca el servicio.
+- `npm test`: ejecuta pruebas del servicio.
 
-- `cargo build`: Builds the gamey application.
-- `cargo test`: Runs the unit tests.
-- `cargo run`: Runs the gamey application.
-- `cargo doc`: Generates documentation for the GameY engine application
+### `gamey`
 
+- `cargo run`: arranca el servicio Gamey.
+- `cargo test`: ejecuta la bateria de tests.
+- `cargo build`: compila el proyecto.
 
+## Tecnologias
+
+- React
+- TypeScript
+- Vite
+- Material UI
+- Node.js
+- Express
+- MongoDB
+- Rust
+- Axum
+- Docker
+- GitHub Actions
+- SonarCloud
+
+## Documentacion extra
+
+- [webapp/README.md](webapp/README.md)
+- [docs/README.md](docs/README.md)

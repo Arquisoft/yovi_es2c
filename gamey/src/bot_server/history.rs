@@ -1,10 +1,11 @@
-use axum::{extract::Path, Json};
-use serde::Serialize;
+use axum::{extract::{Path, Query}, Json};
+use serde::{Deserialize, Serialize};
 
 use crate::{db, error::ErrorResponse, version::check_api_version};
 
 #[derive(Serialize)]
 pub struct HistoryGame {
+    pub username: Option<String>,
     pub winner: Option<String>,
     pub board_size: u32,
     pub moves_count: usize,
@@ -18,9 +19,15 @@ pub struct HistoryResponse {
     pub games: Vec<HistoryGame>,
 }
 
+#[derive(Deserialize)]
+pub struct HistoryQuery {
+    pub username: Option<String>,
+}
+
 #[axum::debug_handler]
 pub async fn history(
     Path(api_version): Path<String>,
+    Query(query): Query<HistoryQuery>,
 ) -> Result<Json<HistoryResponse>, Json<ErrorResponse>> {
     check_api_version(&api_version)?;
 
@@ -28,13 +35,20 @@ pub async fn history(
         .await
         .map_err(|e| Json(ErrorResponse::error(&e.to_string(), Some(api_version.clone()), None)))?;
 
-    let records = db::list_recent_games(&db, 50)
-        .await
-        .map_err(|e| Json(ErrorResponse::error(&e.to_string(), Some(api_version.clone()), None)))?;
+    let records = if let Some(username) = query.username.as_deref() {
+        db::list_recent_games_by_username(&db, username, 50)
+            .await
+            .map_err(|e| Json(ErrorResponse::error(&e.to_string(), Some(api_version.clone()), None)))?
+    } else {
+        db::list_recent_games(&db, 50)
+            .await
+            .map_err(|e| Json(ErrorResponse::error(&e.to_string(), Some(api_version.clone()), None)))?
+    };
 
     let games = records
         .into_iter()
         .map(|r| HistoryGame {
+            username: r.username,
             winner: r.winner,
             board_size: r.board_size,
             moves_count: r.moves_count,
@@ -57,6 +71,7 @@ mod tests {
     #[test]
     fn history_response_serialization() {
         let game = HistoryGame {
+            username: Some("Alice".to_string()),
             winner: Some("Alice".to_string()),
             board_size: 7,
             moves_count: 42,
@@ -71,6 +86,7 @@ mod tests {
 
         let json = serde_json::to_string(&response).unwrap();
         assert!(json.contains("\"api_version\":\"v1\""));
+        assert!(json.contains("\"username\":\"Alice\""));
         assert!(json.contains("\"winner\":\"Alice\""));
         assert!(json.contains("\"board_size\":7"));
         assert!(json.contains("\"moves_count\":42"));
@@ -79,8 +95,10 @@ mod tests {
 
     #[tokio::test]
     async fn history_rejects_invalid_version() {
-        let result = history(Path("v0".to_string())).await;
+        let result = history(
+            Path("v0".to_string()),
+            Query(HistoryQuery { username: None }),
+        ).await;
         assert!(result.is_err());
     }
 }
-

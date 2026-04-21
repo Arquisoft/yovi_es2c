@@ -31,6 +31,7 @@ export interface Coords {
 export type GameVariant = "standard" | "why_not";
 
 export interface HistoryGame {
+    username?: string | null;
     winner: string | null;
     board_size: number;
     moves_count: number;
@@ -116,8 +117,13 @@ export async function chooseBotMove(
     return (data as BotChooseResponse).coords;
 }
 
-export async function fetchGameHistory(): Promise<HistoryGame[]> {
-    const res = await fetch(`${GAMEY_URL}/${API_VERSION}/game/history`, {
+export async function fetchGameHistory(username?: string): Promise<HistoryGame[]> {
+    const url = new URL(`${GAMEY_URL}/${API_VERSION}/game/history`);
+    if (username && username.trim()) {
+        url.searchParams.set('username', username.trim());
+    }
+
+    const res = await fetch(url.toString(), {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });

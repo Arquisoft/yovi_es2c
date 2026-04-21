@@ -152,6 +152,7 @@ describe('GameApi', () => {
         it('obtiene el historial y devuelve games', async () => {
             const games = [
                 {
+                    username: 'alice',
                     winner: 'B',
                     board_size: 5,
                     moves_count: 12,
@@ -168,10 +169,10 @@ describe('GameApi', () => {
                 }),
             } as Response);
 
-            const result = await fetchGameHistory();
+            const result = await fetchGameHistory('alice');
 
             expect(fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/v1/game/history'),
+                expect.stringContaining('/v1/game/history?username=alice'),
                 {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },

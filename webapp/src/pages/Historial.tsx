@@ -38,7 +38,7 @@ export default function Historial({ username, onBack }: HistorialProps) {
             setLoading(true);
             setError(null);
             try {
-                const data = await fetchGameHistory();
+                const data = await fetchGameHistory(username);
                 if (!cancelled) setGames(data);
             } catch (e) {
                 if (!cancelled)
@@ -49,7 +49,7 @@ export default function Historial({ username, onBack }: HistorialProps) {
         };
         load();
         return () => { cancelled = true; };
-    }, []);
+    }, [username]);
 
     return (
         <Box sx={{

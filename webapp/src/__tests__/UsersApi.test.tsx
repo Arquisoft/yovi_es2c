@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchRanking, recordGameResult } from '../UsersApi';
+import { fetchRanking, fetchPersonalStats, recordGameResult } from '../UsersApi';
 
 describe('UsersApi', () => {
     beforeEach(() => {
@@ -56,6 +56,50 @@ describe('UsersApi', () => {
 
             const result = await fetchRanking();
             expect(result).toEqual([]);
+        });
+    });
+
+    describe('fetchPersonalStats', () => {
+        it('devuelve las estadísticas del usuario cuando existe en el ranking', async () => {
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: async () => ({
+                    ranking: [
+                        { position: 2, username: 'alice', wins: 4, losses: 1, winRate: 80 },
+                    ],
+                }),
+            } as Response);
+
+            const result = await fetchPersonalStats('alice');
+
+            expect(result).toEqual({
+                username: 'alice',
+                wins: 4,
+                losses: 1,
+                totalGames: 5,
+                winRate: 80,
+                rankingPosition: 2,
+            });
+        });
+
+        it('devuelve estadísticas vacías si el usuario no está en el ranking', async () => {
+            global.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                json: async () => ({
+                    ranking: [],
+                }),
+            } as Response);
+
+            const result = await fetchPersonalStats('alice');
+
+            expect(result).toEqual({
+                username: 'alice',
+                wins: 0,
+                losses: 0,
+                totalGames: 0,
+                winRate: 0,
+                rankingPosition: null,
+            });
         });
     });
 

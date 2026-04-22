@@ -80,3 +80,67 @@ Tras cada ejecución, Gatling genera un informe detallado en formato HTML en la 
 * **Success Ratio:** Porcentaje de peticiones finalizadas correctamente. Un valor inferior al 100% indica errores de servidor (5xx) o timeouts bajo carga.
 
 Estas pruebas permiten validar que la arquitectura propuesta soporta la concurrencia mínima requerida y establecen una línea base para optimizar el motor GameY.
+
+=== Correlación con métricas de observabilidad (Grafana y Prometheus)
+
+Durante la ejecución de las pruebas de carga con Gatling, las métricas del sistema se monitorizaron en tiempo real utilizando Prometheus y Grafana. Esto permite analizar no solo los resultados simulados, sino también el comportamiento real del sistema bajo carga.
+
+Prometheus recoge automáticamente métricas HTTP del servicio `users` mediante el middleware `express-prom-bundle`, incluyendo:
+
+* Número total de peticiones (`http_request_duration_seconds_count`)
+* Latencia de las peticiones (`http_request_duration_seconds_bucket`)
+* Códigos de estado HTTP (2xx, 4xx, 5xx)
+
+Estas métricas se visualizan en Grafana mediante un dashboard que implementa las métricas RED (Rate, Errors, Duration):
+
+==== Rate (R): Requests per minute
+
+image::Rate_grafana.png[]
+
+Representa el número de peticiones procesadas por minuto. Durante la ejecución de Gatling se observa un incremento en el tráfico coincidiendo con los escenarios simulados, lo que confirma que la carga se está generando correctamente.
+
+==== Errors (E): 4xx vs 5xx
+
+image::Errors_grafana.png[]
+
+Muestra el número de errores diferenciando entre:
+
+* **4xx:** errores del cliente (por ejemplo, peticiones mal formadas)
+* **5xx:** errores del servidor
+
+En las pruebas realizadas, los errores observados corresponden principalmente a códigos 4xx (400 y 415), lo cual es consistente con los resultados de Gatling y sugiere problemas en el formato de las peticiones más que fallos internos del sistema.
+
+==== Duration (D): Latencia de las peticiones
+
+image::Duration_grafana.png[]
+
+Se analizan tres métricas clave:
+
+* **p90:** latencia del 90% de las peticiones
+* **p50 (median):** latencia media
+* **avg:** promedio global
+
+Se observa una latencia estable y baja (en el rango de milisegundos), lo que indica que el sistema responde de forma eficiente bajo la carga generada.
+
+==== Throughput (RPS)
+
+image::General_view_grafana.png[]
+
+Representa el número de peticiones por segundo. Este valor complementa la métrica de Rate y permite analizar la capacidad real del sistema en tiempo continuo.
+
+---
+
+=== Interpretación de resultados
+
+La combinación de Gatling (carga simulada) con Prometheus y Grafana (observabilidad real) permite obtener una visión completa del sistema:
+
+* Gatling indica **qué carga se genera**
+* Grafana muestra **cómo responde el sistema**
+
+A partir de los resultados obtenidos:
+
+* El sistema es capaz de procesar múltiples peticiones concurrentes sin degradación significativa del rendimiento.
+* La latencia se mantiene estable incluso durante picos de carga.
+* Los errores detectados son principalmente de tipo cliente (4xx), no del servidor.
+
+Esto valida que la arquitectura es adecuada para los niveles de carga probados, aunque se recomienda mejorar la validación de entrada para reducir errores 4xx.

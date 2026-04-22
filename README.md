@@ -208,47 +208,54 @@ cargo test
 
 ---
 
-## Tecnologías
+##  Tecnologías
 
 <table>
 <tr>
-<td align="center" width="33%">
 
-### Frontend
+<td align="left" width="33%" valign="top">
 
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" height="30"/><br/>
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" height="30"/><br/>
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vitejs/vitejs-original.svg" height="30"/><br/>
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/materialui/materialui-original.svg" height="30"/>
+###  Frontend
 
-</td>
-
-<td align="center" width="33%">
-
-### Backend
-
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" height="30"/><br/>
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" height="30"/><br/>
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" height="30"/><br/>
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/rust/rust-plain.svg" height="30"/>
+<p>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" height="22"/> React<br/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" height="22"/> TypeScript<br/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vitejs/vitejs-original.svg" height="22"/> Vite<br/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/materialui/materialui-original.svg" height="22"/> Material UI
+</p>
 
 </td>
 
-<td align="center" width="33%">
+<td align="left" width="33%" valign="top">
 
-### DevOps & Observabilidad
+###  Backend
 
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" height="30"/><br/>
-<img src="https://www.vectorlogo.zone/logos/gatlingio/gatlingio-icon.svg" height="30"/><br/>
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prometheus/prometheus-original.svg" height="30"/><br/>
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg" height="30"/><br/>
-<img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" height="30"/><br/>
-<img src="https://www.vectorlogo.zone/logos/sonarsource/sonarsource-icon.svg" height="30"/>
+<p>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" height="22"/> Node.js<br/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" height="22"/> Express<br/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" height="22"/> MongoDB<br/>
+  <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/rust/rust-plain.svg" height="22"/> Rust (Axum)
+</p>
 
 </td>
+
+<td align="left" width="33%" valign="top">
+
+###  DevOps & Observabilidad
+
+<p>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" height="22"/> Docker<br/>
+  <img src="https://www.vectorlogo.zone/logos/gatlingio/gatlingio-icon.svg" height="22"/> Gatling<br/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prometheus/prometheus-original.svg" height="22"/> Prometheus<br/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg" height="22"/> Grafana<br/>
+  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" height="22"/> GitHub Actions<br/>
+  <img src="https://www.vectorlogo.zone/logos/sonarsource/sonarsource-icon.svg" height="22"/> SonarCloud
+</p>
+
+</td>
+
 </tr>
 </table>
-
 ---
 
 ## Documentacion extra

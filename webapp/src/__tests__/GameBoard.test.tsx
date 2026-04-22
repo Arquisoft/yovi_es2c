@@ -66,7 +66,7 @@ describe('GameBoard', () => {
         expect(onExit).toHaveBeenCalledTimes(1);
     });
 
-    it('llama a applyMove al pulsar una celda vacía', async () => {
+    it('llama a applyMove al pulsar una celda vacia', async () => {
         const user = userEvent.setup();
 
         mockedApplyMove.mockResolvedValue({
@@ -102,7 +102,7 @@ describe('GameBoard', () => {
     it('muestra un error si applyMove falla', async () => {
         const user = userEvent.setup();
 
-        mockedApplyMove.mockRejectedValue(new Error('Movimiento no válido'));
+        mockedApplyMove.mockRejectedValue(new Error('Movimiento no valido'));
 
         render(
             <GameBoard
@@ -117,49 +117,11 @@ describe('GameBoard', () => {
         await user.click(cells[0]);
 
         expect(
-            await screen.findByText(/Movimiento inválido: Movimiento no válido/i)
+            await screen.findByText(/Movimiento invalido: Movimiento no valido/i)
         ).toBeInTheDocument();
     });
 
-    it('muestra los botones de bots al cambiar a modo bot', async () => {
-        const user = userEvent.setup();
-
-        render(
-            <GameBoard
-                username="Ana"
-                mode="local"
-                boardSize={5}
-                onExit={() => {}}
-            />
-        );
-
-        await user.click(screen.getByRole('button', { name: /Vs Bot/i }));
-
-        expect(screen.getByRole('button', { name: /Bot fácil/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Bot difícil/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Aleatorio/i })).toBeInTheDocument();
-    });
-
-    it('cambia la variante visible al pulsar Why Not', async () => {
-        const user = userEvent.setup();
-
-        render(
-            <GameBoard
-                username="Ana"
-                mode="local"
-                boardSize={5}
-                onExit={() => {}}
-            />
-        );
-
-        expect(screen.getByText(/Ana\s*·\s*Estándar/i)).toBeInTheDocument();
-
-        await user.click(screen.getByRole('button', { name: /Why Not/i }));
-
-        expect(screen.getByText(/Ana\s*·\s*Why Not/i)).toBeInTheDocument();
-    });
-
-    it('en modo bot llama a chooseBotMove después del movimiento humano', async () => {
+    it('en modo bot llama a chooseBotMove despues del movimiento humano', async () => {
         const user = userEvent.setup();
 
         mockedApplyMove

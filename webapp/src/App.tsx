@@ -7,10 +7,12 @@ import Historial from './pages/Historial';
 import GameBoard, { type GameMode } from './GameBoard';
 import FadeView from './FadeView';
 import Ranking from './pages/Ranking';
+import PreGameMenu from './pages/PreGameMenu';
+import type { BotId, GameVariant } from './GameyApi';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
-type View = 'inicio' | 'menu' | 'game' | 'historial' | 'ranking';
+type View = 'inicio' | 'menu' | 'pregame' | 'game' | 'historial' | 'ranking';
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
@@ -32,6 +34,10 @@ export default function App() {
 
   // Tamaño del tablero seleccionado en el menú (5, 7 o 9)
   const [boardSize, setBoardSize] = useState(7);
+
+  // Seleccion en el menu intermedio
+  const [gameVariant, setGameVariant] = useState<GameVariant>('standard');
+  const [botId, setBotId] = useState<BotId>('side_bot');
   const [inicioAuthMode, setInicioAuthMode] = useState<'login' | 'register'>('login');
 
   // ── Handlers de navegación ────────────────────────────────────────────────
@@ -64,7 +70,7 @@ export default function App() {
     setUsername(name || 'Jugador');
     setGameMode(mode);
     setBoardSize(size);
-    setView('game');
+    setView('pregame');
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -95,12 +101,30 @@ export default function App() {
               />
           )}
 
+          {view === 'pregame' && (
+              <PreGameMenu
+                  username={username}
+                  mode={gameMode}
+                  boardSize={boardSize}
+                  initialVariant={gameVariant}
+                  initialBotId={botId}
+                  onBack={() => setView('menu')}
+                  onStart={(opts) => {
+                    setGameVariant(opts.variant);
+                    setBotId(opts.botId);
+                    setView('game');
+                  }}
+              />
+          )}
+
           {/* Tablero de juego */}
           {view === 'game' && (
               <GameBoard
                   username={username}
                   mode={gameMode}
                   boardSize={boardSize}
+                  variant={gameVariant}
+                  botId={botId}
                   onExit={() => setView('menu')}
               />
           )}

@@ -55,6 +55,28 @@ vi.mock('../pages/Historial', () => ({
   ),
 }));
 
+vi.mock('../pages/PreGameMenu', () => ({
+  default: ({
+              mode,
+              boardSize,
+              onBack,
+              onStart,
+            }: {
+    mode: 'local' | 'bot';
+    boardSize: number;
+    onBack: () => void;
+    onStart: (opts: { variant: 'standard' | 'why_not'; botId: string }) => void;
+  }) => (
+      <div>
+        <h1>PreGameMenu mock</h1>
+        <p>Modo pregame: {mode}</p>
+        <p>Tam pregame: {boardSize}</p>
+        <button onClick={onBack}>Volver al menu</button>
+        <button onClick={() => onStart({ variant: 'why_not', botId: 'random_bot' })}>Empezar</button>
+      </div>
+  ),
+}));
+
 // Espía para comprobar props de GameBoard
 const gameBoardMock = vi.fn();
 
@@ -63,6 +85,8 @@ vi.mock('../GameBoard', () => ({
     username: string;
     mode: 'local' | 'bot';
     boardSize: number;
+    variant?: 'standard' | 'why_not';
+    botId?: string;
     onExit: () => void;
   }) => {
     gameBoardMock(props);
@@ -130,6 +154,13 @@ describe('App', () => {
     fireEvent.click(screen.getByText('Entrar como Ana'));
     fireEvent.click(screen.getByText('Jugar bot 9'));
 
+    expect(screen.getByText('PreGameMenu mock')).toBeInTheDocument();
+    expect(screen.getByText('Modo pregame: bot')).toBeInTheDocument();
+    expect(screen.getByText('Tam pregame: 9')).toBeInTheDocument();
+    expect(screen.getByTestId('fade-view')).toHaveAttribute('data-viewkey', 'pregame');
+
+    fireEvent.click(screen.getByText('Empezar'));
+
     expect(screen.getByText('GameBoard mock')).toBeInTheDocument();
     expect(screen.getByText('Usuario: Lucia')).toBeInTheDocument();
     expect(screen.getByText('Modo: bot')).toBeInTheDocument();
@@ -141,6 +172,8 @@ describe('App', () => {
           username: 'Lucia',
           mode: 'bot',
           boardSize: 9,
+          variant: 'why_not',
+          botId: 'random_bot',
           onExit: expect.any(Function),
         }),
     );
@@ -151,6 +184,9 @@ describe('App', () => {
 
     fireEvent.click(screen.getByText('Entrar como Ana'));
     fireEvent.click(screen.getByText('Jugar por defecto'));
+
+    expect(screen.getByText('PreGameMenu mock')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Empezar'));
 
     expect(screen.getByText('GameBoard mock')).toBeInTheDocument();
     expect(screen.getByText('Usuario: Jugador')).toBeInTheDocument();
@@ -196,6 +232,7 @@ describe('App', () => {
 
     fireEvent.click(screen.getByText('Entrar como Ana'));
     fireEvent.click(screen.getByText('Jugar bot 9'));
+    fireEvent.click(screen.getByText('Empezar'));
     fireEvent.click(screen.getByText('Salir partida'));
 
     expect(screen.getByText('Menu mock')).toBeInTheDocument();

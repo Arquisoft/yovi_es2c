@@ -91,6 +91,32 @@ export interface BotChooseResponse {
     coords: Coords;
 }
 
+export type BotId =
+    | 'random_bot'
+    | 'side_bot'
+    | 'side_bot_hard'
+    | 'blocker_bot'
+    | 'bridge_bot'
+    | 'center_bot'
+    | 'corner_bot';
+
+export interface BotInfo {
+    id: BotId;
+    title: string;
+    description: string;
+    tags?: string[];
+}
+
+export const FALLBACK_BOTS: BotInfo[] = [
+    { id: 'side_bot', title: 'Facil', description: 'Bot sencillo: tiende a jugar cerca de los lados.', tags: ['basic'] },
+    { id: 'side_bot_hard', title: 'Dificil', description: 'Bot mas agresivo: presiona por los lados con mejor criterio.', tags: ['basic'] },
+    { id: 'random_bot', title: 'Aleatorio', description: 'Sin estrategia: elige un movimiento valido al azar.', tags: ['basic'] },
+    { id: 'blocker_bot', title: 'Bot bloqueador', description: 'Prioriza bloquear amenazas inmediatas.', tags: ['strategy'] },
+    { id: 'bridge_bot', title: 'Bot puente', description: 'Busca conectar regiones y crear puentes.', tags: ['strategy'] },
+    { id: 'center_bot', title: 'Bot centro', description: 'Prefiere celdas centrales.', tags: ['strategy'] },
+    { id: 'corner_bot', title: 'Bot esquinas', description: 'Prefiere las esquinas.', tags: ['strategy'] },
+];
+
 /**
  * Ask a bot to choose its next move given a YEN game state.
  *
@@ -100,7 +126,7 @@ export interface BotChooseResponse {
  */
 export async function chooseBotMove(
     yen: YEN,
-    botId = "random_bot"
+    botId: BotId = 'random_bot',
 ): Promise<Coords> {
     const res = await fetch(`${GAMEY_URL}/${API_VERSION}/ybot/choose/${botId}`, {
         method: "POST",
@@ -115,6 +141,24 @@ export async function chooseBotMove(
     }
 
     return (data as BotChooseResponse).coords;
+}
+
+export async function fetchAvailableBots(): Promise<BotInfo[]> {
+    const res = await fetch(`${GAMEY_URL}/${API_VERSION}/ybot/bots`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    if (!Array.isArray(data?.bots)) {
+        throw new Error('Respuesta invalida del servidor');
+    }
+
+    return data.bots as BotInfo[];
 }
 
 export async function fetchGameHistory(username?: string): Promise<HistoryGame[]> {

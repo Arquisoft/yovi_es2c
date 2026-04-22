@@ -1,69 +1,53 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    Box,
-    Typography,
-    Button,
-    ButtonGroup,
-    Chip,
-    Stack,
     Alert,
+    Box,
+    Button,
+    Chip,
     CircularProgress,
+    Stack,
+    Typography,
 } from '@mui/material';
+import { ExitToApp, Person, RestartAlt, SmartToy } from '@mui/icons-material';
 import {
-    RestartAlt,
-    ExitToApp,
-    Person,
-    SmartToy,
-} from '@mui/icons-material';
-import {
-    type Coords,
-    type YEN,
-    type GameVariant,
     applyMove,
     chooseBotMove,
     gridToCoords,
     newGameYEN,
     parseLayout,
+    type BotId,
+    type Coords,
+    type GameVariant,
+    type YEN,
 } from './GameyApi';
 import { recordGameResult } from './UsersApi';
 
 // CSS global para animaciones de las celdas
 const CELL_STYLES = `
 @keyframes popIn {
-    0%   { transform: scale(0.3); opacity: 0; }
-    70%  { transform: scale(1.15); }
-    100% { transform: scale(1); opacity: 1; }
-}
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0px rgba(255,255,255,0.3); }
-    50%       { box-shadow: 0 0 0 5px rgba(255,255,255,0); }
+  0%   { transform: scale(0.3); opacity: 0; }
+  70%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
 }
 `;
 
 export type GameMode = 'local' | 'bot';
-type BotId =
-    | 'random_bot'
-    | 'side_bot'
-    | 'side_bot_hard'
-    | 'blocker_bot'
-    | 'bridge_bot'
-    | 'center_bot'
-    | 'corner_bot';
 
 interface GameBoardProps {
     username: string;
     mode: GameMode;
     boardSize?: number;
+    variant?: GameVariant;
+    botId?: BotId;
     onExit: () => void;
 }
 
 const PLAYER_COLOR: Record<number, string> = { 0: '#4fc3f7', 1: '#ef5350' };
 const PLAYER_NAME: Record<number, string> = { 0: 'Azul', 1: 'Rojo' };
 const MIN_BOARD_SIZE = 5;
+const BOT_THINK_MIN_MS = 500;
 
 type Cell = { index: number; row: number; col: number; coords: Coords };
-
-const BOT_THINK_MIN_MS = 500;
 
 function buildCells(size: number): Cell[] {
     const cells: Cell[] = [];
@@ -81,19 +65,25 @@ function layoutToIndexMap(yen: YEN): Map<number, string> {
     const map = new Map<number, string>();
     const rows = parseLayout(yen);
     let index = 0;
-    for (let row = 0; row < rows.length; row++)
-        for (let col = 0; col < rows[row].length; col++)
+    for (let row = 0; row < rows.length; row++) {
+        for (let col = 0; col < rows[row].length; col++) {
             map.set(index++, rows[row][col]);
+        }
+    }
     return map;
 }
 
-export default function GameBoard({ username, mode: initialMode, boardSize = 7, onExit }: GameBoardProps) {
+export default function GameBoard({
+    username,
+    mode,
+    boardSize = 7,
+    variant = 'standard',
+    botId = 'side_bot',
+    onExit,
+}: GameBoardProps) {
     const safeBoardSize = Math.max(MIN_BOARD_SIZE, boardSize);
 
-    const [mode, setMode] = useState<GameMode>(initialMode);
-    const [botId, setBotId] = useState<BotId>('side_bot');
-    const [variant, setVariant] = useState<GameVariant>('standard');
-    const [yen, setYen] = useState<YEN>(() => newGameYEN(safeBoardSize, 'standard'));
+    const [yen, setYen] = useState<YEN>(() => newGameYEN(safeBoardSize, variant));
     const [winner, setWinner] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -101,16 +91,25 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
     const botTurnRef = useRef(false);
 
     const nextPlayer = yen.turn;
-    const currentVariant = yen.variant;
     const cells = useMemo(() => buildCells(safeBoardSize), [safeBoardSize]);
     const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
-    const hasGameStarted = useMemo(
-        () => Array.from(indexMap.values()).some((value) => value !== '.'),
-        [indexMap],
-    );
-    const lockBotMatchSettings = mode === 'bot' && hasGameStarted;
 
-    // ── Bot turn ──────────────────────────────────────────────────────────────
+    const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
+    const statusText = isBotThinking
+        ? 'LA IA ESTA PENSANDO...'
+        : winner !== null
+            ? `GANO ${PLAYER_NAME[winner].toUpperCase()}!`
+            : `TURNO DE ${mode === 'bot' && nextPlayer === 0 ? username.toUpperCase() : PLAYER_NAME[nextPlayer].toUpperCase()}`;
+
+    const activeColor = winner !== null ? PLAYER_COLOR[winner] : PLAYER_COLOR[nextPlayer];
+
+    const reset = () => {
+        setYen(newGameYEN(safeBoardSize, variant));
+        setWinner(null);
+        setError(null);
+        setStartTimestamp(Math.floor(Date.now() / 1000));
+    };
+
     const runBotTurn = useCallback(async (currentYen: YEN) => {
         if (botTurnRef.current) return;
         botTurnRef.current = true;
@@ -125,7 +124,6 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
             setYen(result.yen);
             if (result.status === 'finished' && result.winner !== null) {
                 setWinner(result.winner);
-                // En modo bot, el jugador humano es siempre el jugador 0
                 await recordGameResult(username, result.winner === 0);
             }
         } catch (e) {
@@ -137,16 +135,18 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
     }, [botId, startTimestamp, username]);
 
     useEffect(() => {
-        if (mode === 'bot' && nextPlayer === 1 && winner === null && !loading)
+        if (mode === 'bot' && nextPlayer === 1 && winner === null && !loading) {
             runBotTurn(yen);
+        }
     }, [mode, nextPlayer, winner, loading, yen, runBotTurn]);
 
-    // ── Human turn ────────────────────────────────────────────────────────────
     const playAt = useCallback(async (cell: Cell) => {
-        if (winner !== null || loading) return;
+        if (winner !== null) return;
+        if (loading) return;
         if (mode === 'bot' && nextPlayer === 1) return;
-        const owned = indexMap.get(cell.index);
-        if (owned && owned !== '.') return;
+
+        const symbol = indexMap.get(cell.index) ?? '.';
+        if (symbol !== '.') return;
 
         setLoading(true);
         setError(null);
@@ -157,50 +157,16 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
             setYen(result.yen);
             if (result.status === 'finished' && result.winner !== null) {
                 setWinner(result.winner);
-                // En modo bot registramos el resultado del humano (jugador 0)
-                // En modo local no registramos porque no sabemos quién es quién
                 if (mode === 'bot') {
                     await recordGameResult(username, result.winner === 0);
                 }
             }
         } catch (e) {
-            setError(`Movimiento inválido: ${e instanceof Error ? e.message : String(e)}`);
+            setError(`Movimiento invalido: ${e instanceof Error ? e.message : String(e)}`);
         } finally {
             setLoading(false);
         }
     }, [winner, loading, mode, nextPlayer, indexMap, yen, startTimestamp, username]);
-
-    // ── Reset / mode / variant ────────────────────────────────────────────────
-    const reset = () => {
-        setYen(newGameYEN(safeBoardSize, variant));
-        setWinner(null);
-        setError(null);
-        setStartTimestamp(Math.floor(Date.now() / 1000));
-    };
-    const changeMode = (m: GameMode) => {
-        setMode(m);
-        setYen(newGameYEN(safeBoardSize, variant));
-        setWinner(null);
-        setError(null);
-        setStartTimestamp(Math.floor(Date.now() / 1000));
-    };
-    const changeVariant = (v: GameVariant) => {
-        setVariant(v);
-        setYen(newGameYEN(safeBoardSize, v));
-        setWinner(null);
-        setError(null);
-        setStartTimestamp(Math.floor(Date.now() / 1000));
-    };
-
-    // ── Derived UI state ──────────────────────────────────────────────────────
-    const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
-    const statusText = isBotThinking
-        ? 'LA IA ESTÁ PENSANDO…'
-        : winner !== null
-            ? `¡GANÓ ${PLAYER_NAME[winner].toUpperCase()}!`
-            : `TURNO DE ${mode === 'bot' && nextPlayer === 0 ? username.toUpperCase() : PLAYER_NAME[nextPlayer].toUpperCase()}`;
-
-    const activeColor = winner !== null ? PLAYER_COLOR[winner] : PLAYER_COLOR[nextPlayer];
 
     return (
         <>
@@ -215,144 +181,45 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                 alignItems: 'center',
                 gap: 2,
             }}>
-                {/* Header */}
                 <Box sx={{ width: '100%', maxWidth: 700 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
                         <Typography variant="h6" fontWeight={800}>
                             YOVI ARENA
                             <Typography component="span" variant="caption"
                                         sx={{ ml: 1, color: 'rgba(255,255,255,0.4)', letterSpacing: 2 }}>
-                                {username} · {currentVariant === 'standard' ? 'Estándar' : 'Why Not'}
+                                {username} · {yen.variant === 'standard' ? 'Estandar' : 'Why Not'}
                             </Typography>
                         </Typography>
                         <Stack direction="row" gap={1}>
-                            <Button size="small" startIcon={<RestartAlt />} onClick={reset}
-                                    sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
-                                    variant="outlined">
+                            <Button
+                                size="small"
+                                startIcon={<RestartAlt />}
+                                onClick={reset}
+                                sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
+                                variant="outlined"
+                            >
                                 Nueva
                             </Button>
-                            <Button size="small" startIcon={<ExitToApp />} onClick={onExit}
-                                    sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
-                                    variant="outlined">
+                            <Button
+                                size="small"
+                                startIcon={<ExitToApp />}
+                                onClick={onExit}
+                                sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
+                                variant="outlined"
+                            >
                                 Salir
                             </Button>
                         </Stack>
                     </Stack>
 
-                    {/* Controls */}
                     <Stack direction="row" gap={1} flexWrap="wrap" mb={2}>
-                        <ButtonGroup size="small">
-                            <Button onClick={() => changeMode('local')}
-                                    variant={mode === 'local' ? 'contained' : 'outlined'}
-                                    startIcon={<Person />}
-                                    sx={mode === 'local'
-                                        ? { bgcolor: '#4fc3f7', color: '#000' }
-                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                Local
-                            </Button>
-                            <Button onClick={() => changeMode('bot')}
-                                    variant={mode === 'bot' ? 'contained' : 'outlined'}
-                                    startIcon={<SmartToy />}
-                                    sx={mode === 'bot'
-                                        ? { bgcolor: '#ef5350', color: '#fff' }
-                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                Vs Bot
-                            </Button>
-                        </ButtonGroup>
-
-                        <ButtonGroup size="small">
-                            <Button onClick={() => changeVariant('standard')}
-                                    disabled={lockBotMatchSettings}
-                                    variant={currentVariant === 'standard' ? 'contained' : 'outlined'}
-                                    sx={currentVariant === 'standard'
-                                        ? { bgcolor: '#7c4dff', color: '#fff' }
-                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                Estándar
-                            </Button>
-                            <Button onClick={() => changeVariant('why_not')}
-                                    disabled={lockBotMatchSettings}
-                                    variant={currentVariant === 'why_not' ? 'contained' : 'outlined'}
-                                    sx={currentVariant === 'why_not'
-                                        ? { bgcolor: '#7c4dff', color: '#fff' }
-                                        : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                Why Not
-                            </Button>
-                        </ButtonGroup>
-
-                        {mode === 'bot' && (
-                            <>
-                                <ButtonGroup size="small">
-                                    <Button
-                                        onClick={() => setBotId('side_bot')}
-                                        disabled={lockBotMatchSettings}
-                                        variant={botId === 'side_bot' ? 'contained' : 'outlined'}
-                                        sx={botId === 'side_bot'
-                                            ? { bgcolor: '#26c6da', color: '#000' }
-                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                        Bot fácil
-                                    </Button>
-                                    <Button
-                                        onClick={() => setBotId('side_bot_hard')}
-                                        disabled={lockBotMatchSettings}
-                                        variant={botId === 'side_bot_hard' ? 'contained' : 'outlined'}
-                                        sx={botId === 'side_bot_hard'
-                                            ? { bgcolor: '#ffb74d', color: '#000' }
-                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                        Bot difícil
-                                    </Button>
-                                    <Button
-                                        onClick={() => setBotId('random_bot')}
-                                        disabled={lockBotMatchSettings}
-                                        variant={botId === 'random_bot' ? 'contained' : 'outlined'}
-                                        sx={botId === 'random_bot'
-                                            ? { bgcolor: '#8bc34a', color: '#000' }
-                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                        Aleatorio
-                                    </Button>
-                                </ButtonGroup>
-                                <ButtonGroup size="small">
-                                    <Button
-                                        onClick={() => setBotId('blocker_bot')}
-                                        disabled={lockBotMatchSettings}
-                                        variant={botId === 'blocker_bot' ? 'contained' : 'outlined'}
-                                        sx={botId === 'blocker_bot'
-                                            ? { bgcolor: '#ffd54f', color: '#000' }
-                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                        Bot bloqueador
-                                    </Button>
-                                    <Button
-                                        onClick={() => setBotId('bridge_bot')}
-                                        disabled={lockBotMatchSettings}
-                                        variant={botId === 'bridge_bot' ? 'contained' : 'outlined'}
-                                        sx={botId === 'bridge_bot'
-                                            ? { bgcolor: '#81c784', color: '#000' }
-                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                        Bot puente
-                                    </Button>
-                                    <Button
-                                        onClick={() => setBotId('center_bot')}
-                                        disabled={lockBotMatchSettings}
-                                        variant={botId === 'center_bot' ? 'contained' : 'outlined'}
-                                        sx={botId === 'center_bot'
-                                            ? { bgcolor: '#9575cd', color: '#000' }
-                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                        Bot centro
-                                    </Button>
-                                    <Button
-                                        onClick={() => setBotId('corner_bot')}
-                                        disabled={lockBotMatchSettings}
-                                        variant={botId === 'corner_bot' ? 'contained' : 'outlined'}
-                                        sx={botId === 'corner_bot'
-                                            ? { bgcolor: '#4db6ac', color: '#000' }
-                                            : { color: 'rgba(255,255,255,0.5)', borderColor: 'rgba(255,255,255,0.15)' }}>
-                                        Bot esquinas
-                                    </Button>
-                                </ButtonGroup>
-                            </>
-                        )}
+                        <Chip
+                            label={mode === 'bot' ? 'Vs Bot' : 'Local'}
+                            icon={mode === 'bot' ? <SmartToy /> : <Person />}
+                            sx={{ bgcolor: 'rgba(255,255,255,0.05)', color: 'white' }}
+                        />
                     </Stack>
 
-                    {/* Status */}
                     <Box sx={{
                         bgcolor: `${activeColor}18`,
                         border: `1px solid ${activeColor}`,
@@ -369,7 +236,12 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                         </Typography>
                     </Box>
 
-                    {/* Players */}
+                    {error && (
+                        <Alert severity="error" sx={{ bgcolor: 'rgba(211,47,47,0.15)', color: '#ff6b6b', mb: 1 }}>
+                            {error}
+                        </Alert>
+                    )}
+
                     <Stack direction="row" justifyContent="center" gap={2} mb={1}>
                         {[0, 1].map((p) => (
                             <Chip
@@ -388,35 +260,21 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                     border: `1px solid ${(nextPlayer === p || winner === p)
                                         ? PLAYER_COLOR[p]
                                         : 'transparent'}`,
-                                    fontWeight: 700,
                                 }}
                             />
                         ))}
                     </Stack>
 
-                    {error && <Alert severity="error" sx={{ bgcolor: 'rgba(211,47,47,0.15)', color: '#ff6b6b', mb: 1 }}>{error}</Alert>}
-                </Box>
-
-                {/* Board */}
-                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                    <Box sx={{ position: 'relative', display: 'inline-block', pt: 2, pb: 4 }}>
-
-                        {/* Side labels */}
-                        <Typography variant="caption" sx={{
-                            position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                            color: 'rgba(255,255,255,0.3)'
-                        }}>Lado A</Typography>
-                        <Typography variant="caption" sx={{
-                            position: 'absolute', bottom: 0, left: 0,
-                            color: 'rgba(255,255,255,0.3)'
-                        }}>Lado B</Typography>
-                        <Typography variant="caption" sx={{
-                            position: 'absolute', bottom: 0, right: 0,
-                            color: 'rgba(255,255,255,0.3)'
-                        }}>Lado C</Typography>
-
-                        {/* Rows */}
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <Box sx={{
+                        bgcolor: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 3,
+                        p: 2,
+                        display: 'flex',
+                        justifyContent: 'center',
+                        overflowX: 'auto',
+                    }}>
+                        <Box sx={{ minWidth: 520 }}>
                             {Array.from({ length: safeBoardSize }, (_, row) => {
                                 const rowCells = cells.filter((c) => c.row === row);
                                 const cellSize = 38;
@@ -424,11 +282,7 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                 const offset = (safeBoardSize - 1 - row) * ((cellSize + cellGap) / 2);
 
                                 return (
-                                    <Box key={row} sx={{
-                                        display: 'flex',
-                                        ml: `${offset}px`,
-                                        mb: '4px',
-                                    }}>
+                                    <Box key={row} sx={{ display: 'flex', ml: `${offset}px`, mb: '4px' }}>
                                         {rowCells.map((cell) => {
                                             const symbol = indexMap.get(cell.index) ?? '.';
                                             const isBlue = symbol === 'B';
@@ -467,18 +321,6 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
                                                         animation: !isEmpty ? 'popIn 0.3s ease forwards' : 'none',
                                                         transition: 'transform 0.15s, box-shadow 0.15s, background-color 0.15s',
                                                     }}
-                                                    onMouseEnter={(e) => {
-                                                        if (!isDisabled && isEmpty) {
-                                                            (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.25)';
-                                                            (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 0 8px ${activeColor}`;
-                                                            (e.currentTarget as HTMLButtonElement).style.backgroundColor = `${activeColor}50`;
-                                                        }
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                                                        (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-                                                        (e.currentTarget as HTMLButtonElement).style.backgroundColor = bgColor;
-                                                    }}
                                                 />
                                             );
                                         })}
@@ -492,3 +334,4 @@ export default function GameBoard({ username, mode: initialMode, boardSize = 7, 
         </>
     );
 }
+

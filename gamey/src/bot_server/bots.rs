@@ -24,50 +24,62 @@ pub struct BotsResponse {
     pub bots: Vec<BotInfo>,
 }
 
+fn bot(id: &str, title: &str, description: &str, tags: &[&str]) -> BotInfo {
+    BotInfo {
+        id: id.to_string(),
+        title: title.to_string(),
+        description: description.to_string(),
+        tags: tags.iter().map(|t| t.to_string()).collect(),
+    }
+}
+
 fn known_bots() -> Vec<BotInfo> {
+    const BASIC: [&str; 1] = ["basic"];
+    const STRATEGY: [&str; 1] = ["strategy"];
+
     vec![
-        BotInfo {
-            id: "side_bot".to_string(),
-            title: "Facil".to_string(),
-            description: "Bot sencillo: tiende a jugar cerca de los lados.".to_string(),
-            tags: vec!["basic".to_string()],
-        },
-        BotInfo {
-            id: "side_bot_hard".to_string(),
-            title: "Dificil".to_string(),
-            description: "Bot mas agresivo: presiona por los lados con mejor criterio.".to_string(),
-            tags: vec!["basic".to_string()],
-        },
-        BotInfo {
-            id: "random_bot".to_string(),
-            title: "Aleatorio".to_string(),
-            description: "Sin estrategia: elige un movimiento valido al azar.".to_string(),
-            tags: vec!["basic".to_string()],
-        },
-        BotInfo {
-            id: "blocker_bot".to_string(),
-            title: "Bot bloqueador".to_string(),
-            description: "Prioriza bloquear amenazas inmediatas.".to_string(),
-            tags: vec!["strategy".to_string()],
-        },
-        BotInfo {
-            id: "bridge_bot".to_string(),
-            title: "Bot puente".to_string(),
-            description: "Busca conectar regiones y crear puentes.".to_string(),
-            tags: vec!["strategy".to_string()],
-        },
-        BotInfo {
-            id: "center_bot".to_string(),
-            title: "Bot centro".to_string(),
-            description: "Prefiere celdas centrales.".to_string(),
-            tags: vec!["strategy".to_string()],
-        },
-        BotInfo {
-            id: "corner_bot".to_string(),
-            title: "Bot esquinas".to_string(),
-            description: "Prefiere las esquinas.".to_string(),
-            tags: vec!["strategy".to_string()],
-        },
+        bot(
+            "side_bot",
+            "Facil",
+            "Bot sencillo: tiende a jugar cerca de los lados.",
+            &BASIC,
+        ),
+        bot(
+            "side_bot_hard",
+            "Dificil",
+            "Bot mas agresivo: presiona por los lados con mejor criterio.",
+            &BASIC,
+        ),
+        bot(
+            "random_bot",
+            "Aleatorio",
+            "Sin estrategia: elige un movimiento valido al azar.",
+            &BASIC,
+        ),
+        bot(
+            "blocker_bot",
+            "Bot bloqueador",
+            "Prioriza bloquear amenazas inmediatas.",
+            &STRATEGY,
+        ),
+        bot(
+            "bridge_bot",
+            "Bot puente",
+            "Busca conectar regiones y crear puentes.",
+            &STRATEGY,
+        ),
+        bot(
+            "center_bot",
+            "Bot centro",
+            "Prefiere celdas centrales.",
+            &STRATEGY,
+        ),
+        bot(
+            "corner_bot",
+            "Bot esquinas",
+            "Prefiere las esquinas.",
+            &STRATEGY,
+        ),
     ]
 }
 
@@ -120,4 +132,3 @@ mod tests {
         assert!(ids.contains(&"corner_bot"));
     }
 }
-

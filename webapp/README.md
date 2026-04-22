@@ -1,73 +1,128 @@
-# React + TypeScript + Vite
+# Webapp - YOVI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<p align="center">
+  <img src="public/tri-billiard.svg" alt="Yovi logo" width="150">
+</p>
 
-Currently, two official plugins are available:
+<p align="center">
+  Frontend de la aplicacion YOVI, desarrollado con React, Vite y TypeScript.
+  Proporciona la interfaz de usuario para jugar al juego Y, gestionar perfiles,
+  consultar el historial de partidas, estadisticas personales y el ranking global.
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Que incluye este frontend
 
-## React Compiler
+- **Interfaz de juego:** tablero interactivo para el juego Y con soporte para coordenadas baricentricas.
+- **Jugadores y bots:** partidas locales contra otro jugador humano o contra un bot proporcionado por el servicio Gamey.
+- **Gestion de usuarios:** formularios de registro e inicio de sesion integrados con el servicio `users`.
+- **Historial y estadisticas:** visualizacion de partidas previas y rendimiento del jugador autenticado.
+- **Ranking global:** tabla de mejores jugadores obtenida desde el servicio de usuarios.
+- **Diseno moderno:** implementado con Material UI (MUI) para una experiencia de usuario fluida y responsiva.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Requisitos
 
-## Expanding the ESLint configuration
+- [Node.js](https://nodejs.org/) (version 18 o superior)
+- [npm](https://www.npmjs.com/)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Para usar todas las funcionalidades necesitas tener levantados los servicios:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- `users` en `http://localhost:3000`
+- `gamey` en `http://localhost:4000`
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Consulta el README de la raiz del repositorio para ver como arrancarlos.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Puesta en marcha en local
+
+Desde la carpeta `webapp`:
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Por defecto el frontend queda disponible en:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+http://localhost:5173
 ```
+
+Si quieres arrancar tambien el servicio de usuarios desde aqui puedes usar:
+
+```bash
+npm run start:all
+```
+
+Este script levanta el frontend (`npm run dev`) y el servicio `users` (via `npm run start:users`). El servicio `gamey` debe seguir arrancandose desde su propio modulo.
+
+## Configuracion
+
+El frontend se configura mediante variables de entorno de Vite:
+
+- `VITE_API_URL`: URL base del servicio de usuarios (`users`).  
+  Valor por defecto: `http://localhost:3000`.
+
+- `VITE_GAMEY_URL`: URL base del servicio Gamey.  
+  Valor por defecto: `http://localhost:4000`.
+
+Puedes crear un fichero `.env.local` en esta carpeta para sobreescribirlas en desarrollo, por ejemplo:
+
+```bash
+VITE_API_URL=http://localhost:3001
+VITE_GAMEY_URL=http://localhost:4001
+```
+
+## Testing
+
+El proyecto utiliza una combinacion de pruebas unitarias, de integracion y de extremo a extremo (E2E).
+
+### Pruebas unitarias e integracion (Vitest)
+
+```bash
+# Ejecutar todos los tests
+npm test
+
+# Ejecutar en modo watch
+npm run test:watch
+
+# Ejecutar tests con cobertura
+npm run test:coverage
+```
+
+### Pruebas E2E (Cucumber + Playwright)
+
+Las pruebas E2E verifican los flujos completos de usuario sobre el navegador.
+
+```bash
+# Instalar navegadores necesarios
+npm run test:e2e:install-browsers
+
+# Ejecutar pruebas E2E (levanta webapp y users si es necesario)
+npm run test:e2e
+```
+
+El detalle de los escenarios E2E se encuentra bajo `test/e2e`.
+
+## Scripts disponibles
+
+- `npm run dev`: inicia el entorno de desarrollo con Vite.
+- `npm run build`: genera el build optimizado para produccion (`tsc -b && vite build`).
+- `npm run lint`: ejecuta el linter para asegurar la calidad del codigo.
+- `npm run preview`: previsualiza el build de produccion localmente.
+- `npm test`: ejecuta los tests unitarios con Vitest.
+- `npm run test:watch`: ejecuta los tests en modo observacion.
+- `npm run test:coverage`: ejecuta los tests y genera informe de cobertura.
+- `npm run test:e2e:install-browsers`: instala los navegadores necesarios para Playwright.
+- `npm run test:e2e:run`: ejecuta solo los escenarios E2E (requiere servicios levantados).
+- `npm run test:e2e`: levanta los servicios necesarios y ejecuta las pruebas E2E completas.
+- `npm run start:users`: instala dependencias y arranca el servicio `users` desde `../users`.
+- `npm run start:all`: arranca webapp y el servicio `users` en paralelo.
+
+## Tecnologias principales
+
+- **React 18**: biblioteca para construir la interfaz.
+- **Vite**: herramienta de construccion rapida.
+- **TypeScript**: tipado estatico para un desarrollo mas robusto.
+- **Material UI (MUI)**: componentes de diseno profesional.
+- **Vitest**: framework de testing unitario.
+- **Testing Library**: utilidades para pruebas de componentes React.
+- **Playwright & Cucumber**: herramientas para pruebas E2E basadas en comportamiento.

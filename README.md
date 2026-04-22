@@ -237,7 +237,7 @@ cargo test
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prometheus/prometheus-original.svg" height="24"/>&nbsp;Prometheus<br/><br/>
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg" height="24"/>&nbsp;Grafana<br/><br/>
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" height="24"/>&nbsp;GitHub Actions<br/><br/>
-  <img src="https://icon-icons.com/icon/sonarcloud-logo/249577" height="24"/>&nbsp;SonarCloud
+  <img src="https://static.cdnlogo.com/logos/s/13/sonarcloud.svg" height="24"/>&nbsp;SonarCloud
 </p>
 
 ## Documentacion extra

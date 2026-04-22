@@ -97,15 +97,22 @@ tiempo de ejecución, nunca se incluyen en el código ni en las imágenes Docker
 
 === Observability: Métricas y monitorización
 
-El sistema incluye un stack de observabilidad completo:
+El sistema incluye un stack de observabilidad completo basado en Prometheus y Grafana, que permite monitorizar el comportamiento del sistema en tiempo real.
 
-* **Prometheus** recoge métricas HTTP del servicio `users` mediante el middleware
-`express-prom-bundle`, que expone automáticamente métricas de latencia,
-conteo de peticiones y códigos de respuesta por método y ruta.
-* **Grafana** visualiza esas métricas en dashboards configurados mediante
-provisioning automático desde `./users/monitoring/grafana/provisioning`.
-* Ambos servicios se despliegan como contenedores Docker dentro del mismo
-`docker-compose.yml`.
+* **Prometheus** recoge métricas HTTP del servicio `users` mediante el middleware `express-prom-bundle`, que expone automáticamente métricas de latencia, número de peticiones y códigos de respuesta, segmentadas por método HTTP y ruta.
+* **Grafana** visualiza estas métricas mediante dashboards configurados automáticamente a través de provisioning desde `./users/monitoring/grafana/provisioning`.
+* Ambos servicios se despliegan como contenedores Docker dentro del mismo `docker-compose.yml`, lo que permite su integración directa en el entorno de desarrollo.
+
+El sistema monitoriza tres métricas clave que permiten evaluar su rendimiento:
+
+* **Rate (R)**: número de peticiones por minuto, utilizado para medir la carga del sistema y su actividad.
+* **Errors (E)**: número de peticiones fallidas (códigos HTTP 5xx), que permite detectar problemas internos del sistema.
+* **Duration (D)**: tiempo de respuesta de las peticiones, calculado mediante:
+  - Tiempo medio (average)
+  - Mediana
+  - Percentil 90 (p90)
+
+Estas métricas permiten analizar el comportamiento del sistema bajo distintas condiciones y facilitan la detección de problemas de rendimiento, cuellos de botella o fallos en tiempo de ejecución.
 
 ---
 

@@ -237,6 +237,7 @@ describe('App', () => {
 
     expect(screen.getByText('Menu mock')).toBeInTheDocument();
     expect(screen.getByText('Usuario inicial: Lucia')).toBeInTheDocument();
+    expect(screen.getByText('Has abandonado la partida. Se ha registrado como rendición.')).toBeInTheDocument();
     expect(screen.getByTestId('fade-view')).toHaveAttribute('data-viewkey', 'menu');
   });
 });

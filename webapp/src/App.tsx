@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert, Snackbar } from '@mui/material';
 import './App.css';
 import './styles/Additions.css';
 import Inicio from './pages/Inicio';
@@ -39,6 +40,7 @@ export default function App() {
   const [gameVariant, setGameVariant] = useState<GameVariant>('standard');
   const [botId, setBotId] = useState<BotId>('side_bot');
   const [inicioAuthMode, setInicioAuthMode] = useState<'login' | 'register'>('login');
+  const [gameExitNotice, setGameExitNotice] = useState<string | null>(null);
 
   // ── Handlers de navegación ────────────────────────────────────────────────
 
@@ -71,6 +73,11 @@ export default function App() {
     setGameMode(mode);
     setBoardSize(size);
     setView('pregame');
+  };
+
+  const exitGame = () => {
+    setGameExitNotice('Has abandonado la partida. Se ha registrado como rendición.');
+    setView('menu');
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -125,7 +132,7 @@ export default function App() {
                   boardSize={boardSize}
                   variant={gameVariant}
                   botId={botId}
-                  onExit={() => setView('menu')}
+                  onExit={exitGame}
               />
           )}
 
@@ -144,6 +151,21 @@ export default function App() {
           )}
 
         </FadeView>
+        <Snackbar
+            open={Boolean(gameExitNotice)}
+            autoHideDuration={3500}
+            onClose={() => setGameExitNotice(null)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert
+              onClose={() => setGameExitNotice(null)}
+              severity="info"
+              variant="filled"
+              sx={{ width: '100%' }}
+          >
+            {gameExitNotice}
+          </Alert>
+        </Snackbar>
       </main>
   );
 }

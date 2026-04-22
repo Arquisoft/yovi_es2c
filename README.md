@@ -233,7 +233,7 @@ cargo test
 ###  DevOps & Observabilidad
 <p align="center">
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" height="24"/>&nbsp;Docker<br/><br/>
-  <img src="https://www.vectorlogo.zone/logos/gatlingio/gatlingio-icon.svg" height="24"/>&nbsp;Gatling<br/><br/>
+  <img src="https://cdn.simpleicons.org/gatling" height="24"/>&nbsp;Gatling<br/><br/>
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prometheus/prometheus-original.svg" height="24"/>&nbsp;Prometheus<br/><br/>
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg" height="24"/>&nbsp;Grafana<br/><br/>
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" height="24"/>&nbsp;GitHub Actions<br/><br/>

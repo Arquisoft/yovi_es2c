@@ -210,32 +210,47 @@ cargo test
 
 ## Tecnologias
 
+<table>
+<tr>
+<td valign="top">
+
 ### Frontend
 <table>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" width="25"/></td><td>React</td></tr>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" width="25"/></td><td>TypeScript</td></tr>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vitejs/vitejs-original.svg" width="25"/></td><td>Vite</td></tr>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/materialui/materialui-original.svg" width="25"/></td><td>Material UI</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" width="20"/></td><td>React</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg" width="20"/></td><td>TypeScript</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vitejs/vitejs-original.svg" width="20"/></td><td>Vite</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/materialui/materialui-original.svg" width="20"/></td><td>Material UI</td></tr>
 </table>
+
+</td>
+
+<td valign="top">
 
 ### Backend
 <table>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" width="25"/></td><td>Node.js</td></tr>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" width="25"/></td><td>Express</td></tr>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" width="25"/></td><td>MongoDB</td></tr>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/rust/rust-plain.svg" width="25"/></td><td>Rust (Axum)</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" width="20"/></td><td>Node.js</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg" width="20"/></td><td>Express</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" width="20"/></td><td>MongoDB</td></tr>
+<tr><td><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/rust/rust-plain.svg" width="20"/></td><td>Rust (Axum)</td></tr>
 </table>
 
-### DevOps y Observabilidad
+</td>
+
+<td valign="top">
+
+### DevOps & Observabilidad
 <table>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" width="25"/></td><td>Docker</td></tr>
-<tr><td><img src="https://www.vectorlogo.zone/logos/gatlingio/gatlingio-icon.svg" width="25"/></td><td>Gatling</td></tr>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prometheus/prometheus-original.svg" width="25"/></td><td>Prometheus</td></tr>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg" width="25"/></td><td>Grafana</td></tr>
-<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="25"/></td><td>GitHub Actions</td></tr>
-<tr><td><img src="https://www.vectorlogo.zone/logos/sonarsource/sonarsource-icon.svg" width="25"/></td><td>SonarCloud</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" width="20"/></td><td>Docker</td></tr>
+<tr><td><img src="https://www.vectorlogo.zone/logos/gatlingio/gatlingio-icon.svg" width="20"/></td><td>Gatling</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prometheus/prometheus-original.svg" width="20"/></td><td>Prometheus</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg" width="20"/></td><td>Grafana</td></tr>
+<tr><td><img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" width="20"/></td><td>GitHub Actions</td></tr>
+<tr><td><img src="https://www.vectorlogo.zone/logos/sonarsource/sonarsource-icon.svg" width="20"/></td><td>SonarCloud</td></tr>
 </table>
 
+</td>
+</tr>
+</table>
 ---
 
 ## Documentacion extra

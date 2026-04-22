@@ -18,7 +18,7 @@ export function getErrorMessage(e: unknown): string {
     try {
         return JSON.stringify(e);
     } catch {
-        return String(e);
+        // Last resort: avoid "[object Object]" by returning a stable placeholder.
+        return 'Error';
     }
 }
-

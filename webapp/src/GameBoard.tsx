@@ -51,9 +51,24 @@ type Cell = { index: number; row: number; col: number; coords: Coords };
 
 function getErrorMessage(e: unknown): string {
     if (typeof e === 'object' && e !== null && 'message' in e) {
-        return String((e as { message?: unknown }).message ?? 'Error');
+        const msg = (e as { message?: unknown }).message;
+        if (typeof msg === 'string') return msg;
+        if (msg === null || msg === undefined) return 'Error';
+        if (typeof msg === 'number' || typeof msg === 'boolean' || typeof msg === 'bigint') return String(msg);
+        try {
+            return JSON.stringify(msg);
+        } catch {
+            return 'Error';
+        }
     }
-    return String(e);
+    if (typeof e === 'string') return e;
+    if (e === null || e === undefined) return 'Error';
+    if (typeof e === 'number' || typeof e === 'boolean' || typeof e === 'bigint') return String(e);
+    try {
+        return JSON.stringify(e);
+    } catch {
+        return String(e);
+    }
 }
 
 function buildCells(size: number): Cell[] {
@@ -72,9 +87,9 @@ function layoutToIndexMap(yen: YEN): Map<number, string> {
     const map = new Map<number, string>();
     const rows = parseLayout(yen);
     let index = 0;
-    for (let row = 0; row < rows.length; row++) {
-        for (let col = 0; col < rows[row].length; col++) {
-            map.set(index++, rows[row][col]);
+    for (const rowCells of rows) {
+        for (const cell of rowCells) {
+            map.set(index++, cell);
         }
     }
     return map;

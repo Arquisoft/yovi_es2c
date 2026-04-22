@@ -26,9 +26,25 @@ type PreGameMenuProps = {
 
 function getErrorMessage(e: unknown): string {
     if (typeof e === 'object' && e !== null && 'message' in e) {
-        return String((e as { message?: unknown }).message ?? 'Error');
+        const msg = (e as { message?: unknown }).message;
+        if (typeof msg === 'string') return msg;
+        // Avoid "[object Object]" noise from default stringification.
+        if (msg === null || msg === undefined) return 'Error';
+        if (typeof msg === 'number' || typeof msg === 'boolean' || typeof msg === 'bigint') return String(msg);
+        try {
+            return JSON.stringify(msg);
+        } catch {
+            return 'Error';
+        }
     }
-    return String(e);
+    if (typeof e === 'string') return e;
+    if (e === null || e === undefined) return 'Error';
+    if (typeof e === 'number' || typeof e === 'boolean' || typeof e === 'bigint') return String(e);
+    try {
+        return JSON.stringify(e);
+    } catch {
+        return String(e);
+    }
 }
 
 const VARIANTS: Array<{ id: GameVariant; label: string; desc: string }> = [

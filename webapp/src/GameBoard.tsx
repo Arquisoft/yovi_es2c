@@ -102,7 +102,7 @@ export default function GameBoard({
     variant = 'standard',
     botId = 'side_bot',
     onExit,
-}: GameBoardProps) {
+}: Readonly<GameBoardProps>) {
     const safeBoardSize = Math.max(MIN_BOARD_SIZE, boardSize);
 
     const [yen, setYen] = useState<YEN>(() => newGameYEN(safeBoardSize, variant));

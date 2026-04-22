@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
     applyMove,
     chooseBotMove,
+    fetchAvailableBots,
     fetchGameHistory,
     newGameYEN,
     parseLayout,
@@ -190,6 +191,41 @@ describe('GameApi', () => {
             } as Response);
 
             await expect(fetchGameHistory()).rejects.toThrow('Service unavailable');
+        });
+    });
+
+    describe('fetchAvailableBots', () => {
+        it('devuelve bots cuando la respuesta es correcta', async () => {
+            const bots = [
+                { id: 'random_bot', title: 'Aleatorio', description: 'x', tags: ['basic'] },
+            ];
+
+            vi.mocked(fetch).mockResolvedValue({
+                ok: true,
+                json: async () => ({ bots }),
+            } as Response);
+
+            const result = await fetchAvailableBots();
+            expect(result).toEqual(bots);
+        });
+
+        it('lanza error con HTTP status si no es ok', async () => {
+            vi.mocked(fetch).mockResolvedValue({
+                ok: false,
+                status: 500,
+                json: async () => ({}),
+            } as Response);
+
+            await expect(fetchAvailableBots()).rejects.toThrow('HTTP 500');
+        });
+
+        it('lanza TypeError si la respuesta no tiene bots como array', async () => {
+            vi.mocked(fetch).mockResolvedValue({
+                ok: true,
+                json: async () => ({ bots: 'nope' }),
+            } as Response);
+
+            await expect(fetchAvailableBots()).rejects.toThrow(TypeError);
         });
     });
 

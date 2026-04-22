@@ -13,6 +13,7 @@ import {
 import { ArrowBack, PlayArrow, SmartToy, People } from '@mui/icons-material';
 import type { GameMode } from '../GameBoard';
 import { FALLBACK_BOTS, fetchAvailableBots, type BotId, type BotInfo, type GameVariant } from '../GameyApi';
+import { getErrorMessage } from '../utils/getErrorMessage';
 
 type PreGameMenuProps = {
     username: string;
@@ -23,29 +24,6 @@ type PreGameMenuProps = {
     onBack: () => void;
     onStart: (opts: { variant: GameVariant; botId: BotId }) => void;
 };
-
-function getErrorMessage(e: unknown): string {
-    if (typeof e === 'object' && e !== null && 'message' in e) {
-        const msg = (e as { message?: unknown }).message;
-        if (typeof msg === 'string') return msg;
-        // Avoid "[object Object]" noise from default stringification.
-        if (msg === null || msg === undefined) return 'Error';
-        if (typeof msg === 'number' || typeof msg === 'boolean' || typeof msg === 'bigint') return String(msg);
-        try {
-            return JSON.stringify(msg);
-        } catch {
-            return 'Error';
-        }
-    }
-    if (typeof e === 'string') return e;
-    if (e === null || e === undefined) return 'Error';
-    if (typeof e === 'number' || typeof e === 'boolean' || typeof e === 'bigint') return String(e);
-    try {
-        return JSON.stringify(e);
-    } catch {
-        return String(e);
-    }
-}
 
 const VARIANTS: Array<{ id: GameVariant; label: string; desc: string }> = [
     { id: 'standard', label: 'Standard', desc: 'Reglas clasicas. Conecta tus 3 lados.' },

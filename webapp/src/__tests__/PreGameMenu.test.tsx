@@ -117,6 +117,34 @@ describe('PreGameMenu', () => {
         expect(onStart).toHaveBeenCalledWith({ variant: 'standard', botId: 'side_bot_hard' });
     });
 
+    it('muestra un estado de carga mientras se estan pidiendo los bots', async () => {
+        let resolveFn: ((value: unknown) => void) | null = null;
+        mockedFetchAvailableBots.mockImplementationOnce(
+            () => new Promise((resolve) => { resolveFn = resolve; }) as any,
+        );
+
+        render(
+            <PreGameMenu
+                username="Ana"
+                mode="bot"
+                boardSize={5}
+                initialVariant="standard"
+                initialBotId="side_bot"
+                onBack={vi.fn()}
+                onStart={vi.fn()}
+            />,
+        );
+
+        expect(await screen.findByText(/Cargando bots disponibles/i)).toBeInTheDocument();
+
+        resolveFn?.([
+            { id: 'side_bot', title: 'Facil', description: 'x', tags: ['basic'] },
+        ]);
+
+        await waitFor(() => expect(screen.queryByText(/Cargando bots disponibles/i)).not.toBeInTheDocument());
+        expect(screen.getByText('Facil')).toBeInTheDocument();
+    });
+
     it('llama a onBack al pulsar Volver', async () => {
         const user = userEvent.setup();
         const onBack = vi.fn();
@@ -137,4 +165,3 @@ describe('PreGameMenu', () => {
         expect(onBack).toHaveBeenCalledTimes(1);
     });
 });
-

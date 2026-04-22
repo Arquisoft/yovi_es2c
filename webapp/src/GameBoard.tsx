@@ -21,6 +21,7 @@ import {
     type YEN,
 } from './GameyApi';
 import { recordGameResult } from './UsersApi';
+import { getErrorMessage } from './utils/getErrorMessage';
 
 // CSS global para animaciones de las celdas
 const CELL_STYLES = `
@@ -48,28 +49,6 @@ const MIN_BOARD_SIZE = 5;
 const BOT_THINK_MIN_MS = 500;
 
 type Cell = { index: number; row: number; col: number; coords: Coords };
-
-function getErrorMessage(e: unknown): string {
-    if (typeof e === 'object' && e !== null && 'message' in e) {
-        const msg = (e as { message?: unknown }).message;
-        if (typeof msg === 'string') return msg;
-        if (msg === null || msg === undefined) return 'Error';
-        if (typeof msg === 'number' || typeof msg === 'boolean' || typeof msg === 'bigint') return String(msg);
-        try {
-            return JSON.stringify(msg);
-        } catch {
-            return 'Error';
-        }
-    }
-    if (typeof e === 'string') return e;
-    if (e === null || e === undefined) return 'Error';
-    if (typeof e === 'number' || typeof e === 'boolean' || typeof e === 'bigint') return String(e);
-    try {
-        return JSON.stringify(e);
-    } catch {
-        return String(e);
-    }
-}
 
 function buildCells(size: number): Cell[] {
     const cells: Cell[] = [];

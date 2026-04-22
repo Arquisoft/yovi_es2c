@@ -15,6 +15,10 @@ vi.mock('../GameyApi', async () => {
     };
 });
 
+vi.mock('../UsersApi', () => ({
+    recordGameResult: vi.fn(),
+}));
+
 const mockedApplyMove = vi.mocked(gameyApi.applyMove);
 const mockedChooseBotMove = vi.mocked(gameyApi.chooseBotMove);
 
@@ -29,6 +33,8 @@ const initialYen: YEN = {
 describe('GameBoard', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mockedApplyMove.mockReset();
+        mockedChooseBotMove.mockReset();
     });
 
     it('renderiza el estado inicial en modo local', () => {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Alert, Snackbar } from '@mui/material';
 import './App.css';
 import './styles/Additions.css';
 import Inicio from './pages/Inicio';
@@ -33,6 +34,7 @@ export default function App() {
   // Tamaño del tablero seleccionado en el menú (5, 7 o 9)
   const [boardSize, setBoardSize] = useState(7);
   const [inicioAuthMode, setInicioAuthMode] = useState<'login' | 'register'>('login');
+  const [gameExitNotice, setGameExitNotice] = useState<string | null>(null);
 
   // ── Handlers de navegación ────────────────────────────────────────────────
 
@@ -65,6 +67,11 @@ export default function App() {
     setGameMode(mode);
     setBoardSize(size);
     setView('game');
+  };
+
+  const exitGame = () => {
+    setGameExitNotice('Has abandonado la partida. Se ha registrado como rendición.');
+    setView('menu');
   };
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -101,7 +108,7 @@ export default function App() {
                   username={username}
                   mode={gameMode}
                   boardSize={boardSize}
-                  onExit={() => setView('menu')}
+                  onExit={exitGame}
               />
           )}
 
@@ -120,6 +127,21 @@ export default function App() {
           )}
 
         </FadeView>
+        <Snackbar
+            open={Boolean(gameExitNotice)}
+            autoHideDuration={3500}
+            onClose={() => setGameExitNotice(null)}
+            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+          <Alert
+              onClose={() => setGameExitNotice(null)}
+              severity="info"
+              variant="filled"
+              sx={{ width: '100%' }}
+          >
+            {gameExitNotice}
+          </Alert>
+        </Snackbar>
       </main>
   );
 }

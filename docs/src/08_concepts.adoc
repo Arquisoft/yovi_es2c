@@ -105,9 +105,9 @@ El sistema incluye un stack de observabilidad completo basado en Prometheus y Gr
 
 El sistema monitoriza tres métricas clave que permiten evaluar su rendimiento:
 
-* **Rate (R)**: número de peticiones por minuto, utilizado para medir la carga del sistema y su actividad.
-* **Errors (E)**: número de peticiones fallidas (códigos HTTP 5xx), que permite detectar problemas internos del sistema.
-* **Duration (D)**: tiempo de respuesta de las peticiones, calculado mediante:
+* **Rate (R) **: número de peticiones por minuto, utilizado para medir la carga del sistema y su actividad.
+* **Errors (E) **: número de peticiones fallidas (códigos HTTP 5xx), que permite detectar problemas internos del sistema.
+* **Duration (D) **: tiempo de respuesta de las peticiones, calculado mediante:
   - Tiempo medio (average)
   - Mediana
   - Percentil 90 (p90)

@@ -155,7 +155,7 @@ export async function fetchAvailableBots(): Promise<BotInfo[]> {
 
     const data = await res.json();
     if (!Array.isArray(data?.bots)) {
-        throw new Error('Respuesta invalida del servidor');
+        throw new TypeError('Respuesta invalida del servidor');
     }
 
     return data.bots as BotInfo[];

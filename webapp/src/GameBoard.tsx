@@ -49,6 +49,13 @@ const BOT_THINK_MIN_MS = 500;
 
 type Cell = { index: number; row: number; col: number; coords: Coords };
 
+function getErrorMessage(e: unknown): string {
+    if (typeof e === 'object' && e !== null && 'message' in e) {
+        return String((e as { message?: unknown }).message ?? 'Error');
+    }
+    return String(e);
+}
+
 function buildCells(size: number): Cell[] {
     const cells: Cell[] = [];
     let index = 0;
@@ -127,7 +134,7 @@ export default function GameBoard({
                 await recordGameResult(username, result.winner === 0);
             }
         } catch (e) {
-            setError(`Error IA: ${e instanceof Error ? e.message : String(e)}`);
+            setError(`Error IA: ${getErrorMessage(e)}`);
         } finally {
             setLoading(false);
             botTurnRef.current = false;
@@ -162,7 +169,7 @@ export default function GameBoard({
                 }
             }
         } catch (e) {
-            setError(`Movimiento invalido: ${e instanceof Error ? e.message : String(e)}`);
+            setError(`Movimiento invalido: ${getErrorMessage(e)}`);
         } finally {
             setLoading(false);
         }
@@ -334,4 +341,3 @@ export default function GameBoard({
         </>
     );
 }
-

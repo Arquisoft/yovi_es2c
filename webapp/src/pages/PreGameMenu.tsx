@@ -24,6 +24,13 @@ type PreGameMenuProps = {
     onStart: (opts: { variant: GameVariant; botId: BotId }) => void;
 };
 
+function getErrorMessage(e: unknown): string {
+    if (typeof e === 'object' && e !== null && 'message' in e) {
+        return String((e as { message?: unknown }).message ?? 'Error');
+    }
+    return String(e);
+}
+
 const VARIANTS: Array<{ id: GameVariant; label: string; desc: string }> = [
     { id: 'standard', label: 'Standard', desc: 'Reglas clasicas. Conecta tus 3 lados.' },
     { id: 'why_not', label: 'Why Not', desc: 'Variante alternativa (mismo tablero, distinto objetivo).' },
@@ -43,7 +50,7 @@ export default function PreGameMenu({
     initialBotId,
     onBack,
     onStart,
-}: PreGameMenuProps) {
+}: Readonly<PreGameMenuProps>) {
     const [variant, setVariant] = useState<GameVariant>(initialVariant);
     const [botId, setBotId] = useState<BotId>(initialBotId);
     const [bots, setBots] = useState<BotInfo[] | null>(null);
@@ -60,7 +67,7 @@ export default function PreGameMenu({
                 const data = await fetchAvailableBots();
                 if (!cancelled) setBots(data);
             } catch (e) {
-                if (!cancelled) setBotsError(e instanceof Error ? e.message : 'Error de red');
+                if (!cancelled) setBotsError(getErrorMessage(e) || 'Error de red');
             } finally {
                 if (!cancelled) setLoadingBots(false);
             }
@@ -251,4 +258,3 @@ export default function PreGameMenu({
         </Box>
     );
 }
-

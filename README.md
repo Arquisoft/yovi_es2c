@@ -212,7 +212,8 @@ cargo test
 
 <table>
 <tr>
-<td valign="top">
+
+<td valign="top" style="padding-right: 40px;">
 
 ### Frontend
 <table>
@@ -224,7 +225,7 @@ cargo test
 
 </td>
 
-<td valign="top">
+<td valign="top" style="padding-right: 40px;">
 
 ### Backend
 <table>
@@ -249,6 +250,7 @@ cargo test
 </table>
 
 </td>
+
 </tr>
 </table>
 ---

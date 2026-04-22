@@ -15,45 +15,57 @@
 </p>
 
 [![Release](https://github.com/arquisoft/yovi_es2c/actions/workflows/release-deploy.yml/badge.svg)](https://github.com/arquisoft/yovi_es2c/actions/workflows/release-deploy.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c\&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c\&metric=coverage)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c\&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c\&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Arquisoft_yovi_es2c\&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Arquisoft_yovi_es2c)
+
+---
 
 ## Que incluye
 
-- Registro e inicio de sesion de usuarios.
-- Juego local y contra bot.
-- Historial de partidas asociado al usuario autenticado.
-- Estadisticas personales por cuenta.
-- Ranking global.
-- Documentacion de arquitectura con Arc42.
+* Registro e inicio de sesion de usuarios
+* Juego local y contra bot
+* Historial de partidas asociado al usuario autenticado
+* Estadisticas personales por cuenta
+* Ranking global
+* Documentacion de arquitectura con Arc42
+* Pruebas de carga con Gatling
+* Monitorizacion con Prometheus y Grafana
+
+---
 
 ## Arquitectura del repositorio
 
 El proyecto esta dividido en varios modulos:
 
-- `webapp/`: frontend en React, Vite y TypeScript.
-- `users/`: servicio de usuarios en Node.js y Express.
-- `gamey/`: motor del juego y servicio de bots en Rust.
-- `docs/`: documentacion de arquitectura y despliegue.
-- `gatling/`: pruebas de carga.
+* `webapp/`: frontend en React, Vite y TypeScript
+* `users/`: servicio de usuarios en Node.js y Express
+* `gamey/`: motor del juego y servicio de bots en Rust
+* `docs/`: documentacion de arquitectura y despliegue
+* `gatling/`: pruebas de carga
+
+---
 
 ## Enlaces utiles
 
-- Aplicacion desplegada: `http://13.49.237.46/`
-- Documentacion: `https://arquisoft.github.io/yovi_es2c/`
-- API docs de usuarios: `http://localhost:3000/api-docs`
-- API de Gamey: `http://localhost:4000`
+* Aplicacion desplegada: [http://13.49.237.46/](http://13.49.237.46/)
+* Documentacion: [https://arquisoft.github.io/yovi_es2c/](https://arquisoft.github.io/yovi_es2c/)
+* API docs de usuarios: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+* API de Gamey: [http://localhost:4000](http://localhost:4000)
+
+---
 
 ## Requisitos
 
 Para desarrollo local:
 
-- Node.js y npm
-- Rust y Cargo
-- Docker Desktop si quieres levantarlo con contenedores
+* Node.js y npm
+* Rust y Cargo
+* Docker Desktop si quieres levantarlo con contenedores
+
+---
 
 ## Puesta en marcha
 
@@ -67,21 +79,21 @@ docker compose up --build
 
 Servicios esperados:
 
-- `webapp`: `http://localhost`
-- `users`: `http://localhost:3000`
-- `gamey`: `http://localhost:4000`
-- `mongodb`: `mongodb://localhost:27017`
+* `webapp`: [http://localhost](http://localhost)
+* `users`: [http://localhost:3000](http://localhost:3000)
+* `gamey`: [http://localhost:4000](http://localhost:4000)
+* `mongodb`: mongodb://localhost:27017
 
-Variables usadas por `docker compose`:
+Variables usadas:
 
-- `DB_URI`
-- `DB_PASSWORD`
+* DB_URI
+* DB_PASSWORD
+
+---
 
 ### Opcion 2: en local
 
-Arranca cada modulo en una terminal distinta.
-
-#### 1. Users
+#### Users
 
 ```bash
 cd users
@@ -89,14 +101,14 @@ npm install
 npm start
 ```
 
-#### 2. Gamey
+#### Gamey
 
 ```bash
 cd gamey
-cargo run
+cargo run -- --mode server --port 4000
 ```
 
-#### 3. Webapp
+#### Webapp
 
 ```bash
 cd webapp
@@ -104,20 +116,72 @@ npm install
 npm run dev
 ```
 
-El frontend suele quedar disponible en:
+Frontend disponible en:
 
-```text
-http://localhost:5173
+[http://localhost:5173](http://localhost:5173)
+
+---
+
+## Observabilidad (Prometheus + Grafana)
+
+El sistema incluye monitorizacion basada en Prometheus y Grafana.
+
+### Levantar monitorizacion
+
+```bash
+docker compose up -d prometheus grafana
 ```
 
-## Como probar la funcionalidad principal
+Acceso:
 
-1. Registra una cuenta nueva.
-2. Inicia sesion.
-3. Juega una o varias partidas.
-4. Entra en `Historial de partidas` y comprueba que ves solo tus partidas.
-5. Entra en `Estadisticas personales` y revisa victorias, derrotas y ratio.
-6. Cierra sesion y repite el proceso con otro usuario para verificar que no se mezclan los datos.
+* Prometheus: [http://localhost:9090](http://localhost:9090)
+* Grafana: [http://localhost:9091](http://localhost:9091)
+
+Credenciales:
+
+* user: admin
+* password: admin
+
+---
+
+### Metricas monitorizadas
+
+Modelo RED:
+
+* Rate (R): numero de peticiones
+* Errors (E): errores HTTP (4xx y 5xx)
+* Duration (D): latencia
+
+Metricas adicionales:
+
+* Error Rate (%)
+* Throughput (RPS)
+* Percentiles (p50, p90)
+
+---
+
+### Uso con pruebas de carga
+
+```bash
+cd gatling
+./mvnw gatling:test
+```
+
+Windows:
+
+```powershell
+cd gatling
+.\mvnw.cmd gatling:test
+```
+
+Durante la ejecucion se puede observar:
+
+* Incremento de Rate
+* Aparicion de errores
+* Variacion de latencia
+* Cambios en throughput
+
+---
 
 ## Testing
 
@@ -126,18 +190,6 @@ http://localhost:5173
 ```bash
 cd webapp
 npm test
-```
-
-Cobertura:
-
-```bash
-npm run test:coverage
-```
-
-E2E:
-
-```bash
-npm run test:e2e
 ```
 
 ### Users
@@ -154,43 +206,29 @@ cd gamey
 cargo test
 ```
 
-## Scripts utiles
-
-### `webapp`
-
-- `npm run dev`: arranca Vite en desarrollo.
-- `npm run build`: genera el build de produccion.
-- `npm test`: ejecuta tests unitarios.
-- `npm run test:coverage`: ejecuta tests con cobertura.
-- `npm run test:e2e`: ejecuta pruebas end-to-end.
-
-### `users`
-
-- `npm start`: arranca el servicio.
-- `npm test`: ejecuta pruebas del servicio.
-
-### `gamey`
-
-- `cargo run`: arranca el servicio Gamey.
-- `cargo test`: ejecuta la bateria de tests.
-- `cargo build`: compila el proyecto.
+---
 
 ## Tecnologias
 
-- React
-- TypeScript
-- Vite
-- Material UI
-- Node.js
-- Express
-- MongoDB
-- Rust
-- Axum
-- Docker
-- GitHub Actions
-- SonarCloud
+* React
+* TypeScript
+* Vite
+* Material UI
+* Node.js
+* Express
+* MongoDB
+* Rust
+* Axum
+* Docker
+* Gatling
+* Prometheus
+* Grafana
+* GitHub Actions
+* SonarCloud
+
+---
 
 ## Documentacion extra
 
-- [webapp/README.md](webapp/README.md)
-- [docs/README.md](docs/README.md)
+* webapp/README.md
+* docs/README.md

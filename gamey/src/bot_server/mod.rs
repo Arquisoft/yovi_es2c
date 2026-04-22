@@ -12,6 +12,7 @@
 //! All endpoints allow cross-origin requests so the React webapp (port 80)
 //! can call this server (port 4000) freely.
 
+pub mod bots;
 pub mod choose;
 pub mod error;
 pub mod game_move;
@@ -44,6 +45,10 @@ pub fn create_router(state: AppState) -> axum::Router {
 
     axum::Router::new()
         .route("/status", axum::routing::get(status))
+        .route(
+            "/{api_version}/ybot/bots",
+            axum::routing::get(bots::bots),
+        )
         .route(
             "/{api_version}/ybot/choose/{bot_id}",
             axum::routing::post(choose::choose),

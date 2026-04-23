@@ -52,6 +52,49 @@ describe('GameBoard', () => {
         expect(screen.getByText(/TURNO DE AZUL/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Nueva/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Salir/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /Silenciar musica|Activar sonido/i })).toBeInTheDocument();
+    });
+
+    it('inicia la musica al entrar en partida y la deja en loop', () => {
+        const playSpy = vi.spyOn(HTMLMediaElement.prototype, 'play');
+        const { container } = render(
+            <GameBoard
+                username="Ana"
+                mode="local"
+                boardSize={5}
+                onExit={() => {}}
+            />
+        );
+
+        const audio = container.querySelector('audio');
+
+        expect(audio).not.toBeNull();
+        expect(audio).toHaveAttribute('src', '/pink-panther.mp3');
+        expect(audio?.loop).toBe(true);
+        expect(playSpy).toHaveBeenCalled();
+    });
+
+    it('permite silenciar y volver a activar el sonido', async () => {
+        const user = userEvent.setup();
+        const { container } = render(
+            <GameBoard
+                username="Ana"
+                mode="local"
+                boardSize={5}
+                onExit={() => {}}
+            />
+        );
+
+        const audio = container.querySelector('audio') as HTMLAudioElement;
+        const toggleMuteButton = screen.getByRole('button', { name: /Silenciar musica/i });
+
+        expect(audio.muted).toBe(false);
+
+        await user.click(toggleMuteButton);
+        expect(audio.muted).toBe(true);
+
+        await user.click(screen.getByRole('button', { name: /Activar sonido/i }));
+        expect(audio.muted).toBe(false);
     });
 
     it('llama a onExit al pulsar salir', async () => {

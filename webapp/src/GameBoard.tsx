@@ -5,10 +5,18 @@ import {
     Button,
     Chip,
     CircularProgress,
+    IconButton,
     Stack,
     Typography,
 } from '@mui/material';
-import { ExitToApp, Person, RestartAlt, SmartToy } from '@mui/icons-material';
+import {
+    ExitToApp,
+    MusicNote,
+    Person,
+    RestartAlt,
+    SmartToy,
+    VolumeOff,
+} from '@mui/icons-material';
 import {
     applyMove,
     chooseBotMove,
@@ -47,6 +55,7 @@ const PLAYER_COLOR: Record<number, string> = { 0: '#4fc3f7', 1: '#ef5350' };
 const PLAYER_NAME: Record<number, string> = { 0: 'Azul', 1: 'Rojo' };
 const MIN_BOARD_SIZE = 5;
 const BOT_THINK_MIN_MS = 500;
+const DEFAULT_MUSIC_VOLUME = 0.35;
 
 type Cell = { index: number; row: number; col: number; coords: Coords };
 
@@ -89,7 +98,9 @@ export default function GameBoard({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [startTimestamp, setStartTimestamp] = useState<number>(() => Math.floor(Date.now() / 1000));
+    const [isMuted, setIsMuted] = useState(false);
     const botTurnRef = useRef(false);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const nextPlayer = yen.turn;
     const cells = useMemo(() => buildCells(safeBoardSize), [safeBoardSize]);
@@ -104,11 +115,42 @@ export default function GameBoard({
 
     const activeColor = winner !== null ? PLAYER_COLOR[winner] : PLAYER_COLOR[nextPlayer];
 
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (!audio) return;
+
+        audio.volume = DEFAULT_MUSIC_VOLUME;
+        audio.muted = isMuted;
+    }, [isMuted]);
+
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (!audio) return;
+
+        audio.currentTime = 0;
+        audio.volume = DEFAULT_MUSIC_VOLUME;
+        audio.muted = isMuted;
+
+        const playPromise = audio.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => undefined);
+        }
+
+        return () => {
+            audio.pause();
+            audio.currentTime = 0;
+        };
+    }, []);
+
     const reset = () => {
         setYen(newGameYEN(safeBoardSize, variant));
         setWinner(null);
         setError(null);
         setStartTimestamp(Math.floor(Date.now() / 1000));
+    };
+
+    const handleToggleMute = () => {
+        setIsMuted((current) => !current);
     };
 
     const runBotTurn = useCallback(async (currentYen: YEN) => {
@@ -172,6 +214,7 @@ export default function GameBoard({
     return (
         <>
             <style>{CELL_STYLES}</style>
+            <audio ref={audioRef} src="/pink-panther.mp3" loop preload="auto" />
             <Box sx={{
                 minHeight: '100vh',
                 background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
@@ -183,18 +226,38 @@ export default function GameBoard({
                 gap: 2,
             }}>
                 <Box sx={{ width: '100%', maxWidth: 700 }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                        <Typography variant="h6" fontWeight={800}>
-                            YOVI ARENA
+                        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                            <Typography variant="h6" fontWeight={800}>
+                                YOVI ARENA
                             <Typography component="span" variant="caption"
                                         sx={{ ml: 1, color: 'rgba(255,255,255,0.4)', letterSpacing: 2 }}>
                                 {username} · {yen.variant === 'standard' ? 'Estandar' : 'Why Not'}
                             </Typography>
-                        </Typography>
-                        <Stack direction="row" gap={1}>
-                            <Button
-                                size="small"
-                                startIcon={<RestartAlt />}
+                            </Typography>
+                            <Stack direction="row" gap={1} flexWrap="wrap" justifyContent="flex-end">
+                                <Stack
+                                    direction="row"
+                                    alignItems="center"
+                                    spacing={0.5}
+                                    sx={{
+                                        px: 1,
+                                        borderRadius: 2,
+                                        border: '1px solid rgba(255,255,255,0.15)',
+                                        bgcolor: 'rgba(255,255,255,0.04)',
+                                    }}
+                                >
+                                    <IconButton
+                                        aria-label={isMuted ? 'Activar sonido' : 'Silenciar musica'}
+                                        onClick={handleToggleMute}
+                                        size="small"
+                                        sx={{ color: isMuted ? 'rgba(255,255,255,0.45)' : '#fff' }}
+                                    >
+                                        {isMuted ? <VolumeOff fontSize="small" /> : <MusicNote fontSize="small" />}
+                                    </IconButton>
+                                </Stack>
+                                <Button
+                                    size="small"
+                                    startIcon={<RestartAlt />}
                                 onClick={reset}
                                 sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
                                 variant="outlined"

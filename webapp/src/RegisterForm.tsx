@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FormEvent, type MouseEvent } from 'react';
 import {
   Box,
   Button,
@@ -16,7 +16,7 @@ type RegisterFormProps = {
 
 type AuthMode = 'login' | 'register';
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, initialMode = 'login' }) => {
+const RegisterForm = ({ onAuthSuccess, initialMode = 'login' }: RegisterFormProps) => {
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -24,7 +24,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, initialMode 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleModeChange = (_event: MouseEvent<HTMLElement>, value: AuthMode | null) => {
+    if (value) {
+      setMode(value);
+      setError(null);
+    }
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
 
@@ -66,22 +73,22 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, initialMode 
         </Box>
         {/* Toggle login / register */}
         <ToggleButtonGroup
-            value={mode}
-            exclusive
-            onChange={(_, val) => val && setMode(val)}
-            fullWidth
-            size="small"
-            sx={{
-              '& .MuiToggleButton-root': {
-                color: 'rgba(255,255,255,0.5)',
-                borderColor: 'rgba(255,255,255,0.15)',
-                '&.Mui-selected': {
-                  bgcolor: 'rgba(79,195,247,0.15)',
-                  color: '#4fc3f7',
-                  borderColor: '#4fc3f7',
-                },
+          value={mode}
+          exclusive
+          onChange={handleModeChange}
+          fullWidth
+          size="small"
+          sx={{
+            '& .MuiToggleButton-root': {
+              color: 'rgba(255,255,255,0.5)',
+              borderColor: 'rgba(255,255,255,0.15)',
+              '&.Mui-selected': {
+                bgcolor: 'rgba(79,195,247,0.15)',
+                color: '#4fc3f7',
+                borderColor: '#4fc3f7',
               },
-            }}
+            },
+          }}
         >
           <ToggleButton value="login">Log in</ToggleButton>
           <ToggleButton value="register">Register</ToggleButton>
@@ -95,8 +102,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, initialMode 
             size="small"
             fullWidth
             variant="outlined"
-            InputLabelProps={{ style: { color: 'rgba(255,255,255,0.5)' } }}
-            InputProps={{ style: { color: 'white' } }}
+            slotProps={{
+              inputLabel: { style: { color: 'rgba(255,255,255,0.5)' } },
+              input: { style: { color: 'white' } },
+            }}
             sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' } } }}
         />
 
@@ -109,8 +118,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, initialMode 
             size="small"
             fullWidth
             variant="outlined"
-            InputLabelProps={{ style: { color: 'rgba(255,255,255,0.5)' } }}
-            InputProps={{ style: { color: 'white' } }}
+            slotProps={{
+              inputLabel: { style: { color: 'rgba(255,255,255,0.5)' } },
+              input: { style: { color: 'white' } },
+            }}
             sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' } } }}
         />
 
@@ -124,8 +135,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onAuthSuccess, initialMode 
                 size="small"
                 fullWidth
                 variant="outlined"
-                InputLabelProps={{ style: { color: 'rgba(255,255,255,0.5)' } }}
-                InputProps={{ style: { color: 'white' } }}
+                slotProps={{
+                  inputLabel: { style: { color: 'rgba(255,255,255,0.5)' } },
+                  input: { style: { color: 'white' } },
+                }}
                 sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' } } }}
             />
         )}

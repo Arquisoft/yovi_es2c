@@ -38,6 +38,7 @@ const CELL_STYLES = `
   70%  { transform: scale(1.15); }
   100% { transform: scale(1); opacity: 1; }
 }
+
 `;
 
 export type GameMode = 'local' | 'bot';
@@ -222,8 +223,36 @@ export default function GameBoard({
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 2,
+                position: 'relative',
+                overflow: 'hidden',
+                isolation: 'isolate',
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: '-12%',
+                    backgroundImage: `
+                        linear-gradient(rgba(79,195,247,0.1) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(239,83,80,0.1) 1px, transparent 1px)
+                    `,
+                    backgroundSize: '54px 54px',
+                    opacity: 0.12,
+                    zIndex: 0,
+                },
+                '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: '-18%',
+                    background: `
+                        radial-gradient(circle at 18% 24%, rgba(79,195,247,0.22), transparent 30%),
+                        radial-gradient(circle at 82% 22%, rgba(239,83,80,0.2), transparent 28%),
+                        radial-gradient(circle at 50% 78%, rgba(255,203,117,0.14), transparent 26%)
+                    `,
+                    opacity: 0.38,
+                    zIndex: 0,
+                    pointerEvents: 'none',
+                },
             }}>
-                <Box sx={{ width: '100%', maxWidth: 700 }}>
+                <Box sx={{ width: '100%', maxWidth: 700, position: 'relative', zIndex: 1 }}>
                         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
                             <Typography variant="h6" fontWeight={800}>
                                 YOVI ARENA
@@ -290,7 +319,7 @@ export default function GameBoard({
                         textAlign: 'center',
                         mb: 1,
                         boxShadow: winner !== null
-                            ? `0 0 24px ${activeColor}55, inset 0 0 18px ${activeColor}18`
+                            ? `0 0 10px ${activeColor}22`
                             : 'none',
                     }}>
                         <Typography
@@ -303,7 +332,6 @@ export default function GameBoard({
                                     : '1rem',
                                 lineHeight: 1.2,
                                 textTransform: 'uppercase',
-                                textShadow: winner !== null ? `0 0 18px ${activeColor}66` : 'none',
                             }}
                         >
                             {isBotThinking

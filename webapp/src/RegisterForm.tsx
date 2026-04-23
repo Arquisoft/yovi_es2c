@@ -7,7 +7,10 @@ import {
   ToggleButtonGroup,
   Alert,
   CircularProgress,
+  IconButton,
+  InputAdornment,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 type RegisterFormProps = {
   onAuthSuccess: (username: string) => void;
@@ -21,6 +24,8 @@ const RegisterForm = ({ onAuthSuccess, initialMode = 'login' }: RegisterFormProp
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -112,7 +117,7 @@ const RegisterForm = ({ onAuthSuccess, initialMode = 'login' }: RegisterFormProp
         {/* Password */}
         <TextField
             label="Password"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             size="small"
@@ -120,7 +125,21 @@ const RegisterForm = ({ onAuthSuccess, initialMode = 'login' }: RegisterFormProp
             variant="outlined"
             slotProps={{
               inputLabel: { style: { color: 'rgba(255,255,255,0.5)' } },
-              input: { style: { color: 'white' } },
+              input: {
+                style: { color: 'white' },
+                endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                          aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                          onClick={() => setShowPassword((current) => !current)}
+                          edge="end"
+                          sx={{ color: 'rgba(255,255,255,0.65)' }}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                ),
+              },
             }}
             sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' } } }}
         />
@@ -129,7 +148,7 @@ const RegisterForm = ({ onAuthSuccess, initialMode = 'login' }: RegisterFormProp
         {mode === 'register' && (
             <TextField
                 label="Confirm password"
-                type="password"
+                type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 size="small"
@@ -137,7 +156,21 @@ const RegisterForm = ({ onAuthSuccess, initialMode = 'login' }: RegisterFormProp
                 variant="outlined"
                 slotProps={{
                   inputLabel: { style: { color: 'rgba(255,255,255,0.5)' } },
-                  input: { style: { color: 'white' } },
+                  input: {
+                    style: { color: 'white' },
+                    endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                              aria-label={showConfirmPassword ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}
+                              onClick={() => setShowConfirmPassword((current) => !current)}
+                              edge="end"
+                              sx={{ color: 'rgba(255,255,255,0.65)' }}
+                          >
+                            {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                    ),
+                  },
                 }}
                 sx={{ '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.15)' } } }}
             />

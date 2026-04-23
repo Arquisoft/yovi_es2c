@@ -116,6 +116,68 @@ describe('GameBoard', () => {
         expect(onExit).toHaveBeenCalledWith(true);
     });
 
+    it('muestra el mensaje de victoria ampliado cuando gana un jugador', async () => {
+        const user = userEvent.setup();
+
+        mockedApplyMove.mockResolvedValue({
+            yen: {
+                ...initialYen,
+                turn: 1,
+                layout: 'B/BB/.../..../.....',
+            },
+            status: 'finished',
+            winner: 0,
+            next_player: null,
+        });
+
+        render(
+            <GameBoard
+                username="Ana"
+                mode="local"
+                boardSize={5}
+                onExit={() => {}}
+            />
+        );
+
+        const cells = screen.getAllByTitle(/^\(/i);
+        await user.click(cells[0]);
+
+        expect(await screen.findByText(/🏆 ENHORABUENA, GANA AZUL! 🏆/i)).toBeInTheDocument();
+    });
+
+    it('al salir tras finalizar la partida no marca rendición', async () => {
+        const user = userEvent.setup();
+        const onExit = vi.fn();
+
+        mockedApplyMove.mockResolvedValue({
+            yen: {
+                ...initialYen,
+                turn: 1,
+                layout: 'B/BB/.../..../.....',
+            },
+            status: 'finished',
+            winner: 0,
+            next_player: null,
+        });
+
+        render(
+            <GameBoard
+                username="Ana"
+                mode="local"
+                boardSize={5}
+                onExit={onExit}
+            />
+        );
+
+        const cells = screen.getAllByTitle(/^\(/i);
+        await user.click(cells[0]);
+        await screen.findByText(/🏆 ENHORABUENA, GANA AZUL! 🏆/i);
+
+        await user.click(screen.getByRole('button', { name: /Salir/i }));
+
+        expect(onExit).toHaveBeenCalledWith(false);
+    });
+
     it('llama a applyMove al pulsar una celda vacia', async () => {
         const user = userEvent.setup();
 

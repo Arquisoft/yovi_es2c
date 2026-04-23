@@ -75,8 +75,12 @@ export default function App() {
     setView('pregame');
   };
 
-  const exitGame = () => {
-    setGameExitNotice('Has abandonado la partida. Se ha registrado como rendición.');
+  const exitGame = (didResign: boolean) => {
+    setGameExitNotice(
+      didResign
+        ? 'Has abandonado la partida. Se ha registrado como rendición.'
+        : 'Partida finalizada. Volviendo al menú.'
+    );
     setView('menu');
   };
 

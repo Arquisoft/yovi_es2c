@@ -48,7 +48,7 @@ interface GameBoardProps {
     boardSize?: number;
     variant?: GameVariant;
     botId?: BotId;
-    onExit: () => void;
+    onExit: (didResign: boolean) => void;
 }
 
 const PLAYER_COLOR: Record<number, string> = { 0: '#4fc3f7', 1: '#ef5350' };
@@ -107,10 +107,11 @@ export default function GameBoard({
     const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
 
     const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
+    const winnerName = winner !== null ? PLAYER_NAME[winner].toUpperCase() : null;
     const statusText = isBotThinking
         ? 'LA IA ESTA PENSANDO...'
         : winner !== null
-            ? `GANO ${PLAYER_NAME[winner].toUpperCase()}!`
+            ? `🏆 ENHORABUENA, GANA ${winnerName}! 🏆`
             : `TURNO DE ${mode === 'bot' && nextPlayer === 0 ? username.toUpperCase() : PLAYER_NAME[nextPlayer].toUpperCase()}`;
 
     const activeColor = winner !== null ? PLAYER_COLOR[winner] : PLAYER_COLOR[nextPlayer];
@@ -264,7 +265,7 @@ export default function GameBoard({
                             <Button
                                 size="small"
                                 startIcon={<ExitToApp />}
-                                onClick={onExit}
+                                onClick={() => onExit(winner === null)}
                                 sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
                                 variant="outlined"
                             >
@@ -282,14 +283,29 @@ export default function GameBoard({
                     </Stack>
 
                     <Box sx={{
-                        bgcolor: `${activeColor}18`,
-                        border: `1px solid ${activeColor}`,
-                        borderRadius: 2,
-                        p: 1.5,
+                        bgcolor: winner !== null ? `${activeColor}24` : `${activeColor}18`,
+                        border: `2px solid ${activeColor}`,
+                        borderRadius: winner !== null ? 3 : 2,
+                        p: winner !== null ? { xs: 2.2, md: 2.8 } : 1.5,
                         textAlign: 'center',
                         mb: 1,
+                        boxShadow: winner !== null
+                            ? `0 0 24px ${activeColor}55, inset 0 0 18px ${activeColor}18`
+                            : 'none',
                     }}>
-                        <Typography fontWeight={800} letterSpacing={2} sx={{ color: activeColor }}>
+                        <Typography
+                            fontWeight={900}
+                            letterSpacing={winner !== null ? 1 : 2}
+                            sx={{
+                                color: activeColor,
+                                fontSize: winner !== null
+                                    ? { xs: '1.45rem', md: '2.1rem' }
+                                    : '1rem',
+                                lineHeight: 1.2,
+                                textTransform: 'uppercase',
+                                textShadow: winner !== null ? `0 0 18px ${activeColor}66` : 'none',
+                            }}
+                        >
                             {isBotThinking
                                 ? <><CircularProgress size={14} sx={{ mr: 1, color: activeColor }} />{statusText}</>
                                 : statusText

@@ -113,6 +113,7 @@ describe('GameBoard', () => {
         await user.click(screen.getByRole('button', { name: /Salir/i }));
 
         expect(onExit).toHaveBeenCalledTimes(1);
+        expect(onExit).toHaveBeenCalledWith(true);
     });
 
     it('llama a applyMove al pulsar una celda vacia', async () => {

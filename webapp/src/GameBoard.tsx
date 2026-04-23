@@ -131,10 +131,7 @@ export default function GameBoard({
         audio.volume = DEFAULT_MUSIC_VOLUME;
         audio.muted = isMuted;
 
-        const playPromise = audio.play();
-        if (playPromise && typeof playPromise.catch === 'function') {
-            playPromise.catch(() => undefined);
-        }
+        audio.play()?.catch?.(() => undefined);
 
         return () => {
             audio.pause();

@@ -107,11 +107,14 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
             {/* Board size picker */}
             <Paper
                 sx={{
-                    bgcolor: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    bgcolor: 'rgba(79,195,247,0.08)',
+                    border: '1px solid rgba(79,195,247,0.18)',
                     borderRadius: 3,
                     p: 3,
                     mb: 4,
+                    maxWidth: 560,
+                    mx: 'auto',
+                    textAlign: 'center',
                 }}
             >
                 <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.5)', mb: 2, letterSpacing: 2 }}>
@@ -122,6 +125,7 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
                     exclusive
                     onChange={(_, val) => val && setBoardSize(val)}
                     sx={{
+                        justifyContent: 'center',
                         '& .MuiToggleButton-root': {
                             color: 'rgba(255,255,255,0.5)',
                             borderColor: 'rgba(255,255,255,0.15)',

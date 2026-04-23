@@ -50,6 +50,26 @@ describe('RegisterForm', () => {
     expect(await screen.findByText(/passwords do not match/i)).toBeInTheDocument();
   });
 
+  it('permite mostrar y ocultar la contraseña con el icono de ojo', async () => {
+    const user = userEvent.setup();
+    render(<RegisterForm onAuthSuccess={() => {}} />);
+
+    const passwordInput = screen.getByLabelText(/^password$/i);
+    expect(passwordInput).toHaveAttribute('type', 'password');
+
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: /mostrar contraseña/i }));
+    });
+
+    expect(passwordInput).toHaveAttribute('type', 'text');
+
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: /ocultar contraseña/i }));
+    });
+
+    expect(passwordInput).toHaveAttribute('type', 'password');
+  });
+
   it('calls onAuthSuccess when login succeeds', async () => {
     const user = userEvent.setup();
     const onAuthSuccess = vi.fn();

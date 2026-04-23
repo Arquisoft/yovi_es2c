@@ -38,6 +38,7 @@ const CELL_STYLES = `
   70%  { transform: scale(1.15); }
   100% { transform: scale(1); opacity: 1; }
 }
+
 `;
 
 export type GameMode = 'local' | 'bot';
@@ -48,7 +49,7 @@ interface GameBoardProps {
     boardSize?: number;
     variant?: GameVariant;
     botId?: BotId;
-    onExit: () => void;
+    onExit: (didResign: boolean) => void;
 }
 
 const PLAYER_COLOR: Record<number, string> = { 0: '#4fc3f7', 1: '#ef5350' };
@@ -107,10 +108,11 @@ export default function GameBoard({
     const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
 
     const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
+    const winnerName = winner !== null ? PLAYER_NAME[winner].toUpperCase() : null;
     const statusText = isBotThinking
         ? 'LA IA ESTA PENSANDO...'
         : winner !== null
-            ? `GANO ${PLAYER_NAME[winner].toUpperCase()}!`
+            ? `🏆 ENHORABUENA, GANA ${winnerName}! 🏆`
             : `TURNO DE ${mode === 'bot' && nextPlayer === 0 ? username.toUpperCase() : PLAYER_NAME[nextPlayer].toUpperCase()}`;
 
     const activeColor = winner !== null ? PLAYER_COLOR[winner] : PLAYER_COLOR[nextPlayer];
@@ -221,8 +223,36 @@ export default function GameBoard({
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: 2,
+                position: 'relative',
+                overflow: 'hidden',
+                isolation: 'isolate',
+                '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: '-12%',
+                    backgroundImage: `
+                        linear-gradient(rgba(79,195,247,0.1) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(239,83,80,0.1) 1px, transparent 1px)
+                    `,
+                    backgroundSize: '54px 54px',
+                    opacity: 0.12,
+                    zIndex: 0,
+                },
+                '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    inset: '-18%',
+                    background: `
+                        radial-gradient(circle at 18% 24%, rgba(79,195,247,0.22), transparent 30%),
+                        radial-gradient(circle at 82% 22%, rgba(239,83,80,0.2), transparent 28%),
+                        radial-gradient(circle at 50% 78%, rgba(255,203,117,0.14), transparent 26%)
+                    `,
+                    opacity: 0.38,
+                    zIndex: 0,
+                    pointerEvents: 'none',
+                },
             }}>
-                <Box sx={{ width: '100%', maxWidth: 700 }}>
+                <Box sx={{ width: '100%', maxWidth: 700, position: 'relative', zIndex: 1 }}>
                         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
                             <Typography variant="h6" fontWeight={800}>
                                 YOVI ARENA
@@ -264,7 +294,7 @@ export default function GameBoard({
                             <Button
                                 size="small"
                                 startIcon={<ExitToApp />}
-                                onClick={onExit}
+                                onClick={() => onExit(winner === null)}
                                 sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
                                 variant="outlined"
                             >
@@ -282,14 +312,28 @@ export default function GameBoard({
                     </Stack>
 
                     <Box sx={{
-                        bgcolor: `${activeColor}18`,
-                        border: `1px solid ${activeColor}`,
-                        borderRadius: 2,
-                        p: 1.5,
+                        bgcolor: winner !== null ? `${activeColor}24` : `${activeColor}18`,
+                        border: `2px solid ${activeColor}`,
+                        borderRadius: winner !== null ? 3 : 2,
+                        p: winner !== null ? { xs: 2.2, md: 2.8 } : 1.5,
                         textAlign: 'center',
                         mb: 1,
+                        boxShadow: winner !== null
+                            ? `0 0 10px ${activeColor}22`
+                            : 'none',
                     }}>
-                        <Typography fontWeight={800} letterSpacing={2} sx={{ color: activeColor }}>
+                        <Typography
+                            fontWeight={900}
+                            letterSpacing={winner !== null ? 1 : 2}
+                            sx={{
+                                color: activeColor,
+                                fontSize: winner !== null
+                                    ? { xs: '1.45rem', md: '2.1rem' }
+                                    : '1rem',
+                                lineHeight: 1.2,
+                                textTransform: 'uppercase',
+                            }}
+                        >
                             {isBotThinking
                                 ? <><CircularProgress size={14} sx={{ mr: 1, color: activeColor }} />{statusText}</>
                                 : statusText

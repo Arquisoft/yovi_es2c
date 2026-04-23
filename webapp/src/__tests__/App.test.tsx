@@ -87,7 +87,7 @@ vi.mock('../GameBoard', () => ({
     boardSize: number;
     variant?: 'standard' | 'why_not';
     botId?: string;
-    onExit: () => void;
+    onExit: (didResign: boolean) => void;
   }) => {
     gameBoardMock(props);
     return (
@@ -96,7 +96,8 @@ vi.mock('../GameBoard', () => ({
           <p>Usuario: {props.username}</p>
           <p>Modo: {props.mode}</p>
           <p>Tamaño: {props.boardSize}</p>
-          <button onClick={props.onExit}>Salir partida</button>
+          <button onClick={() => props.onExit(true)}>Salir partida</button>
+          <button onClick={() => props.onExit(false)}>Salir partida finalizada</button>
         </div>
     );
   },
@@ -239,5 +240,18 @@ describe('App', () => {
     expect(screen.getByText('Usuario inicial: Lucia')).toBeInTheDocument();
     expect(screen.getByText('Has abandonado la partida. Se ha registrado como rendición.')).toBeInTheDocument();
     expect(screen.getByTestId('fade-view')).toHaveAttribute('data-viewkey', 'menu');
+  });
+
+  it('si la partida ya ha terminado, salir no muestra rendición', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByText('Entrar como Ana'));
+    fireEvent.click(screen.getByText('Jugar bot 9'));
+    fireEvent.click(screen.getByText('Empezar'));
+    fireEvent.click(screen.getByText('Salir partida finalizada'));
+
+    expect(screen.getByText('Menu mock')).toBeInTheDocument();
+    expect(screen.getByText('Usuario inicial: Lucia')).toBeInTheDocument();
+    expect(screen.getByText('Partida finalizada. Volviendo al menú.')).toBeInTheDocument();
   });
 });

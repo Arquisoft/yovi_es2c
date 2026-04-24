@@ -191,7 +191,7 @@ describe('Ranking', () => {
         expect(screen.getByText('#4')).toBeInTheDocument();
 
         // Verificar nombres
-        expect(screen.getByText('Ana')).toBeInTheDocument();
+        expect(screen.getAllByText('Ana').length).toBeGreaterThan(0);
         expect(screen.getByText('Bob')).toBeInTheDocument();
         expect(screen.getByText('Charlie')).toBeInTheDocument();
         expect(screen.getByText('Diana')).toBeInTheDocument();

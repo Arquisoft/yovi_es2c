@@ -158,4 +158,34 @@ describe('Ranking', () => {
 
         expect(screen.getByRole('progressbar')).toBeInTheDocument();
     });
+
+    it('renderiza la lista de ranking correctamente con medallas y estilos', async () => {
+        mockedFetchRanking.mockResolvedValue([
+            { username: 'Ana', wins: 10, losses: 2, position: 1, winRate: 83 },
+            { username: 'Bob', wins: 8, losses: 4, position: 2, winRate: 67 },
+            { username: 'Charlie', wins: 5, losses: 5, position: 3, winRate: 50 },
+            { username: 'Diana', wins: 1, losses: 9, position: 4, winRate: 10 },
+        ]);
+
+        render(<Ranking username="Ana" onBack={onBack} />);
+
+        await waitFor(() => {
+            // Verificar medallas de los 3 primeros
+            expect(screen.getByText('🥇')).toBeInTheDocument();
+            expect(screen.getByText('🥈')).toBeInTheDocument();
+            expect(screen.getByText('🥉')).toBeInTheDocument();
+            
+            // Verificar puesto normal
+            expect(screen.getByText('#4')).toBeInTheDocument();
+
+            // Verificar nombres
+            expect(screen.getByText('Ana')).toBeInTheDocument();
+            expect(screen.getByText('Bob')).toBeInTheDocument();
+            expect(screen.getByText('Charlie')).toBeInTheDocument();
+            expect(screen.getByText('Diana')).toBeInTheDocument();
+
+            // Verificar que se indica el usuario actual
+            expect(screen.getByText('Tú')).toBeInTheDocument();
+        });
+    });
 });

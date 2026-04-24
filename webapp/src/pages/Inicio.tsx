@@ -71,10 +71,17 @@ export default function Inicio({ onEntrar, initialAuthMode = 'login' }: InicioPr
                         display: 'flex',
                         justifyContent: 'center',
                         mb: 3,
-                        '& img': { width: 140, opacity: 0.9 },
+                        '& img': {
+                            width: '100%',
+                            maxWidth: 320,
+                            borderRadius: 3,
+                            opacity: 0.96,
+                            objectFit: 'cover',
+                            boxShadow: '0 18px 44px rgba(0,0,0,0.32)',
+                        },
                     }}
                 >
-                    <img src="/tri-billiard.svg" alt="Tablero triangular" />
+                    <img src="/Foto-login-yovi.png" alt="YOVI Arena login" />
                 </Box>
 
                 {/* Chips info */}

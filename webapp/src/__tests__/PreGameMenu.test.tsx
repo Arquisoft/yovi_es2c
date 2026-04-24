@@ -118,7 +118,7 @@ describe('PreGameMenu', () => {
     });
 
     it('muestra un estado de carga mientras se estan pidiendo los bots', async () => {
-        let resolveFn: ((value: unknown) => void) | null = null;
+        let resolveFn: any = null;
         mockedFetchAvailableBots.mockImplementationOnce(
             () => new Promise((resolve) => { resolveFn = resolve; }) as any,
         );

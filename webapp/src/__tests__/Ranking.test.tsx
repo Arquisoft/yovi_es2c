@@ -10,19 +10,22 @@ vi.mock('../UsersApi', async () => {
     return {
         ...actual,
         fetchPersonalStats: vi.fn(),
+        fetchRanking: vi.fn(),
     };
 });
 
 const mockedFetchPersonalStats = vi.mocked(UsersApi.fetchPersonalStats);
+const mockedFetchRanking = vi.mocked(UsersApi.fetchRanking);
 
 describe('Ranking', () => {
     const onBack = vi.fn();
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mockedFetchRanking.mockResolvedValue([]);
     });
 
-    it('renderiza el header correctamente', async () => {
+    it('renderiza el header del ranking global por defecto', async () => {
         mockedFetchPersonalStats.mockResolvedValue({
             username: 'Ana',
             wins: 0,
@@ -34,8 +37,44 @@ describe('Ranking', () => {
 
         render(<Ranking username="Ana" onBack={onBack} />);
 
-        expect(screen.getByText(/Estadísticas personales/i)).toBeInTheDocument();
+        expect(screen.getByText(/Ranking Global/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Volver/i })).toBeInTheDocument();
+    });
+
+    it('permite cambiar a la pestaña de estadísticas personales', async () => {
+        const user = userEvent.setup();
+        mockedFetchPersonalStats.mockResolvedValue({
+            username: 'Ana',
+            wins: 5,
+            losses: 2,
+            totalGames: 7,
+            winRate: 71,
+            rankingPosition: 1,
+        });
+
+        render(<Ranking username="Ana" onBack={onBack} />);
+
+        const statsTab = screen.getByRole('tab', { name: /Mis Estadísticas/i });
+        await user.click(statsTab);
+
+        expect(screen.getByText(/Estadísticas personales/i)).toBeInTheDocument();
+        expect(screen.getByText('5')).toBeInTheDocument();
+        expect(screen.getByText('2')).toBeInTheDocument();
+    });
+
+    it('renderiza la pestaña de estadísticas directamente si se indica en props', async () => {
+        mockedFetchPersonalStats.mockResolvedValue({
+            username: 'Ana',
+            wins: 5,
+            losses: 2,
+            totalGames: 7,
+            winRate: 71,
+            rankingPosition: 1,
+        });
+
+        render(<Ranking username="Ana" onBack={onBack} initialTab={1} />);
+
+        expect(screen.getByText(/Estadísticas personales/i)).toBeInTheDocument();
     });
 
     it('llama a onBack al pulsar Volver', async () => {
@@ -56,6 +95,7 @@ describe('Ranking', () => {
     });
 
     it('muestra las estadísticas del usuario autenticado', async () => {
+        const user = userEvent.setup();
         mockedFetchPersonalStats.mockResolvedValue({
             username: 'Ana',
             wins: 7,
@@ -66,6 +106,9 @@ describe('Ranking', () => {
         });
 
         render(<Ranking username="Ana" onBack={onBack} />);
+
+        const statsTab = screen.getByRole('tab', { name: /Mis Estadísticas/i });
+        await user.click(statsTab);
 
         await waitFor(() => {
             expect(screen.getAllByText('Ana').length).toBeGreaterThan(0);
@@ -78,6 +121,7 @@ describe('Ranking', () => {
     });
 
     it('muestra mensaje cuando el usuario aún no aparece en ranking', async () => {
+        const user = userEvent.setup();
         mockedFetchPersonalStats.mockResolvedValue({
             username: 'Ana',
             wins: 0,
@@ -88,6 +132,9 @@ describe('Ranking', () => {
         });
 
         render(<Ranking username="Ana" onBack={onBack} />);
+
+        const statsTab = screen.getByRole('tab', { name: /Mis Estadísticas/i });
+        await user.click(statsTab);
 
         await waitFor(() => {
             expect(screen.getByText(/Todavía no apareces en el ranking global/i)).toBeInTheDocument();
@@ -110,5 +157,46 @@ describe('Ranking', () => {
         render(<Ranking username="Ana" onBack={onBack} />);
 
         expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    });
+
+    it('renderiza la lista de ranking correctamente con medallas y estilos', async () => {
+        mockedFetchRanking.mockResolvedValue([
+            { username: 'Ana', wins: 10, losses: 2, position: 1, winRate: 83 },
+            { username: 'Bob', wins: 8, losses: 4, position: 2, winRate: 67 },
+            { username: 'Charlie', wins: 5, losses: 5, position: 3, winRate: 50 },
+            { username: 'Diana', wins: 1, losses: 9, position: 4, winRate: 10 },
+        ]);
+        mockedFetchPersonalStats.mockResolvedValue({
+            username: 'Ana',
+            wins: 10,
+            losses: 2,
+            totalGames: 12,
+            winRate: 83,
+            rankingPosition: 1,
+        });
+
+        render(<Ranking username="Ana" onBack={onBack} />);
+
+        // Esperar a que desaparezca el cargando
+        await waitFor(() => {
+            expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+        });
+
+        // Verificar medallas de los 3 primeros
+        expect(screen.getByText('🥇')).toBeInTheDocument();
+        expect(screen.getByText('🥈')).toBeInTheDocument();
+        expect(screen.getByText('🥉')).toBeInTheDocument();
+        
+        // Verificar puesto normal
+        expect(screen.getByText('#4')).toBeInTheDocument();
+
+        // Verificar nombres
+        expect(screen.getAllByText('Ana').length).toBeGreaterThan(0);
+        expect(screen.getByText('Bob')).toBeInTheDocument();
+        expect(screen.getByText('Charlie')).toBeInTheDocument();
+        expect(screen.getByText('Diana')).toBeInTheDocument();
+
+        // Verificar que se indica el usuario actual
+        expect(screen.getByText('Tú')).toBeInTheDocument();
     });
 });

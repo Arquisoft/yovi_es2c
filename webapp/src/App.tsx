@@ -41,6 +41,7 @@ export default function App() {
   const [botId, setBotId] = useState<BotId>('side_bot');
   const [inicioAuthMode, setInicioAuthMode] = useState<'login' | 'register'>('login');
   const [gameExitNotice, setGameExitNotice] = useState<string | null>(null);
+  const [rankingTab, setRankingTab] = useState(0);
 
   // ── Handlers de navegación ────────────────────────────────────────────────
 
@@ -108,7 +109,14 @@ export default function App() {
                   initialUsername={username}
                   onJugar={startGame}
                   onVerHistorial={() => setView('historial')}
-                  onVerRanking={() => setView('ranking')}
+                  onVerRanking={() => {
+                    setRankingTab(0);
+                    setView('ranking');
+                  }}
+                  onVerEstadisticas={() => {
+                    setRankingTab(1);
+                    setView('ranking');
+                  }}
               />
           )}
 
@@ -150,6 +158,7 @@ export default function App() {
           {view === 'ranking' && (
               <Ranking
                   username={username}
+                  initialTab={rankingTab}
                   onBack={() => setView('menu')}
               />
           )}

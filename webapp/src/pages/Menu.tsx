@@ -16,6 +16,7 @@ import {
     PowerSettingsNew,
     History,
     Leaderboard,
+    BarChart,
 } from '@mui/icons-material';
 import type { GameMode } from '../GameBoard';
 
@@ -27,6 +28,7 @@ type MenuProps = {
     onJugar: (username: string, mode: GameMode, boardSize: number) => void;
     onVerHistorial: () => void;
     onVerRanking: () => void;
+    onVerEstadisticas: () => void;
 };
 
 const CARDS = [
@@ -64,7 +66,7 @@ const CARDS = [
     },
 ];
 
-export default function Menu({ onLogout, onJugar, initialUsername, onVerHistorial, onVerRanking }: MenuProps) {
+export default function Menu({ onLogout, onJugar, initialUsername, onVerHistorial, onVerRanking, onVerEstadisticas }: MenuProps) {
     const [boardSize, setBoardSize] = useState<number>(7);
 
     const launch = (mode: GameMode) => {
@@ -196,7 +198,7 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
             </Box>
 
             {/* Footer buttons */}
-            <Stack direction="row" justifyContent="center" gap={2}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="center" gap={2}>
                 <Button
                     variant="outlined"
                     startIcon={<History />}
@@ -207,7 +209,7 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
                         '&:hover': { borderColor: '#7c4dff', color: '#7c4dff' },
                     }}
                 >
-                    Ver historial de partidas
+                    Historial
                 </Button>
                 <Button
                     variant="outlined"
@@ -219,7 +221,19 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
                         '&:hover': { borderColor: '#ffd54f', color: '#ffd54f' },
                     }}
                 >
-                    Estadísticas personales
+                    Ranking Global
+                </Button>
+                <Button
+                    variant="outlined"
+                    startIcon={<BarChart />}
+                    onClick={onVerEstadisticas}
+                    sx={{
+                        borderColor: 'rgba(255,255,255,0.2)',
+                        color: 'rgba(255,255,255,0.7)',
+                        '&:hover': { borderColor: '#4fc3f7', color: '#4fc3f7' },
+                    }}
+                >
+                    Mis Estadísticas
                 </Button>
             </Stack>
         </Box>

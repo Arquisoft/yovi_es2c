@@ -33,10 +33,10 @@ describe('Inicio', () => {
     it('renderiza la imagen del tablero', () => {
         render(<Inicio onEntrar={vi.fn()} />);
 
-        expect(screen.getByAltText('Tablero triangular')).toBeInTheDocument();
-        expect(screen.getByRole('img', { name: /tablero triangular/i })).toHaveAttribute(
+        expect(screen.getByAltText('YOVI Arena login')).toBeInTheDocument();
+        expect(screen.getByRole('img', { name: /yovi arena login/i })).toHaveAttribute(
             'src',
-            '/tri-billiard.svg'
+            '/Foto-login-yovi.png'
         );
     });
 

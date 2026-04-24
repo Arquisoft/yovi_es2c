@@ -95,6 +95,7 @@ describe('Ranking', () => {
     });
 
     it('muestra las estadísticas del usuario autenticado', async () => {
+        const user = userEvent.setup();
         mockedFetchPersonalStats.mockResolvedValue({
             username: 'Ana',
             wins: 7,
@@ -105,6 +106,9 @@ describe('Ranking', () => {
         });
 
         render(<Ranking username="Ana" onBack={onBack} />);
+
+        const statsTab = screen.getByRole('tab', { name: /Mis Estadísticas/i });
+        await user.click(statsTab);
 
         await waitFor(() => {
             expect(screen.getAllByText('Ana').length).toBeGreaterThan(0);
@@ -117,6 +121,7 @@ describe('Ranking', () => {
     });
 
     it('muestra mensaje cuando el usuario aún no aparece en ranking', async () => {
+        const user = userEvent.setup();
         mockedFetchPersonalStats.mockResolvedValue({
             username: 'Ana',
             wins: 0,
@@ -127,6 +132,9 @@ describe('Ranking', () => {
         });
 
         render(<Ranking username="Ana" onBack={onBack} />);
+
+        const statsTab = screen.getByRole('tab', { name: /Mis Estadísticas/i });
+        await user.click(statsTab);
 
         await waitFor(() => {
             expect(screen.getByText(/Todavía no apareces en el ranking global/i)).toBeInTheDocument();

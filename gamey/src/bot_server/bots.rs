@@ -80,6 +80,12 @@ fn known_bots() -> Vec<BotInfo> {
             "Prefiere las esquinas.",
             &STRATEGY,
         ),
+        bot(
+            "monte_carlo_tree_search_bot",
+            "MCTS Bot",
+            "Bot avanzado: usa Monte Carlo Tree Search con UCT para elegir jugadas mas fuertes.",
+            &STRATEGY,
+        ),
     ]
 }
 
@@ -130,5 +136,6 @@ mod tests {
         assert!(ids.contains(&"bridge_bot"));
         assert!(ids.contains(&"center_bot"));
         assert!(ids.contains(&"corner_bot"));
+        assert!(ids.contains(&"monte_carlo_tree_search_bot"));
     }
 }

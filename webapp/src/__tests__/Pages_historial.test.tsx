@@ -100,6 +100,31 @@ describe('Historial', () => {
         expect(await screen.findByText(/Ganador: N\/A/i)).toBeInTheDocument();
     });
 
+    it('muestra el winner tal cual cuando no es 0/1/null', async () => {
+        vi.mocked(fetchGameHistory).mockResolvedValue([
+            {
+                timestamp: 1710000000,
+                winner: 'EMPATE',
+                board_size: 5,
+                duration_seconds: 30,
+                moves_count: 8,
+            },
+        ]);
+
+        render(<Historial username="Manuel" onBack={mockOnBack} />);
+
+        expect(await screen.findByText(/Ganador: EMPATE/i)).toBeInTheDocument();
+    });
+
+    it('muestra "Error" si fetchGameHistory rechaza con algo que no es Error', async () => {
+        // Simula un rechazo "raro" (no instancia de Error).
+        vi.mocked(fetchGameHistory).mockRejectedValue('boom' as unknown as Error);
+
+        render(<Historial username="Manuel" onBack={mockOnBack} />);
+
+        expect(await screen.findByText(/^Error$/)).toBeInTheDocument();
+    });
+
     it('llama a onBack al pulsar el boton volver', async () => {
         vi.mocked(fetchGameHistory).mockResolvedValue([]);
 

@@ -7,6 +7,8 @@ import {
     Stack,
     CircularProgress,
     Alert,
+    Chip,
+    useMediaQuery,
 } from '@mui/material';
 import { ArrowBack, SportsEsports } from '@mui/icons-material';
 import { fetchGameHistory, type HistoryGame } from '../GameyApi';
@@ -27,134 +29,190 @@ function formatWinner(winner: string | null): string {
     return winner;
 }
 
+function winnerGlow(winner: string | null) {
+    if (winner === '0') return '#3b82f6'; // azul neon
+    if (winner === '1') return '#ff2d55'; // rojo neon
+    return '#9ca3af';
+}
+
 export default function Historial({ username, onBack }: HistorialProps) {
     const [games, setGames] = useState<HistoryGame[]>([]);
-    const [loading, setLoading] = useState(true); // true desde el inicio
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const dark = useMediaQuery('(prefers-color-scheme: dark)');
+
     useEffect(() => {
-        let cancelled = false;
+        let cancel = false;
+
         const load = async () => {
             setLoading(true);
             setError(null);
             try {
                 const data = await fetchGameHistory(username);
-                if (!cancelled) setGames(data);
+                if (!cancel) setGames(data);
             } catch (e) {
-                if (!cancelled)
-                    setError(e instanceof Error ? e.message : 'Error de red');
+                if (!cancel)
+                    setError(e instanceof Error ? e.message : 'Error');
             } finally {
-                if (!cancelled) setLoading(false);
+                if (!cancel) setLoading(false);
             }
         };
+
         load();
-        return () => { cancelled = true; };
+        return () => {
+            cancel = true;
+        };
     }, [username]);
 
     return (
-        <Box sx={{
-            minHeight: '100vh',
-            background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%)',
-            color: 'white',
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-        }}>
-            <Box sx={{ width: '100%', maxWidth: 700 }}>
+        <Box
+            sx={{
+                minHeight: '100vh',
+                px: 2,
+                py: 3,
+                display: 'flex',
+                justifyContent: 'center',
+                background: dark
+                    ? 'radial-gradient(circle at top, #0f172a, #020617 70%)'
+                    : 'linear-gradient(135deg, #e0f2fe, #f8fafc)',
+                color: dark ? '#fff' : '#0f172a',
+            }}
+        >
+            <Box sx={{ width: '100%', maxWidth: 780 }}>
 
-                {/* Header */}
-                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                    <Typography variant="h6" fontWeight={800}>
-                        Historial de partidas
-                        <Typography component="span" variant="caption"
-                                    sx={{ ml: 1, color: 'rgba(255,255,255,0.4)', letterSpacing: 2 }}>
+                {/* HEADER */}
+                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+                    <Box>
+                        <Typography variant="h5" fontWeight={900}>
+                            Historial de partidas
+                        </Typography>
+                        <Typography variant="caption" sx={{ opacity: 0.7 }}>
                             {username}
                         </Typography>
-                    </Typography>
+                    </Box>
+
                     <Button
-                        size="small"
-                        startIcon={<ArrowBack />}
                         onClick={onBack}
-                        sx={{ color: 'rgba(255,255,255,0.6)', borderColor: 'rgba(255,255,255,0.15)' }}
-                        variant="outlined"
+                        startIcon={<ArrowBack />}
+                        sx={{
+                            borderRadius: 3,
+                            px: 2,
+                            color: '#3b82f6',
+                            border: '1px solid rgba(59,130,246,0.5)',
+                            backdropFilter: 'blur(10px)',
+                            background: 'rgba(59,130,246,0.08)',
+                            '&:hover': {
+                                background: 'rgba(255,45,85,0.1)',
+                                borderColor: '#ff2d55',
+                                color: '#ff2d55',
+                            },
+                        }}
                     >
                         Volver
                     </Button>
                 </Stack>
 
-                {/* Loading */}
+                {/* LOADING */}
                 {loading && (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-                        <CircularProgress sx={{ color: '#4fc3f7' }} />
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 6 }}>
+                        <CircularProgress sx={{ color: '#3b82f6' }} />
                     </Box>
                 )}
 
-                {/* Error */}
+                {/* ERROR */}
                 {!loading && error && (
-                    <Alert severity="error"
-                           sx={{ bgcolor: 'rgba(211,47,47,0.15)', color: '#ff6b6b', mb: 2 }}>
+                    <Alert
+                        severity="error"
+                        sx={{
+                            mb: 2,
+                            background: 'rgba(255,45,85,0.1)',
+                            color: '#ff2d55',
+                        }}
+                    >
                         {error}
                     </Alert>
                 )}
 
-                {/* Empty state */}
+                {/* EMPTY */}
                 {!loading && !error && games.length === 0 && (
-                    <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: 2,
-                        mt: 8,
-                        opacity: 0.5,
-                    }}>
-                        <SportsEsports sx={{ fontSize: 64 }} />
-                        <Typography variant="h6" fontWeight={700}>
+                    <Box sx={{ textAlign: 'center', mt: 8, opacity: 0.6 }}>
+                        <SportsEsports sx={{ fontSize: 70, color: '#3b82f6' }} />
+                        <Typography fontWeight={700}>
                             Todavía no hay partidas registradas.
                         </Typography>
-                        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                        <Typography>
                             Juega tu primera partida para verla aquí.
                         </Typography>
                     </Box>
                 )}
 
-                {/* Game list */}
-                {!loading && !error && games.length > 0 && (
-                    <Stack spacing={1.5}>
-                        {games.map((g, idx) => (
-                            <Paper
-                                key={idx}
-                                elevation={2}
-                                sx={{
-                                    p: 1.5,
-                                    backgroundColor: 'rgba(255,255,255,0.03)',
-                                    border: '1px solid rgba(255,255,255,0.06)',
-                                    borderRadius: 2,
-                                }}
-                            >
-                                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                    <Box>
-                                        <Typography variant="subtitle2" sx={{ opacity: 0.8 }}>
-                                            {formatDate(g.timestamp)}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            Ganador: {formatWinner(g.winner)}
-                                        </Typography>
-                                    </Box>
-                                    <Box textAlign="right">
-                                        <Typography variant="body2">
-                                            Tamaño: {g.board_size}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                            Duración: {g.duration_seconds}s
-                                        </Typography>
-                                    </Box>
+                {/* LIST */}
+                <Stack spacing={1.5}>
+                    {games.map((g) => (
+                        <Paper
+                            key={`${g.timestamp}-${g.board_size}-${g.duration_seconds}-${g.moves_count}-${g.winner ?? 'na'}`}
+                            sx={{
+                                p: 2,
+                                borderRadius: 3,
+                                background: dark
+                                    ? 'rgba(255,255,255,0.05)'
+                                    : 'rgba(255,255,255,0.8)',
+                                backdropFilter: 'blur(12px)',
+                                border: `1px solid ${
+                                    g.winner === '1'
+                                        ? 'rgba(255,45,85,0.3)'
+                                        : 'rgba(59,130,246,0.3)'
+                                }`,
+                                boxShadow:
+                                    g.winner === '1'
+                                        ? '0 0 20px rgba(255,45,85,0.15)'
+                                        : '0 0 20px rgba(59,130,246,0.15)',
+                                transition: '0.25s',
+                                '&:hover': {
+                                    transform: 'scale(1.01)',
+                                    boxShadow:
+                                        g.winner === '1'
+                                            ? '0 0 25px rgba(255,45,85,0.3)'
+                                            : '0 0 25px rgba(59,130,246,0.3)',
+                                },
+                            }}
+                        >
+                            <Stack direction="row" justifyContent="space-between">
+
+                                <Box>
+                                    <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                                        {formatDate(g.timestamp)}
+                                    </Typography>
+
+                                    <Typography sx={{ color: winnerGlow(g.winner), fontWeight: 700 }}>
+                                        Ganador: {formatWinner(g.winner)}
+                                    </Typography>
+                                </Box>
+
+                                <Stack direction="row" spacing={1}>
+                                    <Chip
+                                        label={`Tamaño: ${g.board_size}`}
+                                        size="small"
+                                        sx={{
+                                            background: 'rgba(59,130,246,0.15)',
+                                            color: '#3b82f6',
+                                        }}
+                                    />
+                                    <Chip
+                                        label={`Duración: ${g.duration_seconds}s`}
+                                        size="small"
+                                        sx={{
+                                            background: 'rgba(255,45,85,0.15)',
+                                            color: '#ff2d55',
+                                        }}
+                                    />
                                 </Stack>
-                            </Paper>
-                        ))}
-                    </Stack>
-                )}
+
+                            </Stack>
+                        </Paper>
+                    ))}
+                </Stack>
             </Box>
         </Box>
     );

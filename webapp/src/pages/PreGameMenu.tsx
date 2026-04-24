@@ -27,12 +27,18 @@ type PreGameMenuProps = {
 
 const VARIANTS: Array<{ id: GameVariant; label: string; desc: string }> = [
     { id: 'standard', label: 'Standard', desc: 'Reglas clasicas. Conecta tus 3 lados.' },
-    { id: 'why_not', label: 'Why Not', desc: 'Variante alternativa (mismo tablero, distinto objetivo).' },
+    { id: 'why_not', label: 'Why Not', desc: 'Haz que el rival conecte sus 3 lados para ganar.' },
 ];
 
 function groupBots(botList: BotInfo[]) {
-    const basicBots = botList.filter((b) => b.tags?.includes('basic'));
-    const strategyBots = botList.filter((b) => !b.tags?.includes('basic'));
+    const BASIC_IDS = new Set<BotId>(['side_bot', 'side_bot_hard', 'random_bot']);
+    const isBasic = (b: BotInfo) =>
+        b.tags?.includes('basic')
+        || BASIC_IDS.has(b.id)
+        || ['facil', 'difícil', 'dificil', 'aleatorio'].includes((b.title ?? '').trim().toLowerCase());
+
+    const basicBots = botList.filter(isBasic);
+    const strategyBots = botList.filter((b) => !isBasic(b));
     return { basicBots, strategyBots };
 }
 
@@ -118,17 +124,18 @@ export default function PreGameMenu({
 
             <Paper
                 sx={{
-                    bgcolor: 'rgba(255,255,255,0.05)',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    bgcolor: 'rgba(79,195,247,0.07)',
+                    border: '1px solid rgba(79,195,247,0.22)',
                     borderRadius: 3,
                     p: 3,
                     mb: 3,
+                    textAlign: 'center',
                 }}
             >
                 <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.5)', mb: 1, letterSpacing: 2 }}>
                     ESTRATEGIA (VARIANTE)
                 </Typography>
-                <ButtonGroup sx={{ flexWrap: 'wrap' }}>
+                <ButtonGroup sx={{ flexWrap: 'wrap', justifyContent: 'center' }}>
                     {VARIANTS.map((v) => (
                         <Button
                             key={v.id}
@@ -157,8 +164,19 @@ export default function PreGameMenu({
                         mb: 3,
                     }}
                 >
-                    <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.5)', mb: 1, letterSpacing: 2 }}>
-                        BOT (LISTA)
+                    <Typography
+                        variant="subtitle2"
+                        sx={{
+                            color: '#ff4159',
+                            mb: 2,
+                            letterSpacing: 3,
+                            textAlign: 'center',
+                            fontWeight: 950,
+                            textTransform: 'uppercase',
+                            textShadow: '0 0 10px rgba(255, 65, 89, 0.35)',
+                        }}
+                    >
+                        Lista de bots: escoge uno
                     </Typography>
 
                     {loadingBots && (
@@ -174,63 +192,88 @@ export default function PreGameMenu({
                         </Alert>
                     )}
 
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.45)', letterSpacing: 2, mb: 1, display: 'block' }}>
-                        BASICOS (FACIL / DIFICIL / ALEATORIO)
-                    </Typography>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5, mb: 2 }}>
-                        {basicBots.map((b) => (
-                            <Paper
-                                key={b.id}
-                                component="button"
-                                onClick={() => setBotId(b.id)}
-                                sx={{
-                                    bgcolor: botId === b.id ? 'rgba(79,195,247,0.15)' : 'rgba(255,255,255,0.03)',
-                                    border: `1px solid ${botId === b.id ? '#4fc3f7' : 'rgba(255,255,255,0.1)'}`,
-                                    borderRadius: 2,
-                                    p: 2,
-                                    textAlign: 'left',
-                                    color: 'white',
-                                    cursor: 'pointer',
-                                    transition: 'transform 0.15s, border-color 0.15s, background-color 0.15s',
-                                    '&:hover': { transform: 'translateY(-1px)', borderColor: '#4fc3f7' },
-                                }}
-                            >
-                                <Typography fontWeight={900}>{b.title}</Typography>
-                                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.55)' }}>
-                                    {b.description}
-                                </Typography>
-                            </Paper>
-                        ))}
-                    </Box>
+                    <Paper
+                        sx={{
+                            background: 'linear-gradient(135deg, rgba(0, 229, 255, 0.18), rgba(33, 150, 243, 0.10))',
+                            border: '1px solid rgba(0, 229, 255, 0.30)',
+                            borderRadius: 2.5,
+                            p: 2,
+                            mb: 2,
+                        }}
+                    >
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ color: 'rgba(255,255,255,0.85)', letterSpacing: 2, mb: 1, display: 'block', textAlign: 'center', fontWeight: 900 }}
+                        >
+                            BASICOS
+                        </Typography>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
+                            {basicBots.map((b) => (
+                                <Paper
+                                    key={b.id}
+                                    component="button"
+                                    onClick={() => setBotId(b.id)}
+                                    sx={{
+                                        bgcolor: botId === b.id ? 'rgba(255, 203, 117, 0.18)' : 'rgba(255,255,255,0.03)',
+                                        border: `1px solid ${botId === b.id ? '#ffcb75' : 'rgba(255,255,255,0.1)'}`,
+                                        borderRadius: 2,
+                                        p: 2,
+                                        textAlign: 'left',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        transition: 'transform 0.15s, border-color 0.15s, background-color 0.15s',
+                                        '&:hover': { transform: 'translateY(-1px)', borderColor: '#ffcb75' },
+                                    }}
+                                >
+                                    <Typography fontWeight={900}>{b.title}</Typography>
+                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.55)' }}>
+                                        {b.description}
+                                    </Typography>
+                                </Paper>
+                            ))}
+                        </Box>
+                    </Paper>
 
-                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.45)', letterSpacing: 2, mb: 1, display: 'block' }}>
-                        ESTRATEGIAS
-                    </Typography>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
-                        {strategyBots.map((b) => (
+                    <Paper
+                        sx={{
+                            bgcolor: 'rgba(79,195,247,0.07)',
+                            border: '1px solid rgba(79,195,247,0.20)',
+                            borderRadius: 2.5,
+                            p: 2,
+                        }}
+                    >
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ color: 'rgba(255,255,255,0.85)', letterSpacing: 2, mb: 1, display: 'block', textAlign: 'center', fontWeight: 900 }}
+                        >
+                            ESTRATEGIAS
+                        </Typography>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
+                            {strategyBots.map((b) => (
                             <Paper
                                 key={b.id}
                                 component="button"
                                 onClick={() => setBotId(b.id)}
                                 sx={{
-                                    bgcolor: botId === b.id ? 'rgba(79,195,247,0.15)' : 'rgba(255,255,255,0.03)',
-                                    border: `1px solid ${botId === b.id ? '#4fc3f7' : 'rgba(255,255,255,0.1)'}`,
-                                    borderRadius: 2,
-                                    p: 2,
-                                    textAlign: 'left',
-                                    color: 'white',
-                                    cursor: 'pointer',
-                                    transition: 'transform 0.15s, border-color 0.15s, background-color 0.15s',
-                                    '&:hover': { transform: 'translateY(-1px)', borderColor: '#4fc3f7' },
-                                }}
-                            >
-                                <Typography fontWeight={800}>{b.title}</Typography>
-                                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.55)' }}>
-                                    {b.description}
-                                </Typography>
-                            </Paper>
-                        ))}
-                    </Box>
+                                        bgcolor: botId === b.id ? 'rgba(255, 203, 117, 0.18)' : 'rgba(255,255,255,0.03)',
+                                        border: `1px solid ${botId === b.id ? '#ffcb75' : 'rgba(255,255,255,0.1)'}`,
+                                        borderRadius: 2,
+                                        p: 2,
+                                        textAlign: 'left',
+                                        color: 'white',
+                                        cursor: 'pointer',
+                                        transition: 'transform 0.15s, border-color 0.15s, background-color 0.15s',
+                                        '&:hover': { transform: 'translateY(-1px)', borderColor: botId === b.id ? '#ffcb75' : '#4fc3f7' },
+                                    }}
+                                >
+                                    <Typography fontWeight={800}>{b.title}</Typography>
+                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.55)' }}>
+                                        {b.description}
+                                    </Typography>
+                                </Paper>
+                            ))}
+                        </Box>
+                    </Paper>
 
                     <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.45)', mt: 1.5, display: 'block' }}>
                         Seleccionado: {selectedBot?.title ?? botId}

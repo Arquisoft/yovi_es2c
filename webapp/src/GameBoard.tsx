@@ -109,11 +109,17 @@ export default function GameBoard({
 
     const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
     const winnerName = winner !== null ? PLAYER_NAME[winner].toUpperCase() : null;
-    const statusText = isBotThinking
+    let statusText = isBotThinking
         ? 'LA IA ESTA PENSANDO...'
         : winner !== null
             ? `🏆 ENHORABUENA, GANA ${winnerName}! 🏆`
             : `TURNO DE ${mode === 'bot' && nextPlayer === 0 ? username.toUpperCase() : PLAYER_NAME[nextPlayer].toUpperCase()}`;
+
+    // Si juega contra bot: evita "ENHORABUENA" cuando gana el bot.
+    if (winner !== null && mode === 'bot') {
+        if (winner === 1) statusText = `GANA ${winnerName}!`;
+        if (winner === 0) statusText = `ENHORABUENA, GANA ${username.toUpperCase()}!`;
+    }
 
     const activeColor = winner !== null ? PLAYER_COLOR[winner] : PLAYER_COLOR[nextPlayer];
 
@@ -379,7 +385,7 @@ export default function GameBoard({
                         justifyContent: 'center',
                         overflowX: 'auto',
                     }}>
-                        <Box sx={{ minWidth: 520 }}>
+                        <Box sx={{ minWidth: 'fit-content', mx: 'auto' }}>
                             {Array.from({ length: safeBoardSize }, (_, row) => {
                                 const rowCells = cells.filter((c) => c.row === row);
                                 const cellSize = 38;

@@ -24,8 +24,8 @@ function formatDate(timestamp: number): string {
 
 function formatWinner(winner: string | null): string {
     if (winner === null) return 'N/A';
-    if (winner === '0') return 'AZUL';
-    if (winner === '1') return 'ROJO';
+    if (winner === '0') return 'Azul';
+    if (winner === '1') return 'Rojo';
     return winner;
 }
 
@@ -85,7 +85,7 @@ export default function Historial({ username, onBack }: HistorialProps) {
                 <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
                     <Box>
                         <Typography variant="h5" fontWeight={900}>
-                            HISTORIAL
+                            Historial de partidas
                         </Typography>
                         <Typography variant="caption" sx={{ opacity: 0.7 }}>
                             {username}
@@ -139,7 +139,10 @@ export default function Historial({ username, onBack }: HistorialProps) {
                     <Box sx={{ textAlign: 'center', mt: 8, opacity: 0.6 }}>
                         <SportsEsports sx={{ fontSize: 70, color: '#3b82f6' }} />
                         <Typography fontWeight={700}>
-                            No hay partidas aún
+                            Todavía no hay partidas registradas.
+                        </Typography>
+                        <Typography>
+                            Juega tu primera partida para verla aquí.
                         </Typography>
                     </Box>
                 )}
@@ -182,17 +185,14 @@ export default function Historial({ username, onBack }: HistorialProps) {
                                         {formatDate(g.timestamp)}
                                     </Typography>
 
-                                    <Typography>
-                                        Ganador:{' '}
-                                        <strong style={{ color: winnerGlow(g.winner) }}>
-                                            {formatWinner(g.winner)}
-                                        </strong>
+                                    <Typography sx={{ color: winnerGlow(g.winner), fontWeight: 700 }}>
+                                        Ganador: {formatWinner(g.winner)}
                                     </Typography>
                                 </Box>
 
                                 <Stack direction="row" spacing={1}>
                                     <Chip
-                                        label={`Tablero ${g.board_size}`}
+                                        label={`Tamaño: ${g.board_size}`}
                                         size="small"
                                         sx={{
                                             background: 'rgba(59,130,246,0.15)',
@@ -200,7 +200,7 @@ export default function Historial({ username, onBack }: HistorialProps) {
                                         }}
                                     />
                                     <Chip
-                                        label={`${g.duration_seconds}s`}
+                                        label={`Duración: ${g.duration_seconds}s`}
                                         size="small"
                                         sx={{
                                             background: 'rgba(255,45,85,0.15)',

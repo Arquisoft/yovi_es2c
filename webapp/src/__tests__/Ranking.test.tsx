@@ -166,26 +166,37 @@ describe('Ranking', () => {
             { username: 'Charlie', wins: 5, losses: 5, position: 3, winRate: 50 },
             { username: 'Diana', wins: 1, losses: 9, position: 4, winRate: 10 },
         ]);
+        mockedFetchPersonalStats.mockResolvedValue({
+            username: 'Ana',
+            wins: 10,
+            losses: 2,
+            totalGames: 12,
+            winRate: 83,
+            rankingPosition: 1,
+        });
 
         render(<Ranking username="Ana" onBack={onBack} />);
 
+        // Esperar a que desaparezca el cargando
         await waitFor(() => {
-            // Verificar medallas de los 3 primeros
-            expect(screen.getByText('🥇')).toBeInTheDocument();
-            expect(screen.getByText('🥈')).toBeInTheDocument();
-            expect(screen.getByText('🥉')).toBeInTheDocument();
-            
-            // Verificar puesto normal
-            expect(screen.getByText('#4')).toBeInTheDocument();
-
-            // Verificar nombres
-            expect(screen.getByText('Ana')).toBeInTheDocument();
-            expect(screen.getByText('Bob')).toBeInTheDocument();
-            expect(screen.getByText('Charlie')).toBeInTheDocument();
-            expect(screen.getByText('Diana')).toBeInTheDocument();
-
-            // Verificar que se indica el usuario actual
-            expect(screen.getByText('Tú')).toBeInTheDocument();
+            expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
         });
+
+        // Verificar medallas de los 3 primeros
+        expect(screen.getByText('🥇')).toBeInTheDocument();
+        expect(screen.getByText('🥈')).toBeInTheDocument();
+        expect(screen.getByText('🥉')).toBeInTheDocument();
+        
+        // Verificar puesto normal
+        expect(screen.getByText('#4')).toBeInTheDocument();
+
+        // Verificar nombres
+        expect(screen.getByText('Ana')).toBeInTheDocument();
+        expect(screen.getByText('Bob')).toBeInTheDocument();
+        expect(screen.getByText('Charlie')).toBeInTheDocument();
+        expect(screen.getByText('Diana')).toBeInTheDocument();
+
+        // Verificar que se indica el usuario actual
+        expect(screen.getByText('Tú')).toBeInTheDocument();
     });
 });

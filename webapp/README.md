@@ -1,7 +1,7 @@
 # Webapp - YOVI
 
 <p align="center">
-  <img src="public/tri-billiard.svg" alt="Yovi logo" width="150">
+  <img src="public/yovi-arena-cover.png" alt="Yovi Arena cover" width="900">
 </p>
 
 <p align="center">

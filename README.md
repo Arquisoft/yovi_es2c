@@ -1,7 +1,7 @@
 # Yovi ES2C
 
 <p align="center">
-  <img src="webapp/public/tri-billiard.svg" alt="Yovi logo" width="220">
+  <img src="webapp/public/yovi-arena-cover.png" alt="Yovi Arena cover" width="900">
 </p>
 
 <p align="center">

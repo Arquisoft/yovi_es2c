@@ -59,6 +59,7 @@ export interface GameMoveResponse {
  * @param yen    Current game state
  * @param coords Barycentric coordinates of the cell to occupy
  * @param username Logged-in username (used to store friendly winner name)
+ * @param durationSeconds Optional elapsed match duration, sent to the backend in seconds
  * @returns      Updated state, status, and optional winner
  * @throws       Error with a human-readable message on invalid move or network failure
  */

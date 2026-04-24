@@ -30,6 +30,7 @@ import {
 } from './GameyApi';
 import { recordGameResult } from './UsersApi';
 import { getErrorMessage } from './utils/getErrorMessage';
+import { getAvatarById } from './avatars';
 
 // CSS global para animaciones de las celdas
 const CELL_STYLES = `
@@ -45,6 +46,9 @@ export type GameMode = 'local' | 'bot';
 
 interface GameBoardProps {
     username: string;
+    avatarId: string;
+    blueAvatarId?: string;
+    redAvatarId?: string;
     mode: GameMode;
     boardSize?: number;
     variant?: GameVariant;
@@ -86,6 +90,9 @@ function layoutToIndexMap(yen: YEN): Map<number, string> {
 
 export default function GameBoard({
     username,
+    avatarId,
+    blueAvatarId,
+    redAvatarId,
     mode,
     boardSize = 7,
     variant = 'standard',
@@ -108,6 +115,9 @@ export default function GameBoard({
     const indexMap = useMemo(() => layoutToIndexMap(yen), [yen]);
 
     const isBotThinking = mode === 'bot' && nextPlayer === 1 && loading;
+    const selectedAvatar = getAvatarById(avatarId);
+    const blueAvatar = getAvatarById(blueAvatarId ?? avatarId);
+    const redAvatar = getAvatarById(redAvatarId ?? 'wizard');
     const winnerName = winner !== null ? PLAYER_NAME[winner].toUpperCase() : null;
     let statusText = isBotThinking
         ? 'LA IA ESTA PENSANDO...'
@@ -145,7 +155,7 @@ export default function GameBoard({
             audio.pause();
             audio.currentTime = 0;
         };
-    }, []);
+    }, [isMuted]);
 
     const reset = () => {
         setYen(newGameYEN(safeBoardSize, variant));
@@ -184,7 +194,7 @@ export default function GameBoard({
 
     useEffect(() => {
         if (mode === 'bot' && nextPlayer === 1 && winner === null && !loading) {
-            runBotTurn(yen);
+            void runBotTurn(yen);
         }
     }, [mode, nextPlayer, winner, loading, yen, runBotTurn]);
 
@@ -353,28 +363,127 @@ export default function GameBoard({
                         </Alert>
                     )}
 
-                    <Stack direction="row" justifyContent="center" gap={2} mb={1}>
-                        {[0, 1].map((p) => (
-                            <Chip
-                                key={p}
-                                label={p === 0
-                                    ? (mode === 'bot' ? username : 'Azul')
-                                    : (mode === 'bot' ? 'IA Bot' : 'Rojo')
-                                }
-                                sx={{
-                                    bgcolor: (nextPlayer === p || winner === p)
-                                        ? `${PLAYER_COLOR[p]}30`
-                                        : 'rgba(255,255,255,0.05)',
-                                    color: (nextPlayer === p || winner === p)
-                                        ? PLAYER_COLOR[p]
-                                        : 'rgba(255,255,255,0.3)',
-                                    border: `1px solid ${(nextPlayer === p || winner === p)
-                                        ? PLAYER_COLOR[p]
-                                        : 'transparent'}`,
-                                }}
-                            />
-                        ))}
-                    </Stack>
+                    {mode === 'bot' ? (
+                        <Stack direction="row" justifyContent="center" gap={2} mb={2}>
+                            {[
+                                { player: 0, label: username, image: selectedAvatar.src, alt: selectedAvatar.label },
+                                { player: 1, label: 'IA Bot', image: '/bot-avatar.png', alt: 'Bot avatar' },
+                            ].map(({ player, label, image, alt }) => {
+                                const isActive = nextPlayer === player || winner === player;
+                                return (
+                                    <Box
+                                        key={player}
+                                        sx={{
+                                            minWidth: 150,
+                                            px: 1.5,
+                                            py: 1.2,
+                                            borderRadius: 3,
+                                            border: `1px solid ${isActive ? PLAYER_COLOR[player] : 'rgba(255,255,255,0.12)'}`,
+                                            background: isActive ? `${PLAYER_COLOR[player]}24` : 'rgba(255,255,255,0.04)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1.2,
+                                            boxShadow: isActive ? `0 0 18px ${PLAYER_COLOR[player]}22` : 'none',
+                                        }}
+                                    >
+                                        <Box
+                                            component="img"
+                                            src={image}
+                                            alt={alt}
+                                            sx={{
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: '50%',
+                                                objectFit: 'cover',
+                                                border: `2px solid ${PLAYER_COLOR[player]}`,
+                                                flexShrink: 0,
+                                            }}
+                                        />
+                                        <Box sx={{ minWidth: 0 }}>
+                                            <Typography
+                                                variant="caption"
+                                                sx={{
+                                                    color: isActive ? PLAYER_COLOR[player] : 'rgba(255,255,255,0.45)',
+                                                    letterSpacing: 1.2,
+                                                    textTransform: 'uppercase',
+                                                    display: 'block',
+                                                }}
+                                            >
+                                                {player === 0 ? 'Equipo Azul' : 'Equipo Rojo'}
+                                            </Typography>
+                                            <Typography
+                                                sx={{
+                                                    color: 'white',
+                                                    fontWeight: 800,
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                }}
+                                            >
+                                                {label}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                );
+                            })}
+                        </Stack>
+                    ) : (
+                        <Stack direction="row" justifyContent="center" gap={2} mb={2}>
+                            {[
+                                { player: 0, team: 'Equipo Azul', avatar: blueAvatar },
+                                { player: 1, team: 'Equipo Rojo', avatar: redAvatar },
+                            ].map(({ player, team, avatar }) => {
+                                const isActive = nextPlayer === player || winner === player;
+                                return (
+                                    <Box
+                                        key={player}
+                                        sx={{
+                                            minWidth: 150,
+                                            px: 1.5,
+                                            py: 1.2,
+                                            borderRadius: 3,
+                                            border: `1px solid ${isActive ? PLAYER_COLOR[player] : 'rgba(255,255,255,0.12)'}`,
+                                            background: isActive ? `${PLAYER_COLOR[player]}24` : 'rgba(255,255,255,0.04)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 1.2,
+                                            boxShadow: isActive ? `0 0 18px ${PLAYER_COLOR[player]}22` : 'none',
+                                        }}
+                                    >
+                                        <Box
+                                            component="img"
+                                            src={avatar.src}
+                                            alt={avatar.label}
+                                            sx={{
+                                                width: 40,
+                                                height: 40,
+                                                borderRadius: '50%',
+                                                objectFit: 'cover',
+                                                border: `2px solid ${PLAYER_COLOR[player]}`,
+                                                flexShrink: 0,
+                                            }}
+                                        />
+                                        <Box sx={{ minWidth: 0 }}>
+                                            <Typography
+                                                variant="caption"
+                                                sx={{
+                                                    color: isActive ? PLAYER_COLOR[player] : 'rgba(255,255,255,0.45)',
+                                                    letterSpacing: 1.2,
+                                                    textTransform: 'uppercase',
+                                                    display: 'block',
+                                                }}
+                                            >
+                                                {team}
+                                            </Typography>
+                                            <Typography sx={{ color: 'white', fontWeight: 800 }}>
+                                                {avatar.label}
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                );
+                            })}
+                        </Stack>
+                    )}
 
                     <Box sx={{
                         bgcolor: 'rgba(255,255,255,0.04)',

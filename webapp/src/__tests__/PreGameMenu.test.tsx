@@ -14,6 +14,7 @@ vi.mock('../GameyApi', async () => {
 });
 
 const mockedFetchAvailableBots = vi.mocked(gameyApi.fetchAvailableBots);
+type FetchAvailableBotsResult = Awaited<ReturnType<typeof gameyApi.fetchAvailableBots>>;
 
 describe('PreGameMenu', () => {
     beforeEach(() => {
@@ -32,6 +33,8 @@ describe('PreGameMenu', () => {
                 boardSize={7}
                 initialVariant="standard"
                 initialBotId="side_bot"
+                initialBlueAvatarId="elf"
+                initialRedAvatarId="wizard"
                 onBack={onBack}
                 onStart={onStart}
             />,
@@ -44,7 +47,12 @@ describe('PreGameMenu', () => {
         await user.click(screen.getByRole('button', { name: /Why Not/i }));
         await user.click(screen.getByRole('button', { name: /Empezar partida/i }));
 
-        expect(onStart).toHaveBeenCalledWith({ variant: 'why_not', botId: 'side_bot' });
+        expect(onStart).toHaveBeenCalledWith({
+            variant: 'why_not',
+            botId: 'side_bot',
+            blueAvatarId: 'elf',
+            redAvatarId: 'wizard',
+        });
     });
 
     it('en modo bot carga bots del servidor, muestra basicos y estrategias, y arranca con lo seleccionado', async () => {
@@ -64,6 +72,8 @@ describe('PreGameMenu', () => {
                 boardSize={5}
                 initialVariant="standard"
                 initialBotId="side_bot"
+                initialBlueAvatarId="elf"
+                initialRedAvatarId="wizard"
                 onBack={vi.fn()}
                 onStart={onStart}
             />,
@@ -81,7 +91,12 @@ describe('PreGameMenu', () => {
         await user.click(screen.getByRole('button', { name: /Why Not/i }));
         await user.click(screen.getByRole('button', { name: /Empezar partida/i }));
 
-        expect(onStart).toHaveBeenCalledWith({ variant: 'why_not', botId: 'random_bot' });
+        expect(onStart).toHaveBeenCalledWith({
+            variant: 'why_not',
+            botId: 'random_bot',
+            blueAvatarId: 'elf',
+            redAvatarId: 'wizard',
+        });
     });
 
     it('si falla la carga de bots, muestra aviso y usa opciones por defecto', async () => {
@@ -97,6 +112,8 @@ describe('PreGameMenu', () => {
                 boardSize={5}
                 initialVariant="standard"
                 initialBotId="side_bot"
+                initialBlueAvatarId="elf"
+                initialRedAvatarId="wizard"
                 onBack={vi.fn()}
                 onStart={onStart}
             />,
@@ -114,13 +131,18 @@ describe('PreGameMenu', () => {
         await user.click(screen.getByText('Dificil'));
         await user.click(screen.getByRole('button', { name: /Empezar partida/i }));
 
-        expect(onStart).toHaveBeenCalledWith({ variant: 'standard', botId: 'side_bot_hard' });
+        expect(onStart).toHaveBeenCalledWith({
+            variant: 'standard',
+            botId: 'side_bot_hard',
+            blueAvatarId: 'elf',
+            redAvatarId: 'wizard',
+        });
     });
 
     it('muestra un estado de carga mientras se estan pidiendo los bots', async () => {
-        let resolveFn: any = null;
+        let resolveFn!: (value: FetchAvailableBotsResult) => void;
         mockedFetchAvailableBots.mockImplementationOnce(
-            () => new Promise((resolve) => { resolveFn = resolve; }) as any,
+            () => new Promise<FetchAvailableBotsResult>((resolve) => { resolveFn = resolve; }),
         );
 
         render(
@@ -130,6 +152,8 @@ describe('PreGameMenu', () => {
                 boardSize={5}
                 initialVariant="standard"
                 initialBotId="side_bot"
+                initialBlueAvatarId="elf"
+                initialRedAvatarId="wizard"
                 onBack={vi.fn()}
                 onStart={vi.fn()}
             />,
@@ -137,7 +161,7 @@ describe('PreGameMenu', () => {
 
         expect(await screen.findByText(/Cargando bots disponibles/i)).toBeInTheDocument();
 
-        resolveFn?.([
+        resolveFn([
             { id: 'side_bot', title: 'Facil', description: 'x', tags: ['basic'] },
         ]);
 
@@ -156,6 +180,8 @@ describe('PreGameMenu', () => {
                 boardSize={7}
                 initialVariant="standard"
                 initialBotId="side_bot"
+                initialBlueAvatarId="elf"
+                initialRedAvatarId="wizard"
                 onBack={onBack}
                 onStart={vi.fn()}
             />,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Snackbar } from '@mui/material';
 import './App.css';
 import './styles/Additions.css';
@@ -9,11 +9,28 @@ import GameBoard, { type GameMode } from './GameBoard';
 import FadeView from './FadeView';
 import Ranking from './pages/Ranking';
 import PreGameMenu from './pages/PreGameMenu';
+import Perfil from './pages/Perfil';
 import type { BotId, GameVariant } from './GameyApi';
+import { DEFAULT_AVATAR_ID } from './avatars';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 
-type View = 'inicio' | 'menu' | 'pregame' | 'game' | 'historial' | 'ranking';
+type View = 'inicio' | 'menu' | 'pregame' | 'game' | 'historial' | 'ranking' | 'perfil';
+const AVATAR_STORAGE_KEY = 'yovi.selectedAvatar';
+
+function readStoredAvatar(): string {
+  if (typeof window === 'undefined') return DEFAULT_AVATAR_ID;
+  const storage = window.localStorage;
+  if (!storage || typeof storage.getItem !== 'function') return DEFAULT_AVATAR_ID;
+  return storage.getItem(AVATAR_STORAGE_KEY) || DEFAULT_AVATAR_ID;
+}
+
+function writeStoredAvatar(avatarId: string): void {
+  if (typeof window === 'undefined') return;
+  const storage = window.localStorage;
+  if (!storage || typeof storage.setItem !== 'function') return;
+  storage.setItem(AVATAR_STORAGE_KEY, avatarId);
+}
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 
@@ -29,6 +46,7 @@ export default function App() {
 
   // Nombre del jugador autenticado
   const [username, setUsername] = useState('Jugador');
+  const [avatarId, setAvatarId] = useState(readStoredAvatar);
 
   // Modo de juego seleccionado: 'local' (2 jugadores) o 'bot' (vs IA)
   const [gameMode, setGameMode] = useState<GameMode>('local');
@@ -39,9 +57,15 @@ export default function App() {
   // Seleccion en el menu intermedio
   const [gameVariant, setGameVariant] = useState<GameVariant>('standard');
   const [botId, setBotId] = useState<BotId>('side_bot');
+  const [localBlueAvatarId, setLocalBlueAvatarId] = useState(DEFAULT_AVATAR_ID);
+  const [localRedAvatarId, setLocalRedAvatarId] = useState('wizard');
   const [inicioAuthMode, setInicioAuthMode] = useState<'login' | 'register'>('login');
   const [gameExitNotice, setGameExitNotice] = useState<string | null>(null);
   const [rankingTab, setRankingTab] = useState(0);
+
+  useEffect(() => {
+    writeStoredAvatar(avatarId);
+  }, [avatarId]);
 
   // ── Handlers de navegación ────────────────────────────────────────────────
 
@@ -107,6 +131,7 @@ export default function App() {
               <Menu
                   onLogout={logout}
                   initialUsername={username}
+                  avatarId={avatarId}
                   onJugar={startGame}
                   onVerHistorial={() => setView('historial')}
                   onVerRanking={() => {
@@ -117,6 +142,7 @@ export default function App() {
                     setRankingTab(1);
                     setView('ranking');
                   }}
+                  onVerPerfil={() => setView('perfil')}
               />
           )}
 
@@ -127,10 +153,14 @@ export default function App() {
                   boardSize={boardSize}
                   initialVariant={gameVariant}
                   initialBotId={botId}
+                  initialBlueAvatarId={localBlueAvatarId}
+                  initialRedAvatarId={localRedAvatarId}
                   onBack={() => setView('menu')}
                   onStart={(opts) => {
                     setGameVariant(opts.variant);
                     setBotId(opts.botId);
+                    setLocalBlueAvatarId(opts.blueAvatarId);
+                    setLocalRedAvatarId(opts.redAvatarId);
                     setView('game');
                   }}
               />
@@ -140,6 +170,9 @@ export default function App() {
           {view === 'game' && (
               <GameBoard
                   username={username}
+                  avatarId={avatarId}
+                  blueAvatarId={localBlueAvatarId}
+                  redAvatarId={localRedAvatarId}
                   mode={gameMode}
                   boardSize={boardSize}
                   variant={gameVariant}
@@ -159,6 +192,15 @@ export default function App() {
               <Ranking
                   username={username}
                   initialTab={rankingTab}
+                  onBack={() => setView('menu')}
+              />
+          )}
+
+          {view === 'perfil' && (
+              <Perfil
+                  username={username}
+                  avatarId={avatarId}
+                  onSelectAvatar={setAvatarId}
                   onBack={() => setView('menu')}
               />
           )}

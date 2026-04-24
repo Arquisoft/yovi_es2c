@@ -41,6 +41,7 @@ describe('GameBoard', () => {
         render(
             <GameBoard
                 username="Ana"
+                avatarId="elf"
                 mode="local"
                 boardSize={5}
                 onExit={() => {}}
@@ -55,11 +56,31 @@ describe('GameBoard', () => {
         expect(screen.getByRole('button', { name: /Silenciar musica|Activar sonido/i })).toBeInTheDocument();
     });
 
+    it('muestra los avatares elegidos para azul y rojo en modo local', () => {
+        render(
+            <GameBoard
+                username="Ana"
+                avatarId="elf"
+                blueAvatarId="ninja"
+                redAvatarId="wizard"
+                mode="local"
+                boardSize={5}
+                onExit={() => {}}
+            />
+        );
+
+        expect(screen.getByText(/Equipo Azul/i)).toBeInTheDocument();
+        expect(screen.getByText(/Equipo Rojo/i)).toBeInTheDocument();
+        expect(screen.getByAltText('Ninja')).toBeInTheDocument();
+        expect(screen.getByAltText('Mago')).toBeInTheDocument();
+    });
+
     it('inicia la musica al entrar en partida y la deja en loop', () => {
         const playSpy = vi.spyOn(HTMLMediaElement.prototype, 'play');
         const { container } = render(
             <GameBoard
                 username="Ana"
+                avatarId="elf"
                 mode="local"
                 boardSize={5}
                 onExit={() => {}}
@@ -79,6 +100,7 @@ describe('GameBoard', () => {
         const { container } = render(
             <GameBoard
                 username="Ana"
+                avatarId="elf"
                 mode="local"
                 boardSize={5}
                 onExit={() => {}}
@@ -104,6 +126,7 @@ describe('GameBoard', () => {
         render(
             <GameBoard
                 username="Ana"
+                avatarId="elf"
                 mode="local"
                 boardSize={5}
                 onExit={onExit}
@@ -133,6 +156,7 @@ describe('GameBoard', () => {
         render(
             <GameBoard
                 username="Ana"
+                avatarId="elf"
                 mode="local"
                 boardSize={5}
                 onExit={() => {}}
@@ -163,6 +187,7 @@ describe('GameBoard', () => {
         render(
             <GameBoard
                 username="Ana"
+                avatarId="elf"
                 mode="local"
                 boardSize={5}
                 onExit={onExit}
@@ -195,6 +220,7 @@ describe('GameBoard', () => {
         render(
             <GameBoard
                 username="Ana"
+                avatarId="elf"
                 mode="local"
                 boardSize={5}
                 onExit={() => {}}
@@ -219,6 +245,7 @@ describe('GameBoard', () => {
         render(
             <GameBoard
                 username="Ana"
+                avatarId="elf"
                 mode="local"
                 boardSize={5}
                 onExit={() => {}}
@@ -263,6 +290,7 @@ describe('GameBoard', () => {
         render(
             <GameBoard
                 username="Ana"
+                avatarId="elf"
                 mode="bot"
                 boardSize={5}
                 onExit={() => {}}
@@ -296,6 +324,7 @@ describe('GameBoard', () => {
         render(
             <GameBoard
                 username="Ana"
+                avatarId="elf"
                 mode="local"
                 boardSize={5}
                 onExit={() => {}}

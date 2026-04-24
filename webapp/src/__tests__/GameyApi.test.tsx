@@ -122,15 +122,15 @@ describe('GameApi', () => {
                 ok: true,
                 json: async () => ({
                     api_version: 'v1',
-                    bot_id: 'smart_bot',
+                    bot_id: 'side_bot',
                     coords: { x: 0, y: 0, z: 4 },
                 }),
             } as Response);
 
-            const result = await chooseBotMove(sampleYen, 'smart_bot');
+            const result = await chooseBotMove(sampleYen, 'side_bot');
 
             expect(fetch).toHaveBeenCalledWith(
-                expect.stringContaining('/v1/ybot/choose/smart_bot'),
+                expect.stringContaining('/v1/ybot/choose/side_bot'),
                 expect.any(Object)
             );
             expect(result).toEqual({ x: 0, y: 0, z: 4 });
@@ -143,7 +143,7 @@ describe('GameApi', () => {
                 json: async () => ({ message: 'Bot not found' }),
             } as Response);
 
-            await expect(chooseBotMove(sampleYen, 'ghost_bot')).rejects.toThrow(
+            await expect(chooseBotMove(sampleYen, 'ghost_bot' as any)).rejects.toThrow(
                 'Bot not found'
             );
         });

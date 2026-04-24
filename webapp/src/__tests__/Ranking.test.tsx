@@ -10,19 +10,22 @@ vi.mock('../UsersApi', async () => {
     return {
         ...actual,
         fetchPersonalStats: vi.fn(),
+        fetchRanking: vi.fn(),
     };
 });
 
 const mockedFetchPersonalStats = vi.mocked(UsersApi.fetchPersonalStats);
+const mockedFetchRanking = vi.mocked(UsersApi.fetchRanking);
 
 describe('Ranking', () => {
     const onBack = vi.fn();
 
     beforeEach(() => {
         vi.clearAllMocks();
+        mockedFetchRanking.mockResolvedValue([]);
     });
 
-    it('renderiza el header correctamente', async () => {
+    it('renderiza el header del ranking global por defecto', async () => {
         mockedFetchPersonalStats.mockResolvedValue({
             username: 'Ana',
             wins: 0,
@@ -34,8 +37,44 @@ describe('Ranking', () => {
 
         render(<Ranking username="Ana" onBack={onBack} />);
 
-        expect(screen.getByText(/Estadísticas personales/i)).toBeInTheDocument();
+        expect(screen.getByText(/Ranking Global/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Volver/i })).toBeInTheDocument();
+    });
+
+    it('permite cambiar a la pestaña de estadísticas personales', async () => {
+        const user = userEvent.setup();
+        mockedFetchPersonalStats.mockResolvedValue({
+            username: 'Ana',
+            wins: 5,
+            losses: 2,
+            totalGames: 7,
+            winRate: 71,
+            rankingPosition: 1,
+        });
+
+        render(<Ranking username="Ana" onBack={onBack} />);
+
+        const statsTab = screen.getByRole('tab', { name: /Mis Estadísticas/i });
+        await user.click(statsTab);
+
+        expect(screen.getByText(/Estadísticas personales/i)).toBeInTheDocument();
+        expect(screen.getByText('5')).toBeInTheDocument();
+        expect(screen.getByText('2')).toBeInTheDocument();
+    });
+
+    it('renderiza la pestaña de estadísticas directamente si se indica en props', async () => {
+        mockedFetchPersonalStats.mockResolvedValue({
+            username: 'Ana',
+            wins: 5,
+            losses: 2,
+            totalGames: 7,
+            winRate: 71,
+            rankingPosition: 1,
+        });
+
+        render(<Ranking username="Ana" onBack={onBack} initialTab={1} />);
+
+        expect(screen.getByText(/Estadísticas personales/i)).toBeInTheDocument();
     });
 
     it('llama a onBack al pulsar Volver', async () => {

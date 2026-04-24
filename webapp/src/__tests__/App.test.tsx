@@ -21,11 +21,15 @@ vi.mock('../pages/Menu', () => ({
               initialUsername,
               onJugar,
               onVerHistorial,
+              onVerRanking,
+              onVerEstadisticas,
             }: {
     onLogout: () => void;
     initialUsername: string;
     onJugar: (name: string, mode: 'local' | 'bot', size: number) => void;
     onVerHistorial: () => void;
+    onVerRanking: () => void;
+    onVerEstadisticas: () => void;
   }) => (
       <div>
         <h1>Menu mock</h1>
@@ -34,6 +38,8 @@ vi.mock('../pages/Menu', () => ({
         <button onClick={() => onJugar('Lucia', 'bot', 9)}>Jugar bot 9</button>
         <button onClick={() => onJugar('', 'local', 5)}>Jugar por defecto</button>
         <button onClick={onVerHistorial}>Ir a historial</button>
+        <button onClick={onVerRanking}>Ir a ranking</button>
+        <button onClick={onVerEstadisticas}>Ir a estadisticas</button>
       </div>
   ),
 }));
@@ -101,6 +107,26 @@ vi.mock('../GameBoard', () => ({
         </div>
     );
   },
+}));
+
+// Mock de Ranking
+vi.mock('../pages/Ranking', () => ({
+  default: ({
+              username,
+              onBack,
+              initialTab,
+            }: {
+    username: string;
+    onBack: () => void;
+    initialTab: number;
+  }) => (
+      <div>
+        <h1>Ranking mock</h1>
+        <p>Usuario ranking: {username}</p>
+        <p>Tab inicial: {initialTab}</p>
+        <button onClick={onBack}>Volver</button>
+      </div>
+  ),
 }));
 
 // Mock simple de FadeView
@@ -253,5 +279,27 @@ describe('App', () => {
     expect(screen.getByText('Menu mock')).toBeInTheDocument();
     expect(screen.getByText('Usuario inicial: Lucia')).toBeInTheDocument();
     expect(screen.getByText('Partida finalizada. Volviendo al menú.')).toBeInTheDocument();
+  });
+
+  it('desde el menú navega al ranking global', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByText('Entrar como Ana'));
+    fireEvent.click(screen.getByText('Ir a ranking'));
+
+    expect(screen.getByText('Ranking mock')).toBeInTheDocument();
+    expect(screen.getByText('Tab inicial: 0')).toBeInTheDocument();
+    expect(screen.getByTestId('fade-view')).toHaveAttribute('data-viewkey', 'ranking');
+  });
+
+  it('desde el menú navega a mis estadísticas', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByText('Entrar como Ana'));
+    fireEvent.click(screen.getByText('Ir a estadisticas'));
+
+    expect(screen.getByText('Ranking mock')).toBeInTheDocument();
+    expect(screen.getByText('Tab inicial: 1')).toBeInTheDocument();
+    expect(screen.getByTestId('fade-view')).toHaveAttribute('data-viewkey', 'ranking');
   });
 });

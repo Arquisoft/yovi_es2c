@@ -99,7 +99,8 @@ export type BotId =
     | 'blocker_bot'
     | 'bridge_bot'
     | 'center_bot'
-    | 'corner_bot';
+    | 'corner_bot'
+    | 'monte_carlo_tree_search_bot';
 
 export interface BotInfo {
     id: BotId;
@@ -116,6 +117,12 @@ export const FALLBACK_BOTS: BotInfo[] = [
     { id: 'bridge_bot', title: 'Bot puente', description: 'Busca conectar regiones y crear puentes.', tags: ['strategy'] },
     { id: 'center_bot', title: 'Bot centro', description: 'Prefiere celdas centrales.', tags: ['strategy'] },
     { id: 'corner_bot', title: 'Bot esquinas', description: 'Prefiere las esquinas.', tags: ['strategy'] },
+    {
+        id: 'monte_carlo_tree_search_bot',
+        title: 'MCTS Bot',
+        description: 'Bot avanzado: usa Monte Carlo Tree Search con UCT para elegir jugadas más fuertes.',
+        tags: ['strategy', 'hard'],
+    },
 ];
 
 /**

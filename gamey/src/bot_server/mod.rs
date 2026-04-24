@@ -23,6 +23,7 @@ pub mod session;
 pub mod play;
 
 use axum::http::Method;
+use axum::response::IntoResponse;
 use std::sync::Arc;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -31,10 +32,10 @@ pub use error::ErrorResponse;
 pub use version::*;
 
 use crate::{
-    BlockerBot, BridgeBot, CenterBot, CornerBot, GameYError, RandomBot, SideBot, SideBotHard, YBotRegistry,
+    BlockerBot, BridgeBot, CenterBot, CornerBot, GameYError,
+    MctsBot, RandomBot, SideBot, SideBotHard, YBotRegistry,
     state::AppState,
 };
-use axum::response::IntoResponse;
 
 /// Creates the Axum router with all routes and CORS middleware.
 pub fn create_router(state: AppState) -> axum::Router {
@@ -53,7 +54,10 @@ pub fn create_router(state: AppState) -> axum::Router {
             "/{api_version}/ybot/choose/{bot_id}",
             axum::routing::post(choose::choose),
         )
-        .route("/{api_version}/game/move", axum::routing::post(game_move::make_move))
+        .route(
+            "/{api_version}/game/move",
+            axum::routing::post(game_move::make_move),
+        )
         .route(
             "/{api_version}/game/history",
             axum::routing::get(history::history),
@@ -84,7 +88,9 @@ pub fn create_default_state() -> AppState {
         .with_bot(Arc::new(BridgeBot))
         .with_bot(Arc::new(RandomBot))
         .with_bot(Arc::new(SideBot))
-        .with_bot(Arc::new(SideBotHard));
+        .with_bot(Arc::new(SideBotHard))
+        .with_bot(Arc::new(MctsBot::default()));
+
     AppState::new(bots)
 }
 
@@ -94,6 +100,7 @@ pub async fn run_bot_server(port: u16) -> Result<(), GameYError> {
     let app = create_router(state);
 
     let addr = format!("0.0.0.0:{}", port);
+
     let listener = tokio::net::TcpListener::bind(&addr)
         .await
         .map_err(|e| GameYError::ServerError {
@@ -101,6 +108,7 @@ pub async fn run_bot_server(port: u16) -> Result<(), GameYError> {
         })?;
 
     println!("Server mode: Listening on http://{}", addr);
+
     axum::serve(listener, app)
         .await
         .map_err(|e| GameYError::ServerError {

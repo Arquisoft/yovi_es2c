@@ -5,6 +5,7 @@ import {
     Button,
     Paper,
     Stack,
+    IconButton,
     ToggleButton,
     ToggleButtonGroup,
 } from '@mui/material';
@@ -19,16 +20,19 @@ import {
     BarChart,
 } from '@mui/icons-material';
 import type { GameMode } from '../GameBoard';
+import { getAvatarById } from '../avatars';
 
 const BOARD_SIZE_OPTIONS = [5, 7, 9] as const;
 
 type MenuProps = {
     onLogout: () => void;
     initialUsername: string;
+    avatarId: string;
     onJugar: (username: string, mode: GameMode, boardSize: number) => void;
     onVerHistorial: () => void;
     onVerRanking: () => void;
     onVerEstadisticas: () => void;
+    onVerPerfil: () => void;
 };
 
 const CARDS = [
@@ -66,8 +70,18 @@ const CARDS = [
     },
 ];
 
-export default function Menu({ onLogout, onJugar, initialUsername, onVerHistorial, onVerRanking, onVerEstadisticas }: MenuProps) {
+export default function Menu({
+    onLogout,
+    onJugar,
+    initialUsername,
+    avatarId,
+    onVerHistorial,
+    onVerRanking,
+    onVerEstadisticas,
+    onVerPerfil,
+}: MenuProps) {
     const [boardSize, setBoardSize] = useState<number>(7);
+    const selectedAvatar = getAvatarById(avatarId);
 
     const launch = (mode: GameMode) => {
         onJugar(initialUsername || 'Jugador', mode, boardSize);
@@ -92,18 +106,47 @@ export default function Menu({ onLogout, onJugar, initialUsername, onVerHistoria
                         Elige Tu Modo
                     </Typography>
                 </Box>
-                <Button
-                    variant="outlined"
-                    startIcon={<PowerSettingsNew />}
-                    onClick={onLogout}
-                    sx={{
-                        borderColor: 'rgba(255,255,255,0.2)',
-                        color: 'rgba(255,255,255,0.7)',
-                        '&:hover': { borderColor: '#ef5350', color: '#ef5350' },
-                    }}
-                >
-                    Desconectar
-                </Button>
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                    <IconButton
+                        aria-label="Abrir perfil"
+                        onClick={onVerPerfil}
+                        sx={{
+                            width: 42,
+                            height: 42,
+                            border: '1px solid rgba(79,195,247,0.35)',
+                            bgcolor: 'rgba(79,195,247,0.12)',
+                            color: '#4fc3f7',
+                            '&:hover': {
+                                bgcolor: 'rgba(79,195,247,0.2)',
+                                borderColor: '#4fc3f7',
+                            },
+                        }}
+                    >
+                        <Box
+                            component="img"
+                            src={selectedAvatar.src}
+                            alt={selectedAvatar.label}
+                            sx={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: '50%',
+                                objectFit: 'cover',
+                            }}
+                        />
+                    </IconButton>
+                    <Button
+                        variant="outlined"
+                        startIcon={<PowerSettingsNew />}
+                        onClick={onLogout}
+                        sx={{
+                            borderColor: 'rgba(255,255,255,0.2)',
+                            color: 'rgba(255,255,255,0.7)',
+                            '&:hover': { borderColor: '#ef5350', color: '#ef5350' },
+                        }}
+                    >
+                        Desconectar
+                    </Button>
+                </Stack>
             </Stack>
 
             {/* Board size picker */}

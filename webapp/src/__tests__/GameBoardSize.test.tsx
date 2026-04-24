@@ -8,6 +8,7 @@ describe('GameBoard board size', () => {
     render(
       <GameBoard
         username="Ana"
+        avatarId="elf"
         mode="local"
         boardSize={3}
         onExit={() => {}}
@@ -23,6 +24,7 @@ describe('GameBoard board size', () => {
     render(
       <GameBoard
         username="Ana"
+        avatarId="elf"
         mode="local"
         boardSize={7}
         onExit={() => {}}
@@ -38,6 +40,7 @@ describe('GameBoard board size', () => {
     render(
       <GameBoard
         username="Ana"
+        avatarId="elf"
         mode="local"
         boardSize={9}
         onExit={() => {}}

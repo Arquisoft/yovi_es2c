@@ -7,6 +7,7 @@ import {
     newGameYEN,
     parseLayout,
     gridToCoords,
+    type BotId,
     type YEN,
 } from '../GameyApi.ts';
 
@@ -143,7 +144,7 @@ describe('GameApi', () => {
                 json: async () => ({ message: 'Bot not found' }),
             } as Response);
 
-            await expect(chooseBotMove(sampleYen, 'ghost_bot' as any)).rejects.toThrow(
+            await expect(chooseBotMove(sampleYen, 'ghost_bot' as BotId)).rejects.toThrow(
                 'Bot not found'
             );
         });

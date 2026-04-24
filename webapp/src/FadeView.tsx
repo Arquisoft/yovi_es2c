@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Box } from '@mui/material';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 interface FadeViewProps {
     /** Contenido a mostrar con la animación */
-    children: React.ReactNode;
+    children: ReactNode;
     /** Clave que identifica la vista actual. Cada vez que cambia, se dispara la transición */
     viewKey: string;
 }
@@ -86,7 +86,7 @@ export default function FadeView({ children, viewKey }: FadeViewProps) {
             clearTimeout(t2.current);
             clearTimeout(t3.current);
         };
-    }, [viewKey]);
+    }, [children, viewKey]);
 
     // ── Estilos por fase ───────────────────────────────────────────────────────
 

@@ -6,6 +6,23 @@ import { act } from 'react';
 import Menu from '../pages/Menu';
 
 describe('Menu board size selection', () => {
+  it('shows a small profile icon button in the header', () => {
+    render(
+      <Menu
+        onLogout={() => {}}
+        onJugar={() => {}}
+        initialUsername="Ana"
+        avatarId="elf"
+        onVerHistorial={() => {}}
+        onVerRanking={() => {}}
+        onVerEstadisticas={() => {}}
+        onVerPerfil={() => {}}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /abrir perfil/i })).toBeInTheDocument();
+  });
+
   it('updates the board size hint when selecting a different size', async () => {
     const user = userEvent.setup();
 
@@ -14,9 +31,11 @@ describe('Menu board size selection', () => {
         onLogout={() => {}}
         onJugar={() => {}}
         initialUsername="Ana"
+        avatarId="elf"
         onVerHistorial={() => {}}
         onVerRanking={() => {}}
         onVerEstadisticas={() => {}}
+        onVerPerfil={() => {}}
       />,
     );
 
@@ -37,9 +56,11 @@ describe('Menu board size selection', () => {
         onLogout={() => {}}
         onJugar={() => {}}
         initialUsername="Ana"
+        avatarId="elf"
         onVerHistorial={() => {}}
         onVerRanking={() => {}}
         onVerEstadisticas={() => {}}
+        onVerPerfil={() => {}}
       />,
     );
 
@@ -71,9 +92,11 @@ describe('Menu board size selection', () => {
         onLogout={() => {}}
         onJugar={onJugar}
         initialUsername="Ana"
+        avatarId="elf"
         onVerHistorial={() => {}}
         onVerRanking={() => {}}
         onVerEstadisticas={() => {}}
+        onVerPerfil={() => {}}
       />,
     );
 
@@ -102,9 +125,11 @@ describe('Menu board size selection', () => {
         onLogout={() => {}}
         onJugar={onJugar}
         initialUsername="Ana"
+        avatarId="elf"
         onVerHistorial={() => {}}
         onVerRanking={() => {}}
         onVerEstadisticas={() => {}}
+        onVerPerfil={() => {}}
       />,
     );
 
@@ -133,9 +158,11 @@ describe('Menu board size selection', () => {
         onLogout={() => {}}
         onJugar={onJugar}
         initialUsername="Ana"
+        avatarId="elf"
         onVerHistorial={() => {}}
         onVerRanking={() => {}}
         onVerEstadisticas={() => {}}
+        onVerPerfil={() => {}}
       />,
     );
 

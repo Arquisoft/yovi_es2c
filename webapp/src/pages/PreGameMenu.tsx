@@ -3,6 +3,7 @@ import {
     Alert,
     Box,
     Button,
+    ButtonBase,
     ButtonGroup,
     Chip,
     CircularProgress,
@@ -13,6 +14,7 @@ import {
 import { ArrowBack, PlayArrow, SmartToy, People } from '@mui/icons-material';
 import type { GameMode } from '../GameBoard';
 import { FALLBACK_BOTS, fetchAvailableBots, type BotId, type BotInfo, type GameVariant } from '../GameyApi';
+import { AVATAR_OPTIONS } from '../avatars';
 import { getErrorMessage } from '../utils/getErrorMessage';
 
 type PreGameMenuProps = {
@@ -21,8 +23,10 @@ type PreGameMenuProps = {
     boardSize: number;
     initialVariant: GameVariant;
     initialBotId: BotId;
+    initialBlueAvatarId: string;
+    initialRedAvatarId: string;
     onBack: () => void;
-    onStart: (opts: { variant: GameVariant; botId: BotId }) => void;
+    onStart: (opts: { variant: GameVariant; botId: BotId; blueAvatarId: string; redAvatarId: string }) => void;
 };
 
 const VARIANTS: Array<{ id: GameVariant; label: string; desc: string }> = [
@@ -48,11 +52,15 @@ export default function PreGameMenu({
     boardSize,
     initialVariant,
     initialBotId,
+    initialBlueAvatarId,
+    initialRedAvatarId,
     onBack,
     onStart,
 }: Readonly<PreGameMenuProps>) {
     const [variant, setVariant] = useState<GameVariant>(initialVariant);
     const [botId, setBotId] = useState<BotId>(initialBotId);
+    const [blueAvatarId, setBlueAvatarId] = useState(initialBlueAvatarId);
+    const [redAvatarId, setRedAvatarId] = useState(initialRedAvatarId);
     const [bots, setBots] = useState<BotInfo[] | null>(null);
     const [loadingBots, setLoadingBots] = useState(false);
     const [botsError, setBotsError] = useState<string | null>(null);
@@ -153,6 +161,79 @@ export default function PreGameMenu({
                     {VARIANTS.find((v) => v.id === variant)?.desc}
                 </Typography>
             </Paper>
+
+            {mode === 'local' && (
+                <Paper
+                    sx={{
+                        bgcolor: 'rgba(255,255,255,0.05)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: 3,
+                        p: 3,
+                        mb: 3,
+                    }}
+                >
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ color: '#4fc3f7', mb: 2, letterSpacing: 3, textAlign: 'center', fontWeight: 900, textTransform: 'uppercase' }}
+                    >
+                        Avatares de la partida local
+                    </Typography>
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                        {[
+                            { team: 'Azul', value: blueAvatarId, setValue: setBlueAvatarId, color: '#4fc3f7' },
+                            { team: 'Rojo', value: redAvatarId, setValue: setRedAvatarId, color: '#ef5350' },
+                        ].map(({ team, value, setValue, color }) => (
+                            <Paper
+                                key={team}
+                                sx={{
+                                    flex: 1,
+                                    p: 2,
+                                    borderRadius: 3,
+                                    bgcolor: 'rgba(255,255,255,0.03)',
+                                    border: `1px solid ${color}55`,
+                                }}
+                            >
+                                <Typography sx={{ color, fontWeight: 900, mb: 1.5, textTransform: 'uppercase', letterSpacing: 1.5 }}>
+                                    Equipo {team}
+                                </Typography>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
+                                    {AVATAR_OPTIONS.map((avatar) => {
+                                        const isSelected = value === avatar.id;
+                                        return (
+                                            <ButtonBase
+                                                key={`${team}-${avatar.id}`}
+                                                type="button"
+                                                aria-label={`Seleccionar avatar ${avatar.label} para ${team}`}
+                                                aria-pressed={isSelected}
+                                                onClick={() => setValue(avatar.id)}
+                                                sx={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    gap: 0.75,
+                                                    p: 1,
+                                                    borderRadius: 2,
+                                                    border: `1px solid ${isSelected ? color : 'rgba(255,255,255,0.12)'}`,
+                                                    backgroundColor: isSelected ? `${color}20` : 'rgba(255,255,255,0.02)',
+                                                }}
+                                            >
+                                                <Box
+                                                    component="img"
+                                                    src={avatar.src}
+                                                    alt={avatar.label}
+                                                    sx={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover' }}
+                                                />
+                                                <Typography variant="caption" sx={{ color: 'white', fontWeight: isSelected ? 800 : 500 }}>
+                                                    {avatar.label}
+                                                </Typography>
+                                            </ButtonBase>
+                                        );
+                                    })}
+                                </Box>
+                            </Paper>
+                        ))}
+                    </Stack>
+                </Paper>
+            )}
 
             {mode === 'bot' && (
                 <Paper
@@ -286,7 +367,7 @@ export default function PreGameMenu({
                     variant="contained"
                     size="large"
                     endIcon={<PlayArrow />}
-                    onClick={() => onStart({ variant, botId })}
+                    onClick={() => onStart({ variant, botId, blueAvatarId, redAvatarId })}
                     sx={{ bgcolor: '#4fc3f7', color: '#000', fontWeight: 900 }}
                 >
                     Empezar partida

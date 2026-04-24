@@ -19,27 +19,33 @@ vi.mock('../pages/Menu', () => ({
   default: ({
               onLogout,
               initialUsername,
+              avatarId,
               onJugar,
               onVerHistorial,
               onVerRanking,
               onVerEstadisticas,
+              onVerPerfil,
             }: {
     onLogout: () => void;
     initialUsername: string;
+    avatarId: string;
     onJugar: (name: string, mode: 'local' | 'bot', size: number) => void;
     onVerHistorial: () => void;
     onVerRanking: () => void;
     onVerEstadisticas: () => void;
+    onVerPerfil: () => void;
   }) => (
       <div>
         <h1>Menu mock</h1>
         <p>Usuario inicial: {initialUsername}</p>
+        <p>Avatar actual: {avatarId}</p>
         <button onClick={onLogout}>Logout</button>
         <button onClick={() => onJugar('Lucia', 'bot', 9)}>Jugar bot 9</button>
         <button onClick={() => onJugar('', 'local', 5)}>Jugar por defecto</button>
         <button onClick={onVerHistorial}>Ir a historial</button>
         <button onClick={onVerRanking}>Ir a ranking</button>
         <button onClick={onVerEstadisticas}>Ir a estadisticas</button>
+        <button onClick={onVerPerfil}>Ir a perfil</button>
       </div>
   ),
 }));
@@ -61,6 +67,28 @@ vi.mock('../pages/Historial', () => ({
   ),
 }));
 
+vi.mock('../pages/Perfil', () => ({
+  default: ({
+              username,
+              avatarId,
+              onSelectAvatar,
+              onBack,
+            }: {
+    username: string;
+    avatarId: string;
+    onSelectAvatar: (avatarId: string) => void;
+    onBack: () => void;
+  }) => (
+      <div>
+        <h1>Perfil mock</h1>
+        <p>Usuario perfil: {username}</p>
+        <p>Avatar perfil: {avatarId}</p>
+        <button onClick={() => onSelectAvatar('wizard')}>Elegir wizard</button>
+        <button onClick={onBack}>Volver desde perfil</button>
+      </div>
+  ),
+}));
+
 vi.mock('../pages/PreGameMenu', () => ({
   default: ({
               mode,
@@ -71,14 +99,14 @@ vi.mock('../pages/PreGameMenu', () => ({
     mode: 'local' | 'bot';
     boardSize: number;
     onBack: () => void;
-    onStart: (opts: { variant: 'standard' | 'why_not'; botId: string }) => void;
+    onStart: (opts: { variant: 'standard' | 'why_not'; botId: string; blueAvatarId: string; redAvatarId: string }) => void;
   }) => (
       <div>
         <h1>PreGameMenu mock</h1>
         <p>Modo pregame: {mode}</p>
         <p>Tam pregame: {boardSize}</p>
         <button onClick={onBack}>Volver al menu</button>
-        <button onClick={() => onStart({ variant: 'why_not', botId: 'random_bot' })}>Empezar</button>
+        <button onClick={() => onStart({ variant: 'why_not', botId: 'random_bot', blueAvatarId: 'elf', redAvatarId: 'wizard' })}>Empezar</button>
       </div>
   ),
 }));
@@ -89,6 +117,9 @@ const gameBoardMock = vi.fn();
 vi.mock('../GameBoard', () => ({
   default: (props: {
     username: string;
+    avatarId: string;
+    blueAvatarId?: string;
+    redAvatarId?: string;
     mode: 'local' | 'bot';
     boardSize: number;
     variant?: 'standard' | 'why_not';
@@ -100,6 +131,9 @@ vi.mock('../GameBoard', () => ({
         <div>
           <h1>GameBoard mock</h1>
           <p>Usuario: {props.username}</p>
+          <p>Avatar: {props.avatarId}</p>
+          <p>Avatar azul: {props.blueAvatarId}</p>
+          <p>Avatar rojo: {props.redAvatarId}</p>
           <p>Modo: {props.mode}</p>
           <p>Tamaño: {props.boardSize}</p>
           <button onClick={() => props.onExit(true)}>Salir partida</button>
@@ -145,8 +179,27 @@ vi.mock('../FadeView', () => ({
 }));
 
 describe('App', () => {
+  let storage: Record<string, string>;
+
   beforeEach(() => {
     gameBoardMock.mockClear();
+    storage = {};
+
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: {
+        getItem: (key: string) => storage[key] ?? null,
+        setItem: (key: string, value: string) => {
+          storage[key] = value;
+        },
+        removeItem: (key: string) => {
+          delete storage[key];
+        },
+        clear: () => {
+          storage = {};
+        },
+      },
+    });
   });
 
   it('muestra la vista de inicio al renderizar', () => {
@@ -163,7 +216,17 @@ describe('App', () => {
 
     expect(screen.getByText('Menu mock')).toBeInTheDocument();
     expect(screen.getByText('Usuario inicial: Ana')).toBeInTheDocument();
+    expect(screen.getByText('Avatar actual: elf')).toBeInTheDocument();
     expect(screen.getByTestId('fade-view')).toHaveAttribute('data-viewkey', 'menu');
+  });
+
+  it('lee el avatar guardado en localStorage al arrancar', () => {
+    window.localStorage.setItem('yovi.selectedAvatar', 'wizard');
+
+    render(<App />);
+    fireEvent.click(screen.getByText('Entrar como Ana'));
+
+    expect(screen.getByText('Avatar actual: wizard')).toBeInTheDocument();
   });
 
   it('usa "Jugador" como nombre por defecto si se entra con nombre vacío', () => {
@@ -196,7 +259,8 @@ describe('App', () => {
 
     expect(gameBoardMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          username: 'Lucia',
+         username: 'Lucia',
+          avatarId: 'elf',
           mode: 'bot',
           boardSize: 9,
           variant: 'why_not',
@@ -232,12 +296,49 @@ describe('App', () => {
     expect(screen.getByTestId('fade-view')).toHaveAttribute('data-viewkey', 'historial');
   });
 
+  it('desde el menú navega al perfil', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByText('Entrar como Ana'));
+    fireEvent.click(screen.getByText('Ir a perfil'));
+
+    expect(screen.getByText('Perfil mock')).toBeInTheDocument();
+    expect(screen.getByText('Usuario perfil: Ana')).toBeInTheDocument();
+    expect(screen.getByText('Avatar perfil: elf')).toBeInTheDocument();
+    expect(screen.getByTestId('fade-view')).toHaveAttribute('data-viewkey', 'perfil');
+  });
+
+  it('conserva el avatar elegido al volver del perfil', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByText('Entrar como Ana'));
+    fireEvent.click(screen.getByText('Ir a perfil'));
+    fireEvent.click(screen.getByText('Elegir wizard'));
+    fireEvent.click(screen.getByText('Volver desde perfil'));
+
+    expect(screen.getByText('Menu mock')).toBeInTheDocument();
+    expect(screen.getByText('Avatar actual: wizard')).toBeInTheDocument();
+    expect(window.localStorage.getItem('yovi.selectedAvatar')).toBe('wizard');
+  });
+
   it('desde historial vuelve al menú', () => {
     render(<App />);
 
     fireEvent.click(screen.getByText('Entrar como Ana'));
     fireEvent.click(screen.getByText('Ir a historial'));
     fireEvent.click(screen.getByText('Volver'));
+
+    expect(screen.getByText('Menu mock')).toBeInTheDocument();
+    expect(screen.getByText('Usuario inicial: Ana')).toBeInTheDocument();
+    expect(screen.getByTestId('fade-view')).toHaveAttribute('data-viewkey', 'menu');
+  });
+
+  it('desde perfil vuelve al menú', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByText('Entrar como Ana'));
+    fireEvent.click(screen.getByText('Ir a perfil'));
+    fireEvent.click(screen.getByText('Volver desde perfil'));
 
     expect(screen.getByText('Menu mock')).toBeInTheDocument();
     expect(screen.getByText('Usuario inicial: Ana')).toBeInTheDocument();
@@ -279,6 +380,21 @@ describe('App', () => {
     expect(screen.getByText('Menu mock')).toBeInTheDocument();
     expect(screen.getByText('Usuario inicial: Lucia')).toBeInTheDocument();
     expect(screen.getByText('Partida finalizada. Volviendo al menú.')).toBeInTheDocument();
+  });
+
+  it('permite cerrar manualmente el aviso de salida', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByText('Entrar como Ana'));
+    fireEvent.click(screen.getByText('Jugar bot 9'));
+    fireEvent.click(screen.getByText('Empezar'));
+    fireEvent.click(screen.getByText('Salir partida'));
+
+    expect(screen.getByText('Has abandonado la partida. Se ha registrado como rendición.')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText(/close/i));
+
+    expect(screen.queryByText('Has abandonado la partida. Se ha registrado como rendición.')).not.toBeInTheDocument();
   });
 
   it('desde el menú navega al ranking global', () => {

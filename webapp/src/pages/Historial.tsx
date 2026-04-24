@@ -149,9 +149,9 @@ export default function Historial({ username, onBack }: HistorialProps) {
 
                 {/* LIST */}
                 <Stack spacing={1.5}>
-                    {games.map((g, i) => (
+                    {games.map((g) => (
                         <Paper
-                            key={i}
+                            key={`${g.timestamp}-${g.board_size}-${g.duration_seconds}-${g.moves_count}-${g.winner ?? 'na'}`}
                             sx={{
                                 p: 2,
                                 borderRadius: 3,

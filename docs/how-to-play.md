@@ -4,23 +4,19 @@
 
 Yovi es una aplicación web que implementa el juego de estrategia *Y*, en el que dos jugadores compiten por conectar los tres lados de un tablero triangular.
 
-Este documento describe el funcionamiento de la aplicación y el flujo completo para iniciar y jugar una partida.
+Este documento describe el funcionamiento de la aplicación y el flujo completo necesario para iniciar y jugar una partida.
 
 ---
 
 ## 2. Registro de usuario
 
-Si el usuario no dispone de una cuenta, debe registrarse:
+Si el usuario no dispone de una cuenta, debe registrarse siguiendo estos pasos:
 
-1. Seleccionar la pestaña **REGISTER**
-
-
+1. Seleccionar la pestaña **REGISTER**  
 2. Introducir:
    - Nombre de usuario
    - Contraseña
-   - Confirmación de contraseña
-   
-
+   - Confirmación de contraseña  
 3. Pulsar **CREATE ACCOUNT**
 
 ![Registro](./images/tutorial_registro.png)
@@ -31,10 +27,10 @@ Si el usuario no dispone de una cuenta, debe registrarse:
 
 Para acceder a la aplicación:
 
-1. Seleccionar la pestaña **LOG IN**
+1. Seleccionar la pestaña **LOG IN**  
 2. Introducir:
    - Nombre de usuario
-   - Contraseña
+   - Contraseña  
 3. Pulsar **ENTER**
 
 ![Inicio de sesión](./images/tutorial_login.png)
@@ -45,16 +41,18 @@ Para acceder a la aplicación:
 
 Una vez autenticado, el usuario accede al menú principal, desde donde puede:
 
-- Iniciar una partida local
-- Iniciar una partida contra la inteligencia artificial
-- Seleccionar el tamaño del tablero
-- Consultar el historial de partidas
-- Acceder al ranking global
-- Visualizar estadísticas personales
-- Cerrar sesión
+- Iniciar una partida local  
+- Iniciar una partida contra la inteligencia artificial  
+- Seleccionar el tamaño del tablero  
+- Consultar el historial de partidas  
+- Acceder al ranking global  
+- Visualizar estadísticas personales (número de victorias y derrotas)  
+- Configurar avatar  
+- Cerrar sesión  
 
 ![Menú principal](./images/tutorial_menu.png)
-*(En la esquina superior derecha se encuentra el avatar del usuario. Desde este icono se puede acceder a opciones como la personalización del perfil y cerrar sesión.)*
+
+*(En la esquina superior derecha se encuentra el avatar del usuario. Desde este icono se puede acceder a opciones como la personalización del perfil y la desconexión del sistema.)*
 
 ---
 
@@ -62,14 +60,9 @@ Una vez autenticado, el usuario accede al menú principal, desde donde puede:
 
 ### 5.1 Selección de avatar
 
-
-
-Durante la configuración de partida, cada jugador puede seleccionar un avatar representativo.
-
-
+Durante la configuración de la partida, cada jugador puede seleccionar un avatar representativo.
 
 ![Avatar](./images/avatar_menu.png)
-
 
 ---
 
@@ -79,25 +72,18 @@ Durante la configuración de partida, cada jugador puede seleccionar un avatar r
 
 Antes de iniciar la partida, el usuario debe seleccionar el tamaño del tablero:
 
-- 5: partidas rápidas
-- 7: tamaño equilibrado (recomendado)
-- 9: mayor complejidad estratégica
-
+- 5: partidas rápidas  
+- 7: tamaño equilibrado (recomendado)  
+- 9: mayor complejidad estratégica  
 
 ---
 
 ### 6.2 Selección del modo de juego
 
-Desde el lobby principal:
+Desde el lobby principal, el usuario puede elegir entre:
 
-
-
-El usuario puede elegir entre:
-
-- **Partida local**: dos jugadores en el mismo dispositivo
-- **Partida contra IA Bot**: juego contra un bot
-
-Además, se puede acceder a opciones adicionales como historial, ranking y estadísticas.
+- **Partida local**: dos jugadores en el mismo dispositivo  
+- **Partida contra IA (bot)**: juego contra un oponente automático  
 
 ---
 
@@ -107,10 +93,10 @@ Además, se puede acceder a opciones adicionales como historial, ranking y estad
 
 En este modo se configuran:
 
-- Los avatares de ambos jugadores (equipo azul y equipo rojo)
+- Los avatares de ambos jugadores (equipo azul y equipo rojo)  
 - La variante del juego:
-   - **STANDARD**: reglas clásicas
-   - **WHY NOT**: variante alternativa(debes intentar que el rival gane)
+  - **STANDARD**: reglas clásicas  
+  - **WHY NOT**: variante en la que el objetivo se invierte. El jugador pierde si consigue conectar los tres lados del tablero, por lo que debe evitar formar dicha conexión y forzar que sea el rival quien la complete.  
 
 ---
 
@@ -118,18 +104,18 @@ En este modo se configuran:
 
 ![Configuración contra bot](./images/tutorial_partida_IA.png)
 
-En este modo se selecciona el comportamiento del rival automático:
+En este modo se selecciona el comportamiento del rival automático.
 
-### Dificultad o Estrategias disponibles:
+### Dificultad y estrategias disponibles:
 
-- Fácil
-- Difícil
-- Aleatorio
-- Bloqueador
-- Centro
-- Esquinas
-- Puente
-- Avanzado
+- Fácil  
+- Difícil  
+- Aleatorio  
+- Bloqueador  
+- Centro  
+- Esquinas  
+- Puente  
+- Avanzado  
 
 ---
 
@@ -139,42 +125,40 @@ Una vez configurados todos los parámetros, el usuario debe pulsar **EMPEZAR PAR
 
 ---
 
-
-
 ## 10. Desarrollo de la partida
 
 ![Partida en curso](./images/tutorial_partida_en_curso.png)
 
 ### Elementos de la interfaz:
 
-- Indicador de turno activo
-- Identificación de los equipos (azul y rojo)
-- Tablero triangular de juego
+- Indicador de turno activo  
+- Identificación de los equipos (azul y rojo)  
+- Tablero triangular de juego  
 
 ### Funcionamiento:
 
-1. Los jugadores juegan por turnos
-2. En cada turno se selecciona una casilla vacía
-3. Se coloca una ficha en dicha posición
-4. Las fichas no se pueden mover ni eliminar
+1. Los jugadores juegan por turnos  
+2. En cada turno se selecciona una casilla vacía  
+3. Se coloca una ficha en dicha posición  
+4. Las fichas no se pueden mover ni eliminar  
 
 En el modo contra IA, el sistema realiza automáticamente el movimiento del rival.
 
 ---
-### 10.1 Control de sonido, nueva partida y salir
-En la parte superior derecha la interfaz permite activar o desactivar la música del juego mediante el icono correspondiente en la barra superior.
 
-Tambien permite reiniciar la partida o abandonar la partida actual.
+### 10.1 Control de sonido, nueva partida y salida
 
+En la parte superior derecha, la interfaz permite:
 
+- Activar o desactivar la música mediante el icono correspondiente  
+- Reiniciar la partida  
+- Abandonar la partida actual  
 
 ---
 
 ## 11. Objetivo del juego
 
 El objetivo consiste en conectar los tres lados del tablero mediante una cadena continua de fichas propias.
-
-
 
 ---
 
@@ -183,12 +167,19 @@ El objetivo consiste en conectar los tres lados del tablero mediante una cadena 
 La partida finaliza automáticamente cuando uno de los jugadores consigue conectar los tres lados del tablero.
 
 ![Partida finalizada](./images/tutorial_partida_finalizada.png)
-*(Imagen: pantalla de victoria)*
+
+*(Pantalla de victoria con el resultado de la partida)*
 
 ---
 
 ## 13. Consideraciones finales
 
-- No es posible el empate; siempre existe un ganador
-- El juego no incluye elementos aleatorios, por lo que la estrategia es determinante
-- La elección del tamaño del tablero influye directamente en la duración y complejidad de la partida
+- No es posible el empate; siempre existe un ganador  
+- El juego no incluye elementos aleatorios, por lo que la estrategia es determinante  
+- La elección del tamaño del tablero influye directamente en la duración y complejidad de la partida  
+
+---
+
+## 14. Conclusión
+
+Esta guía permite a cualquier usuario comprender el funcionamiento completo de la aplicación y comenzar a jugar de forma autónoma.

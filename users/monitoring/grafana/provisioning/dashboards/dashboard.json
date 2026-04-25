@@ -15,361 +15,159 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 7,
+  "id": null,
   "links": [],
   "panels": [
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 11,
-        "w": 8,
-        "x": 0,
-        "y": 0
-      },
-      "hiddenSeries": false,
+      "datasource": "Prometheus",
+      "fill": 2,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
       "id": 10,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
+      "legend": { "show": true },
       "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pluginVersion": "7.0.0",
-      "pointradius": 2,
+      "linewidth": 3,
       "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(http_request_duration_seconds_count[1m]))",
-          "interval": "",
+          "expr": "sum(rate(http_request_duration_seconds_count[1m])) * 60",
           "legendFormat": "Requests per minute",
           "refId": "A"
         }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Rate (R): Number of requests per minute",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
+      "title": "Rate (R): Requests per minute",
       "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
+      "xaxis": { "mode": "time", "show": true },
       "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+        { "format": "short", "min": 0, "show": true },
+        { "format": "short", "show": true }
+      ]
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 11,
-        "w": 8,
-        "x": 8,
-        "y": 0
-      },
-      "hiddenSeries": false,
+      "datasource": "Prometheus",
+      "fill": 2,
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
       "id": 12,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
+      "legend": { "show": true },
       "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pluginVersion": "7.0.0",
-      "pointradius": 2,
+      "linewidth": 3,
       "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(http_request_duration_seconds_count{code=~\"5.*\"}[1m]))",
-          "interval": "",
-          "legendFormat": "",
+          "expr": "sum(rate(http_request_duration_seconds_count{status_code=~\"4.*\"}[1m])) * 60",
+          "legendFormat": "4xx errors per minute",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(http_request_duration_seconds_count{status_code=~\"5.*\"}[1m])) * 60",
+          "legendFormat": "5xx errors per minute",
+          "refId": "B"
+        }
+      ],
+      "title": "Errors (E): 4xx vs 5xx responses",
+      "type": "graph",
+      "xaxis": { "mode": "time", "show": true },
+      "yaxes": [
+        { "format": "short", "min": 0, "show": true },
+        { "format": "short", "show": true }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fill": 2,
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "id": 13,
+      "legend": { "show": true },
+      "lines": true,
+      "linewidth": 3,
+      "points": false,
+      "targets": [
+        {
+          "expr": "100 * (sum(rate(http_request_duration_seconds_count{status_code=~\"4.*|5.*\"}[1m])) / clamp_min(sum(rate(http_request_duration_seconds_count[1m])), 1))",
+          "legendFormat": "Error %",
           "refId": "A"
         }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Errors (E): The number of failed requests",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
+      "title": "Error Rate (%)",
       "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
+      "xaxis": { "mode": "time", "show": true },
       "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+        { "format": "percent", "min": 0, "max": 100, "show": true },
+        { "format": "short", "show": true }
+      ]
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 11,
-        "w": 8,
-        "x": 16,
-        "y": 0
-      },
-      "hiddenSeries": false,
-      "id": 2,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
+      "datasource": "Prometheus",
+      "fill": 2,
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
+      "id": 14,
+      "legend": { "show": true },
       "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
+      "linewidth": 3,
       "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.9, sum(rate(http_request_duration_seconds_bucket[10m])) by (le, route))",
-          "interval": "",
+          "expr": "sum(rate(http_request_duration_seconds_count[1m]))",
+          "legendFormat": "Requests/sec",
+          "refId": "A"
+        }
+      ],
+      "title": "Throughput (RPS)",
+      "type": "graph",
+      "xaxis": { "mode": "time", "show": true },
+      "yaxes": [
+        { "format": "reqps", "min": 0, "show": true },
+        { "format": "short", "show": true }
+      ]
+    },
+    {
+      "datasource": "Prometheus",
+      "fill": 2,
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 8 },
+      "id": 2,
+      "legend": { "show": true },
+      "lines": true,
+      "linewidth": 3,
+      "points": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.90, sum(rate(http_request_duration_seconds_bucket[1m])) by (le, route))",
           "legendFormat": "p90 {{route}}",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.5, sum(rate(http_request_duration_seconds_bucket[10m])) by (le, route))",
-          "interval": "",
-          "legendFormat": "Median {{route}}",
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[1m])) by (le, route))",
+          "legendFormat": "p50 {{route}}",
           "refId": "B"
         },
         {
-          "expr": "rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])",
-          "interval": "",
+          "expr": "sum(rate(http_request_duration_seconds_sum[1m])) by (route) / sum(rate(http_request_duration_seconds_count[1m])) by (route)",
           "legendFormat": "Average {{route}}",
           "refId": "C"
         }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Duration (D): The amount of time to process a request",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
+      "title": "Duration (D): Request latency",
       "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
+      "xaxis": { "mode": "time", "show": true },
       "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+        { "format": "s", "min": 0, "show": true },
+        { "format": "short", "show": true }
+      ]
     }
   ],
-  "refresh": false,
+  "refresh": "15s",
   "schemaVersion": 25,
   "style": "dark",
-  "tags": [],
-  "templating": {
-    "list": []
-  },
+  "tags": ["prometheus", "grafana", "gatling", "monitoring"],
+  "templating": { "list": [] },
   "time": {
     "from": "now-15m",
     "to": "now"
   },
   "timepicker": {
-    "refresh_intervals": [
-      "10s",
-      "30s",
-      "1m",
-      "5m",
-      "15m",
-      "30m",
-      "1h",
-      "2h",
-      "1d"
-    ]
+    "refresh_intervals": ["10s", "15s", "30s", "1m", "5m", "15m", "30m", "1h"]
   },
   "timezone": "",
-  "title": "Example Service Dashboard",
-  "uid": "1DYaynomMk",
-  "version": 2
+  "title": "Service Dashboard Complete",
+  "uid": "service-dashboard-improved",
+  "version": 1
 }

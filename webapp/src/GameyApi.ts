@@ -119,8 +119,8 @@ export const FALLBACK_BOTS: BotInfo[] = [
     { id: 'corner_bot', title: 'Bot esquinas', description: 'Prefiere las esquinas.', tags: ['strategy'] },
     {
         id: 'monte_carlo_tree_search_bot',
-        title: 'MCTS Bot',
-        description: 'Bot avanzado: usa Monte Carlo Tree Search con UCT para elegir jugadas más fuertes.',
+        title: 'Bot avanzado',
+        description: 'Usa estrategias complicadas.',
         tags: ['strategy', 'hard'],
     },
 ];

@@ -82,8 +82,8 @@ fn known_bots() -> Vec<BotInfo> {
         ),
         bot(
             "monte_carlo_tree_search_bot",
-            "MCTS Bot",
-            "Bot avanzado: usa Monte Carlo Tree Search con UCT para elegir jugadas mas fuertes.",
+            "Bot avanzado",
+            "Realiza jugadas mas fuertes.",
             &STRATEGY,
         ),
     ]

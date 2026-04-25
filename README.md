@@ -23,6 +23,10 @@
 
 ---
 
+- [Guía de uso: Cómo jugar a Yovi](docs/how-to-play.md)
+
+---
+
 ## Que incluye
 
 * Registro e inicio de sesion de usuarios

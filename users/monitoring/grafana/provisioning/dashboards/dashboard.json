@@ -6,370 +6,125 @@
         "datasource": "-- Grafana --",
         "enable": true,
         "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
         "type": "dashboard"
       }
     ]
   },
   "editable": true,
-  "gnetId": null,
-  "graphTooltip": 0,
-  "id": 7,
-  "links": [],
   "panels": [
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 11,
-        "w": 8,
-        "x": 0,
-        "y": 0
-      },
-      "hiddenSeries": false,
-      "id": 10,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
+      "title": "Rate (R): Requests per minute",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
       "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pluginVersion": "7.0.0",
-      "pointradius": 2,
       "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "linewidth": 2,
       "targets": [
         {
           "expr": "sum(increase(http_request_duration_seconds_count[1m]))",
-          "interval": "",
-          "legendFormat": "Requests per minute",
+          "legendFormat": "Total requests",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Errors (E): 4xx vs 5xx",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+      "lines": true,
+      "points": false,
+      "linewidth": 2,
+      "targets": [
+        {
+          "expr": "sum(increase(http_request_duration_seconds_count{status_code=~\"4.*\"}[1m]))",
+          "legendFormat": "4xx errors",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(increase(http_request_duration_seconds_count{status_code=~\"5.*\"}[1m]))",
+          "legendFormat": "5xx errors",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "title": "Error Rate (%)",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+      "lines": true,
+      "points": false,
+      "linewidth": 2,
+      "targets": [
+        {
+          "expr": "(sum(rate(http_request_duration_seconds_count{status_code=~\"4.*|5.*\"}[1m])) / sum(rate(http_request_duration_seconds_count[1m]))) * 100",
+          "legendFormat": "Error %",
           "refId": "A"
         }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Rate (R): Number of requests per minute",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
       "yaxes": [
         {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
+          "format": "percent",
+          "min": 0,
+          "max": 100
         },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+        {}
+      ]
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 11,
-        "w": 8,
-        "x": 8,
-        "y": 0
-      },
-      "hiddenSeries": false,
-      "id": 12,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
+      "title": "Throughput (RPS)",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
       "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pluginVersion": "7.0.0",
-      "pointradius": 2,
       "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "linewidth": 2,
       "targets": [
         {
-          "expr": "sum(increase(http_request_duration_seconds_count{code=~\"5.*\"}[1m]))",
-          "interval": "",
-          "legendFormat": "",
+          "expr": "sum(rate(http_request_duration_seconds_count[1m]))",
+          "legendFormat": "Requests/sec",
           "refId": "A"
         }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Errors (E): The number of failed requests",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      ]
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": null,
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 11,
-        "w": 8,
-        "x": 16,
-        "y": 0
-      },
-      "hiddenSeries": false,
-      "id": 2,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
+      "title": "Duration (D): Request latency",
+      "type": "graph",
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 8 },
       "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
       "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "linewidth": 2,
       "targets": [
         {
-          "expr": "histogram_quantile(0.9, sum(rate(http_request_duration_seconds_bucket[10m])) by (le, route))",
-          "interval": "",
+          "expr": "histogram_quantile(0.9, sum(rate(http_request_duration_seconds_bucket[30s])) by (le, route))",
           "legendFormat": "p90 {{route}}",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.5, sum(rate(http_request_duration_seconds_bucket[10m])) by (le, route))",
-          "interval": "",
-          "legendFormat": "Median {{route}}",
+          "expr": "histogram_quantile(0.5, sum(rate(http_request_duration_seconds_bucket[30s])) by (le, route))",
+          "legendFormat": "p50 {{route}}",
           "refId": "B"
         },
         {
-          "expr": "rate(http_request_duration_seconds_sum[5m]) / rate(http_request_duration_seconds_count[5m])",
-          "interval": "",
-          "legendFormat": "Average {{route}}",
+          "expr": "sum(rate(http_request_duration_seconds_sum[30s])) by (route) / sum(rate(http_request_duration_seconds_count[30s])) by (route)",
+          "legendFormat": "avg {{route}}",
           "refId": "C"
         }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Duration (D): The amount of time to process a request",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
       "yaxes": [
         {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
+          "format": "s",
+          "min": 0
         },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+        {}
+      ]
     }
   ],
-  "refresh": false,
   "schemaVersion": 25,
   "style": "dark",
-  "tags": [],
-  "templating": {
-    "list": []
-  },
   "time": {
     "from": "now-15m",
     "to": "now"
   },
-  "timepicker": {
-    "refresh_intervals": [
-      "10s",
-      "30s",
-      "1m",
-      "5m",
-      "15m",
-      "30m",
-      "1h",
-      "2h",
-      "1d"
-    ]
-  },
-  "timezone": "",
-  "title": "Example Service Dashboard",
-  "uid": "1DYaynomMk",
-  "version": 2
+  "title": "Service Dashboard",
+  "version": 1
 }

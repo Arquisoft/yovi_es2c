@@ -206,8 +206,10 @@ cd gamey
 cargo test
 ```
 ### Carga
-Los test de carga han sido todos hechos con el recorder.sh
-Actualmente tras las actualizaciones de la app el unico funcional es el UltimaPrueba.scala sin embargo se dejan los anteriores para ver sus versiones antiguas
+<p align="center">
+Los test de carga han sido todos hechos con el recorder.sh.
+Actualmente tras las actualizaciones de la app el unico funcional es el UltimaPrueba.scala sin embargo se dejan los anteriores para ver sus versiones antiguas.
+</p>
 ---
 
 ##  Tecnologías

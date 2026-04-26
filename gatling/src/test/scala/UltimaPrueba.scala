@@ -80,9 +80,6 @@ class UltimaPrueba extends Simulation {
         .get("/")
         .headers(headers_0)
         .resources(
-          http("request_1")
-            .get("/assets/index-BC0mWlLo.js")
-            .headers(headers_1),
           http("request_2")
             .get("/assets/index-CqzyyKSk.css")
             .headers(headers_2),

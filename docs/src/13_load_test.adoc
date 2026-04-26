@@ -54,6 +54,17 @@ Una sesión capturada que combina registro y movimientos rápidos para estresar 
     3. Incluye validación de pre-vuelo (OPTIONS) para asegurar que la configuración de CORS no penaliza el rendimiento.
 * **Objetivo:** Simular ráfagas de actividad y validar la robustez de las cabeceras de comunicación.
 
+====5. UltimaPrueba
+Sesion final de inicio de sesion
+
+* **Acciones:**
+    1. Petición OPTIONS (CORS) y POST a `users-service:3000/login`.
+    2. Verificación de la respuesta del servidor.
+    3. Registro en consola del cuerpo de la respuesta para depuración.
+* **Objetivo:** Medir la latencia del servicio de autenticación bajo concurrencia.
+
+image::FotoGatling.png[]
+
 === Ejecución de Pruebas
 
 Las pruebas están integradas en el ciclo de vida de Maven dentro de la carpeta `gatling`.
@@ -127,6 +138,8 @@ Se observa una latencia estable y baja (en el rango de milisegundos), lo que ind
 image::General_view_grafana.png[]
 
 Representa el número de peticiones por segundo. Este valor complementa la métrica de Rate y permite analizar la capacidad real del sistema en tiempo continuo.
+
+image::FotoGrafana.png[]
 
 ---
 

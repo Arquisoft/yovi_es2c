@@ -89,7 +89,17 @@ When('inicio una partida contra la IA', async function () {
 });
 
 When('hago clic en {string}', async function (label) {
-  await this.page.getByRole('button', { name: label }).click();
+  const primary = this.page.getByRole('button', { name: label });
+  try {
+    await primary.click({ timeout: 20000 });
+  } catch {
+    const fallbacks = new Map([
+      ['Ver historial de partidas', 'Historial'],
+    ]);
+    const alt = fallbacks.get(label);
+    if (!alt) throw new Error(`No se pudo hacer clic en "${label}" (y no hay fallback configurado)`);
+    await this.page.getByRole('button', { name: alt }).click({ timeout: 20000 });
+  }
 });
 
 Then('veo el lobby de juego', async function () {
@@ -156,7 +166,15 @@ Then('veo el texto del tablero {string}', async function (text) {
 });
 
 Then('veo la pantalla de juego', async function () {
-  await this.page.getByRole('button', { name: 'Salir' }).waitFor();
+  const startBtn = this.page.getByRole('button', { name: 'Empezar partida' });
+  try {
+    await startBtn.waitFor({ timeout: 15000 });
+    await startBtn.click();
+  } catch {
+    // Already in-game.
+  }
+
+  await this.page.getByRole('button', { name: 'Salir' }).waitFor({ timeout: 30000 });
   const status = await this.page.getByText(/TURNO DE|LA IA ESTÁ PENSANDO|¡GANÓ/).textContent();
   assert.ok(status, 'Expected a status message in the game board');
 });

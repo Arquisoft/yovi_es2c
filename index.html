@@ -532,6 +532,16 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </ul>
 </li>
 <li><a href="#section-glossary">12. Glossary</a></li>
+<li><a href="#section-load-test">13. Load Tests</a>
+<ul class="sectlevel2">
+<li><a href="#_herramientas_y_entorno">13.1. Herramientas y Entorno</a></li>
+<li><a href="#_escenarios_de_prueba_detallados">13.2. Escenarios de Prueba Detallados</a></li>
+<li><a href="#_ejecución_de_pruebas">13.3. Ejecución de Pruebas</a></li>
+<li><a href="#_resultados_y_métricas">13.4. Resultados y Métricas</a></li>
+<li><a href="#_correlación_con_métricas_de_observabilidad_grafana_y_prometheus">13.5. Correlación con métricas de observabilidad (Grafana y Prometheus)</a></li>
+<li><a href="#_interpretación_de_resultados">13.6. Interpretación de resultados</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -3506,13 +3516,324 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 </tr>
 </tbody>
 </table>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="section-load-test">13. Load Tests</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Este documento describe la estrategia, herramientas y escenarios de pruebas de carga implementados para el sistema YOVI. El objetivo principal es mitigar los riesgos de rendimiento identificados en la arquitectura (Sección 11, Riesgo 4).</p>
+</div>
+<div class="sect2">
+<h3 id="_herramientas_y_entorno">13.1. Herramientas y Entorno</h3>
+<div class="paragraph">
+<p>Para las pruebas de carga se ha seleccionado <strong>Gatling</strong>, una herramienta de código abierto basada en Scala que permite simular miles de usuarios concurrentes con una huella de memoria mínima.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Framework:</strong> Gatling (v3.x)</p>
+</li>
+<li>
+<p><strong>Lenguaje:</strong> Scala</p>
+</li>
+<li>
+<p><strong>Gestor de dependencias:</strong> Maven</p>
+</li>
+<li>
+<p><strong>Objetivos de prueba:</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>webapp</code>: Accesibilidad y carga de recursos estáticos.</p>
+</li>
+<li>
+<p><code>users-service</code> (Puerto 3000): Registro y autenticación.</p>
+</li>
+<li>
+<p><code>gamey-service</code> (Puerto 4000): Lógica de juego y movimientos.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_escenarios_de_prueba_detallados">13.2. Escenarios de Prueba Detallados</h3>
+<div class="paragraph">
+<p>Se han implementado cuatro simulaciones que cubren los flujos de usuario más representativos. A continuación se describe el comportamiento de cada una:</p>
+</div>
+<div class="sect3">
+<h4 id="_1_registersimulation">13.2.1. 1. RegisterSimulation</h4>
+<div class="paragraph">
+<p>Simula el flujo inicial de un nuevo usuario en la plataforma.
+* <strong>Acciones:</strong>
+    1. Carga de la página principal (<code>/</code>) y recursos estáticos (<code>index.js</code>, <code>index.css</code>, <code>tri-billiard.svg</code>).
+    2. Pausa de 10 segundos para emular la introducción de datos.
+    3. Petición POST a <code>users-service:3000/register</code> con credenciales de prueba.
+* <strong>Objetivo:</strong> Validar la capacidad de creación de nuevos usuarios y la persistencia inicial en la base de datos.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_2_loginsimulation">13.2.2. 2. LoginSimulation</h4>
+<div class="paragraph">
+<p>Valida el proceso de autenticación de usuarios existentes de forma aislada.
+* <strong>Acciones:</strong>
+    1. Petición OPTIONS (CORS) y POST a <code>users-service:3000/login</code>.
+    2. Verificación de la respuesta del servidor.
+    3. Registro en consola del cuerpo de la respuesta para depuración.
+* <strong>Objetivo:</strong> Medir la latencia del servicio de autenticación bajo concurrencia.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_3_loginandplaysimulation">13.2.3. 3. LoginAndPlaySimulation</h4>
+<div class="paragraph">
+<p>Representa el escenario de uso más completo y crítico del sistema.
+* <strong>Acciones:</strong>
+    1. Carga de la aplicación web completa.
+    2. Inicio de sesión (Login) tras una pausa de 4 segundos.
+    3. Ejecución de una secuencia de movimientos de juego enviando el estado del tablero en formato YEN a <code>gamey-service:4000/v1/game/move</code>.
+    4. Pausas intercaladas de entre 4 y 5 segundos entre movimientos para simular el tiempo de reflexión del jugador.
+* <strong>Objetivo:</strong> Probar la integración de extremo a extremo entre la Webapp, el servicio de usuarios y el motor de juego GameY.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_4_recordedsimulation">13.2.4. 4. RecordedSimulation</h4>
+<div class="paragraph">
+<p>Una sesión capturada que combina registro y movimientos rápidos para estresar el sistema.
+* <strong>Acciones:</strong>
+    1. Registro de usuario inmediato.
+    2. Envío de múltiples jugadas consecutivas a <code>gamey-service</code>.
+    3. Incluye validación de pre-vuelo (OPTIONS) para asegurar que la configuración de CORS no penaliza el rendimiento.
+* <strong>Objetivo:</strong> Simular ráfagas de actividad y validar la robustez de las cabeceras de comunicación.</p>
+</div>
+<div class="paragraph">
+<p>====5. UltimaPrueba
+Sesion final de inicio de sesion</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Acciones:</strong></p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Petición OPTIONS (CORS) y POST a <code>users-service:3000/login</code>.</p>
+</li>
+<li>
+<p>Verificación de la respuesta del servidor.</p>
+</li>
+<li>
+<p>Registro en consola del cuerpo de la respuesta para depuración.</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p><strong>Objetivo:</strong> Medir la latencia del servicio de autenticación bajo concurrencia.</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/FotoGatling.png" alt="FotoGatling">
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ejecución_de_pruebas">13.3. Ejecución de Pruebas</h3>
+<div class="paragraph">
+<p>Las pruebas están integradas en el ciclo de vida de Maven dentro de la carpeta <code>gatling</code>.</p>
+</div>
+<div class="paragraph">
+<p>Para ejecutar todas las simulaciones:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">cd gatling
+./mvnw gatling:test</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Para ejecutar una simulación específica:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-bash" data-lang="bash">./mvnw gatling:test -Dgatling.simulationClass=io.gatling.demo.LoginAndPlaySimulation</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resultados_y_métricas">13.4. Resultados y Métricas</h3>
+<div class="paragraph">
+<p>Tras cada ejecución, Gatling genera un informe detallado en formato HTML en la carpeta <code>target/gatling</code>. Las métricas clave analizadas son:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Response Time (p95, p99):</strong> Tiempo de respuesta para el 95% y 99% de las peticiones. Ayuda a detectar picos de latencia.</p>
+</li>
+<li>
+<p><strong>Requests per Second (RPS):</strong> Capacidad de procesamiento del sistema (Throughput).</p>
+</li>
+<li>
+<p><strong>Success Ratio:</strong> Porcentaje de peticiones finalizadas correctamente. Un valor inferior al 100% indica errores de servidor (5xx) o timeouts bajo carga.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Estas pruebas permiten validar que la arquitectura propuesta soporta la concurrencia mínima requerida y establecen una línea base para optimizar el motor GameY.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_correlación_con_métricas_de_observabilidad_grafana_y_prometheus">13.5. Correlación con métricas de observabilidad (Grafana y Prometheus)</h3>
+<div class="paragraph">
+<p>Durante la ejecución de las pruebas de carga con Gatling, las métricas del sistema se monitorizaron en tiempo real utilizando Prometheus y Grafana. Esto permite analizar no solo los resultados simulados, sino también el comportamiento real del sistema bajo carga.</p>
+</div>
+<div class="paragraph">
+<p>Prometheus recoge automáticamente métricas HTTP del servicio <code>users</code> mediante el middleware <code>express-prom-bundle</code>, incluyendo:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Número total de peticiones (<code>http_request_duration_seconds_count</code>)</p>
+</li>
+<li>
+<p>Latencia de las peticiones (<code>http_request_duration_seconds_bucket</code>)</p>
+</li>
+<li>
+<p>Códigos de estado HTTP (2xx, 4xx, 5xx)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Estas métricas se visualizan en Grafana mediante un dashboard que implementa las métricas RED (Rate, Errors, Duration):</p>
+</div>
+<div class="sect3">
+<h4 id="_rate_requests_per_minute">13.5.1. Rate &#174;: Requests per minute</h4>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Rate_grafana.png" alt="Rate grafana">
+</div>
+</div>
+<div class="paragraph">
+<p>Representa el número de peticiones procesadas por minuto. Durante la ejecución de Gatling se observa un incremento en el tráfico coincidiendo con los escenarios simulados, lo que confirma que la carga se está generando correctamente.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_errors_e_4xx_vs_5xx">13.5.2. Errors (E): 4xx vs 5xx</h4>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Errors_grafana.png" alt="Errors grafana">
+</div>
+</div>
+<div class="paragraph">
+<p>Muestra el número de errores diferenciando entre:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>4xx:</strong> errores del cliente (por ejemplo, peticiones mal formadas)</p>
+</li>
+<li>
+<p><strong>5xx:</strong> errores del servidor</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>En las pruebas realizadas, los errores observados corresponden principalmente a códigos 4xx (400 y 415), lo cual es consistente con los resultados de Gatling y sugiere problemas en el formato de las peticiones más que fallos internos del sistema.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_duration_d_latencia_de_las_peticiones">13.5.3. Duration (D): Latencia de las peticiones</h4>
+<div class="imageblock">
+<div class="content">
+<img src="./images/Duration_grafana.png" alt="Duration grafana">
+</div>
+</div>
+<div class="paragraph">
+<p>Se analizan tres métricas clave:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>p90:</strong> latencia del 90% de las peticiones</p>
+</li>
+<li>
+<p><strong>p50 (median):</strong> latencia media</p>
+</li>
+<li>
+<p><strong>avg:</strong> promedio global</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Se observa una latencia estable y baja (en el rango de milisegundos), lo que indica que el sistema responde de forma eficiente bajo la carga generada.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_throughput_rps">13.5.4. Throughput (RPS)</h4>
+<div class="imageblock">
+<div class="content">
+<img src="./images/General_view_grafana.png" alt="General view grafana">
+</div>
+</div>
+<div class="paragraph">
+<p>Representa el número de peticiones por segundo. Este valor complementa la métrica de Rate y permite analizar la capacidad real del sistema en tiempo continuo.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/FotoGrafana.png" alt="FotoGrafana">
+</div>
+</div>
+<hr>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_interpretación_de_resultados">13.6. Interpretación de resultados</h3>
+<div class="paragraph">
+<p>La combinación de Gatling (carga simulada) con Prometheus y Grafana (observabilidad real) permite obtener una visión completa del sistema:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Gatling indica <strong>qué carga se genera</strong></p>
+</li>
+<li>
+<p>Grafana muestra <strong>cómo responde el sistema</strong></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>A partir de los resultados obtenidos:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>El sistema es capaz de procesar múltiples peticiones concurrentes sin degradación significativa del rendimiento.</p>
+</li>
+<li>
+<p>La latencia se mantiene estable incluso durante picos de carga.</p>
+</li>
+<li>
+<p>Los errores detectados son principalmente de tipo cliente (4xx), no del servidor.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Esto valida que la arquitectura es adecuada para los niveles de carga probados, aunque se recomienda mejorar la validación de entrada para reducir errores 4xx.</p>
+</div>
+</div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-02-09 13:04:57 +0100
+Last updated 2026-04-26 15:04:36 +0200
 </div>
 </div>
 </body>

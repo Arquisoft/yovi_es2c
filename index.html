@@ -2066,24 +2066,52 @@ tiempo de ejecución, nunca se incluyen en el código ni en las imágenes Docker
 <div class="sect2">
 <h3 id="_observability_métricas_y_monitorización">8.5. Observability: Métricas y monitorización</h3>
 <div class="paragraph">
-<p>El sistema incluye un stack de observabilidad completo:</p>
+<p>El sistema incluye un stack de observabilidad completo basado en Prometheus y Grafana, que permite monitorizar el comportamiento del sistema en tiempo real.</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p><strong>Prometheus</strong> recoge métricas HTTP del servicio <code>users</code> mediante el middleware
-<code>express-prom-bundle</code>, que expone automáticamente métricas de latencia,
-conteo de peticiones y códigos de respuesta por método y ruta.</p>
+<p><strong>Prometheus</strong> recoge métricas HTTP del servicio <code>users</code> mediante el middleware <code>express-prom-bundle</code>, que expone automáticamente métricas de latencia, número de peticiones y códigos de respuesta, segmentadas por método HTTP y ruta.</p>
 </li>
 <li>
-<p><strong>Grafana</strong> visualiza esas métricas en dashboards configurados mediante
-provisioning automático desde <code>./users/monitoring/grafana/provisioning</code>.</p>
+<p><strong>Grafana</strong> visualiza estas métricas mediante dashboards configurados automáticamente a través de provisioning desde <code>./users/monitoring/grafana/provisioning</code>.</p>
 </li>
 <li>
-<p>Ambos servicios se despliegan como contenedores Docker dentro del mismo
-<code>docker-compose.yml</code>.</p>
+<p>Ambos servicios se despliegan como contenedores Docker dentro del mismo <code>docker-compose.yml</code>, lo que permite su integración directa en el entorno de desarrollo.</p>
 </li>
 </ul>
+</div>
+<div class="paragraph">
+<p>El sistema monitoriza tres métricas clave que permiten evaluar su rendimiento:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Rate &#174; </strong>: número de peticiones por minuto, utilizado para medir la carga del sistema y su actividad.</p>
+</li>
+<li>
+<p><strong>Errors (E) </strong>: número de peticiones fallidas (códigos HTTP 5xx), que permite detectar problemas internos del sistema.</p>
+</li>
+<li>
+<p><strong>Duration (D) </strong>: tiempo de respuesta de las peticiones, calculado mediante:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Tiempo medio (average)</p>
+</li>
+<li>
+<p>Mediana</p>
+</li>
+<li>
+<p>Percentil 90 (p90)</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Estas métricas permiten analizar el comportamiento del sistema bajo distintas condiciones y facilitan la detección de problemas de rendimiento, cuellos de botella o fallos en tiempo de ejecución.</p>
 </div>
 <hr>
 </div>
@@ -3484,7 +3512,7 @@ more precisely down to a level of scenarios that can be discussed and evaluated.
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-02-20 18:34:09 +0100
+Last updated 2026-02-09 13:04:57 +0100
 </div>
 </div>
 </body>

@@ -54,7 +54,7 @@ El proyecto esta dividido en varios modulos:
 
 ## Enlaces utiles
 
-* Aplicacion desplegada: [http://13.49.237.46/](http://13.49.237.46/)
+* Aplicacion desplegada: [http://100.49.176.54/](http://100.49.176.54/)
 * Documentacion: [https://arquisoft.github.io/yovi_es2c/](https://arquisoft.github.io/yovi_es2c/)
 * API docs de usuarios: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 * API de Gamey: [http://localhost:4000](http://localhost:4000)

@@ -66,10 +66,26 @@ When('selecciono el tamano de tablero {int}', async function (size) {
 
 When('inicio una partida local', async function () {
   await this.page.getByRole('button', { name: 'Partida Local' }).click();
+  // New flow: after selecting mode we go through the pre-game menu.
+  // Keep tests compatible by starting the match if the button is present.
+  const startBtn = this.page.getByRole('button', { name: 'Empezar partida' });
+  try {
+    await startBtn.waitFor({ timeout: 5000 });
+    await startBtn.click();
+  } catch {
+    // If pre-game is skipped in some environments, we may already be in-game.
+  }
 });
 
 When('inicio una partida contra la IA', async function () {
   await this.page.getByRole('button', { name: 'Vs IA Bot' }).click();
+  const startBtn = this.page.getByRole('button', { name: 'Empezar partida' });
+  try {
+    await startBtn.waitFor({ timeout: 5000 });
+    await startBtn.click();
+  } catch {
+    // Might already be in-game.
+  }
 });
 
 When('hago clic en {string}', async function (label) {

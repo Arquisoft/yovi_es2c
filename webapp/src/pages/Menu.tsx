@@ -246,6 +246,7 @@ export default function Menu({
                     variant="outlined"
                     startIcon={<History />}
                     onClick={onVerHistorial}
+                    aria-label="Ver historial de partidas"
                     sx={{
                         borderColor: 'rgba(255,255,255,0.2)',
                         color: 'rgba(255,255,255,0.7)',

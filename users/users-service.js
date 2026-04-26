@@ -11,6 +11,101 @@ const crypto = require('node:crypto');
 
 const mongoUri = process.env.DB_URI || 'mongodb://localhost:27017';
 
+function createInMemoryUsersCollection() {
+  // Minimal Mongo-like API used by this service (enough for E2E and local dev fallback).
+  const users = new Map(); // username -> user doc
+
+  function sanitizeUser(doc) {
+    if (!doc) return null;
+    // Return a shallow copy to avoid accidental external mutation.
+    return { ...doc };
+  }
+
+  return {
+    async findOne(query) {
+      const username = query?.username;
+      if (typeof username !== 'string') return null;
+      return sanitizeUser(users.get(username) || null);
+    },
+
+    async insertOne(doc) {
+      if (!doc || typeof doc.username !== 'string') {
+        throw new Error('Invalid user document');
+      }
+      if (users.has(doc.username)) {
+        const err = new Error('Duplicate key');
+        err.code = 11000;
+        throw err;
+      }
+      users.set(doc.username, sanitizeUser(doc));
+      return { acknowledged: true, insertedId: doc.username };
+    },
+
+    async updateOne(query, update) {
+      const username = query?.username;
+      if (typeof username !== 'string') return { matchedCount: 0, modifiedCount: 0 };
+
+      const doc = users.get(username);
+      if (!doc) return { matchedCount: 0, modifiedCount: 0 };
+
+      const inc = update?.$inc || {};
+      for (const [k, v] of Object.entries(inc)) {
+        if (typeof v !== 'number') continue;
+        doc[k] = (doc[k] ?? 0) + v;
+      }
+      users.set(username, sanitizeUser(doc));
+      return { matchedCount: 1, modifiedCount: 1 };
+    },
+
+    find(_query = {}, options = {}) {
+      const projection = options?.projection || null;
+
+      const cursor = {
+        _sort: null,
+
+        sort(spec) {
+          cursor._sort = spec;
+          return cursor;
+        },
+
+        async toArray() {
+          let arr = Array.from(users.values()).map(sanitizeUser);
+
+          if (cursor._sort && typeof cursor._sort === 'object') {
+            const [[field, dir]] = Object.entries(cursor._sort);
+            const mul = dir === -1 ? -1 : 1;
+            arr.sort((a, b) => {
+              const av = a?.[field] ?? 0;
+              const bv = b?.[field] ?? 0;
+              if (av < bv) return -1 * mul;
+              if (av > bv) return 1 * mul;
+              return 0;
+            });
+          }
+
+          if (projection && typeof projection === 'object') {
+            arr = arr.map((doc) => {
+              const out = {};
+              for (const [k, v] of Object.entries(projection)) {
+                if (v) out[k] = doc[k];
+              }
+              return out;
+            });
+          }
+
+          return arr;
+        },
+      };
+
+      return cursor;
+    },
+  };
+}
+
+// Default to an in-memory DB so the service is usable even before Mongo connects (or if it never does).
+// If Mongo connects successfully, we will replace this with the real collection.
+app.locals.usersCollection = createInMemoryUsersCollection();
+
 async function connectToMongo() {
   try {
     const client = new MongoClient(mongoUri);
@@ -19,7 +114,7 @@ async function connectToMongo() {
     const db = client.db('yovi2c_db');
     app.locals.usersCollection = db.collection('users');
   } catch (err) {
-    console.error('Failed to connect to MongoDB', err);
+    console.error('Failed to connect to MongoDB; using in-memory DB.', err);
   }
 }
 

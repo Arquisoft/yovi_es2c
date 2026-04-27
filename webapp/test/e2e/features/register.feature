@@ -32,6 +32,7 @@ Feature: Autenticacion y flujo base
     When selecciono el tamano de tablero 9
     Then veo el texto del tablero "Lados del triángulo: 9 celdas"
     When inicio una partida local
+    And confirmo la partida
     Then veo la pantalla de juego
 
   Scenario: Registro falla si las contraseñas no coinciden

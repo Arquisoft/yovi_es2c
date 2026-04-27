@@ -253,12 +253,13 @@ export default function Menu({
                         '&:hover': { borderColor: '#7c4dff', color: '#7c4dff' },
                     }}
                 >
-                    Historial
+                    Ver historial de partidas
                 </Button>
                 <Button
                     variant="outlined"
                     startIcon={<Leaderboard />}
                     onClick={onVerRanking}
+                    aria-label="Ver ranking global"
                     sx={{
                         borderColor: 'rgba(255,255,255,0.2)',
                         color: 'rgba(255,255,255,0.7)',
@@ -271,6 +272,7 @@ export default function Menu({
                     variant="outlined"
                     startIcon={<BarChart />}
                     onClick={onVerEstadisticas}
+                    aria-label="Ver mis estadisticas"
                     sx={{
                         borderColor: 'rgba(255,255,255,0.2)',
                         color: 'rgba(255,255,255,0.7)',

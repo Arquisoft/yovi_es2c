@@ -17,19 +17,29 @@ import { DEFAULT_AVATAR_ID } from './avatars';
 
 type View = 'inicio' | 'menu' | 'pregame' | 'game' | 'historial' | 'ranking' | 'perfil';
 const AVATAR_STORAGE_KEY = 'yovi.selectedAvatar';
+const USERNAME_STORAGE_KEY = 'yovi.username';
+const VIEW_STORAGE_KEY = 'yovi.currentView';
 
-function readStoredAvatar(): string {
-  if (typeof window === 'undefined') return DEFAULT_AVATAR_ID;
+function readStoredValue(key: string, defaultValue: string): string {
+  if (typeof window === 'undefined') return defaultValue;
   const storage = window.localStorage;
-  if (!storage || typeof storage.getItem !== 'function') return DEFAULT_AVATAR_ID;
-  return storage.getItem(AVATAR_STORAGE_KEY) || DEFAULT_AVATAR_ID;
+  if (!storage || typeof storage.getItem !== 'function') return defaultValue;
+  return storage.getItem(key) || defaultValue;
 }
 
-function writeStoredAvatar(avatarId: string): void {
+function writeStoredValue(key: string, value: string): void {
   if (typeof window === 'undefined') return;
   const storage = window.localStorage;
   if (!storage || typeof storage.setItem !== 'function') return;
-  storage.setItem(AVATAR_STORAGE_KEY, avatarId);
+  storage.setItem(key, value);
+}
+
+function clearStoredSession(): void {
+  if (typeof window === 'undefined') return;
+  const storage = window.localStorage;
+  if (!storage) return;
+  storage.removeItem(USERNAME_STORAGE_KEY);
+  storage.removeItem(VIEW_STORAGE_KEY);
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
@@ -42,11 +52,15 @@ function writeStoredAvatar(avatarId: string): void {
 export default function App() {
 
   // Vista activa actualmente
-  const [view, setView] = useState<View>('inicio');
+  const [view, setView] = useState<View>(() => {
+    const savedView = readStoredValue(VIEW_STORAGE_KEY, 'inicio') as View;
+    // No queremos restaurar la vista de juego directamente si se recarga (mejor volver al menú)
+    return (savedView === 'game' || savedView === 'pregame') ? 'menu' : savedView;
+  });
 
   // Nombre del jugador autenticado
-  const [username, setUsername] = useState('Jugador');
-  const [avatarId, setAvatarId] = useState(readStoredAvatar);
+  const [username, setUsername] = useState(() => readStoredValue(USERNAME_STORAGE_KEY, 'Jugador'));
+  const [avatarId, setAvatarId] = useState(() => readStoredValue(AVATAR_STORAGE_KEY, DEFAULT_AVATAR_ID));
 
   // Modo de juego seleccionado: 'local' (2 jugadores) o 'bot' (vs IA)
   const [gameMode, setGameMode] = useState<GameMode>('local');
@@ -64,8 +78,18 @@ export default function App() {
   const [rankingTab, setRankingTab] = useState(0);
 
   useEffect(() => {
-    writeStoredAvatar(avatarId);
+    writeStoredValue(AVATAR_STORAGE_KEY, avatarId);
   }, [avatarId]);
+
+  useEffect(() => {
+    if (username !== 'Jugador') {
+      writeStoredValue(USERNAME_STORAGE_KEY, username);
+    }
+  }, [username]);
+
+  useEffect(() => {
+    writeStoredValue(VIEW_STORAGE_KEY, view);
+  }, [view]);
 
   // ── Handlers de navegación ────────────────────────────────────────────────
 
@@ -75,6 +99,7 @@ export default function App() {
    */
   const logout = () => {
     setUsername('Jugador');
+    clearStoredSession();
     setInicioAuthMode('register');
     setView('inicio');
   };

@@ -47,46 +47,39 @@ export default function FadeView({ children, viewKey }: FadeViewProps) {
 
     useEffect(() => {
         if (prevKey.current === viewKey) {
-            // ── Primera carga ──────────────────────────────────────────────
-            // El componente arranca en 'entering' (invisible) desde el estado
-            // inicial, así que solo necesitamos pasar a 'visible' con un pequeño
-            // delay para que el navegador pinte el estado invisible primero
-            // y la animación de entrada sea visible.
-            t1.current = setTimeout(() => setPhase('visible'), 100);
-            return () => clearTimeout(t1.current);
+            // Si solo han cambiado los children pero no la vista,
+            // nos aseguramos de actualizar los hijos mostrados sin disparar animación.
+            setDisplayedChildren(children);
+            setPhase('visible');
+            return;
         }
 
         // ── Cambio de vista ────────────────────────────────────────────────
         prevKey.current = viewKey;
 
         // 1. Inmediatamente: iniciamos la salida con los children ANTERIORES
-        //    todavía en pantalla. El usuario ve cómo la vista actual se desvanece.
-        t1.current = setTimeout(() => setPhase('leaving'), 0);
+        setPhase('leaving');
 
-        // 2. A los 350ms: la salida ha terminado. Ahora sí intercambiamos
+        // 2. A los 300ms: la salida ha terminado. Ahora sí intercambiamos
         //    el contenido por el nuevo y lo ocultamos momentáneamente.
-        t2.current = setTimeout(() => {
+        t1.current = setTimeout(() => {
             setDisplayedChildren(children);
             setPhase('hidden');
-        }, 350);
 
-        // 3. A los 420ms: iniciamos la entrada del nuevo contenido.
-        //    Primero pasamos a 'entering' y tras 80ms a 'visible'
-        //    para que el navegador procese el estado inicial de la animación.
-        t3.current = setTimeout(() => {
-            setPhase('entering');
-            setTimeout(() => setPhase('visible'), 80);
-        }, 420);
+            // 3. Justo después: iniciamos la entrada del nuevo contenido.
+            t2.current = setTimeout(() => {
+                setPhase('entering');
+                t3.current = setTimeout(() => setPhase('visible'), 50);
+            }, 50);
+        }, 300);
 
-        // Cleanup: cancelamos todos los timers pendientes si viewKey vuelve
-        // a cambiar antes de que la animación anterior haya terminado,
-        // o si el componente se desmonta.
+        // Cleanup: cancelamos todos los timers pendientes
         return () => {
             clearTimeout(t1.current);
             clearTimeout(t2.current);
             clearTimeout(t3.current);
         };
-    }, [children, viewKey]);
+    }, [viewKey]); // <--- QUITAMOS 'children' de las dependencias
 
     // ── Estilos por fase ───────────────────────────────────────────────────────
 

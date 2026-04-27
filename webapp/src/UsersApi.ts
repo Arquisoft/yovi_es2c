@@ -10,14 +10,18 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
  */
 export async function recordGameResult(username: string, won: boolean): Promise<void> {
     try {
-        await fetch(`${API_URL}/game/result`, {
+        const res = await fetch(`${API_URL}/game/result`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, won }),
         });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            console.error('Failed to record game result:', data.error || res.statusText);
+        }
     } catch (err) {
         // No bloqueamos el juego si falla el registro
-        console.warn('Could not record game result:', err);
+        console.warn('Could not record game result (network error):', err);
     }
 }
 

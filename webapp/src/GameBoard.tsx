@@ -182,7 +182,9 @@ export default function GameBoard({
             setYen(result.yen);
             if (result.status === 'finished' && result.winner !== null) {
                 setWinner(result.winner);
-                await recordGameResult(username, result.winner === 0);
+                if (mode === 'bot') {
+                    await recordGameResult(username, result.winner === 0);
+                }
             }
         } catch (e) {
             setError(`Error IA: ${getErrorMessage(e)}`);

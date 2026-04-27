@@ -245,16 +245,12 @@ async function loginHandler(req, res) {
 // ── Registrar resultado de partida ──────────────────────────────────────────
 
 async function gameResultHandler(req, res) {
-  // 1. Extraemos los datos del cuerpo de la petición
-  const { username: rawUsername, won } = req.body;
+  // 1. Extraemos y limpiamos los datos
+  const rawUsername = req.body?.username?.trim();
+  const won = req.body?.won;
 
-  // 2. Validación estricta (Sanitización lógica)
-  // Esto asegura que 'rawUsername' sea un string y cumpla el formato esperado
-  if (
-      typeof rawUsername !== 'string' ||
-      !/^[a-zA-Z0-9_]{3,30}$/.test(rawUsername) ||
-      typeof won !== 'boolean'
-  ) {
+  // 2. Validación consistente con el registro
+  if (!rawUsername || typeof won !== 'boolean') {
     return res.status(400).json({ error: 'username and won (boolean) are required' });
   }
 

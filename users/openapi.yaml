@@ -1,9 +1,23 @@
 openapi: 3.0.0
 info:
-  title: User Service API
+  title: Yovi API
   version: 1.0.0
-  description: API for authentication, user creation and ranking
+  description: API for authentication, user creation, ranking and game engine
+
+servers:
+  - url: http://localhost:3000
+    description: Users service (local)
+  - url: http://localhost:4000
+    description: Gamey service (local)
+  - url: http://100.49.176.54:3000
+    description: Users service (production)
+  - url: http://100.49.176.54:4000
+    description: Gamey service (production)
+
 paths:
+
+  # ── Users service (port 3000) ────────────────────────────────────────────────
+
   /register:
     post:
       summary: Register a new user
@@ -178,3 +192,399 @@ paths:
                           example: 83
         '500':
           description: Database not initialized
+
+  # ── Gamey service (port 4000) ────────────────────────────────────────────────
+
+  /status:
+    get:
+      summary: Health check
+      description: Returns OK if the gamey server is running.
+      responses:
+        '200':
+          description: Server is running
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+
+  /play:
+    get:
+      summary: Get bot move (competition API)
+      description: >
+        Stateless endpoint for the competition. Receives a game state in YEN
+        format and returns the bot's chosen move. Does not require a session
+        or database.
+      parameters:
+        - name: position
+          in: query
+          required: true
+          description: Current game state in YEN format (JSON).
+          schema:
+            type: string
+          example: '{"size":3,"turn":0,"players":["B","R"],"layout":"./../...","variant":"standard"}'
+        - name: bot_id
+          in: query
+          required: false
+          description: Bot identifier. Defaults to "side_bot" if not specified.
+          schema:
+            type: string
+            enum:
+              - random_bot
+              - side_bot
+              - side_bot_hard
+              - center_bot
+              - corner_bot
+              - blocker_bot
+              - bridge_bot
+          example: side_bot
+      responses:
+        '200':
+          description: Bot move chosen successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    description: Placement move
+                    properties:
+                      coords:
+                        type: object
+                        properties:
+                          x:
+                            type: integer
+                            example: 1
+                          y:
+                            type: integer
+                            example: 1
+                          z:
+                            type: integer
+                            example: 0
+                  - type: object
+                    description: Special action
+                    properties:
+                      action:
+                        type: string
+                        enum:
+                          - swap
+                          - resign
+                        example: swap
+        '400':
+          description: Invalid YEN format or bot not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  bot_id:
+                    type: string
+                    example: side_bot
+                  api_version:
+                    type: string
+                    nullable: true
+                    example: null
+                  message:
+                    type: string
+                    example: Invalid YEN format
+
+  /v1/ybot/choose/{bot_id}:
+    post:
+      summary: Request a move from a bot
+      description: Ask a specific bot to choose its next move given a YEN game state.
+      parameters:
+        - name: bot_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: random_bot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                yen:
+                  type: object
+                  description: Current game state in YEN format.
+      responses:
+        '200':
+          description: Bot move selected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_version:
+                    type: string
+                    example: v1
+                  bot_id:
+                    type: string
+                    example: random_bot
+                  coords:
+                    type: object
+                    properties:
+                      x:
+                        type: integer
+                      y:
+                        type: integer
+                      z:
+                        type: integer
+        '400':
+          description: Invalid YEN or bot not found
+
+  /v1/game/move:
+    post:
+      summary: Apply a human move
+      description: Applies a move to the current game state and returns the updated state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - yen
+                - x
+                - y
+                - z
+              properties:
+                yen:
+                  type: object
+                  description: Current game state in YEN format.
+                x:
+                  type: integer
+                  example: 1
+                y:
+                  type: integer
+                  example: 1
+                z:
+                  type: integer
+                  example: 0
+                username:
+                  type: string
+                  example: testuser
+                duration_seconds:
+                  type: integer
+                  example: 42
+      responses:
+        '200':
+          description: Move applied successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  yen:
+                    type: object
+                  status:
+                    type: string
+                    enum:
+                      - ongoing
+                      - finished
+                  winner:
+                    type: integer
+                    nullable: true
+                    example: 0
+                  next_player:
+                    type: integer
+                    nullable: true
+                    example: 1
+        '400':
+          description: Invalid move or YEN format
+
+  /v1/game/history:
+    get:
+      summary: Get game history
+      description: Returns the last 50 finished games.
+      responses:
+        '200':
+          description: History retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_version:
+                    type: string
+                    example: v1
+                  games:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        winner:
+                          type: string
+                          nullable: true
+                          example: testuser
+                        board_size:
+                          type: integer
+                          example: 7
+                        moves_count:
+                          type: integer
+                          example: 15
+                        timestamp:
+                          type: integer
+                          example: 1700000000
+                        duration_seconds:
+                          type: integer
+                          example: 120
+        '400':
+          description: Database error
+
+  /v1/game/session:
+    post:
+      summary: Create a game session
+      description: >
+        Creates a new game session between an external bot and an internal bot.
+        If external_player is 1, the internal bot plays first automatically.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - internal_bot_id
+              properties:
+                board_size:
+                  type: integer
+                  example: 7
+                variant:
+                  type: string
+                  enum:
+                    - standard
+                    - why_not
+                  default: standard
+                external_player:
+                  type: integer
+                  enum:
+                    - 0
+                    - 1
+                  default: 0
+                internal_bot_id:
+                  type: string
+                  example: random_bot
+      responses:
+        '200':
+          description: Session created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                    example: a1b2c3d4-e5f6-...
+                  yen:
+                    type: object
+                  external_player:
+                    type: integer
+                  internal_bot_id:
+                    type: string
+                  status:
+                    type: string
+                    enum:
+                      - ongoing
+                      - finished
+                  winner:
+                    type: integer
+                    nullable: true
+                  next_player:
+                    type: integer
+                    nullable: true
+        '400':
+          description: Invalid bot or external_player
+
+  /v1/game/session/{session_id}:
+    get:
+      summary: Get session state
+      description: Returns the current state of a game session.
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: a1b2c3d4-e5f6-...
+      responses:
+        '200':
+          description: Session state retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                  yen:
+                    type: object
+                  external_player:
+                    type: integer
+                  internal_bot_id:
+                    type: string
+                  status:
+                    type: string
+                  winner:
+                    type: integer
+                    nullable: true
+                  next_player:
+                    type: integer
+                    nullable: true
+        '400':
+          description: Session not found
+
+  /v1/game/session/{session_id}/move:
+    post:
+      summary: Make a move in a session
+      description: >
+        Submits the external bot's move. The internal bot responds automatically.
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - x
+                - y
+                - z
+              properties:
+                x:
+                  type: integer
+                  example: 2
+                y:
+                  type: integer
+                  example: 1
+                z:
+                  type: integer
+                  example: 1
+      responses:
+        '200':
+          description: Move applied and internal bot responded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session_id:
+                    type: string
+                  yen:
+                    type: object
+                  status:
+                    type: string
+                  winner:
+                    type: integer
+                    nullable: true
+                  next_player:
+                    type: integer
+                    nullable: true
+        '400':
+          description: Invalid move or session not found

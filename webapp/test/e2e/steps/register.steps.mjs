@@ -66,15 +66,6 @@ When('selecciono el tamano de tablero {int}', async function (size) {
 
 When('inicio una partida local', async function () {
   await this.page.getByRole('button', { name: 'Partida Local' }).click();
-  // New flow: after selecting mode we go through the pre-game menu.
-  // Keep tests compatible by starting the match if the button is present.
-  const startBtn = this.page.getByRole('button', { name: 'Empezar partida' });
-  try {
-    await startBtn.waitFor({ timeout: 5000 });
-    await startBtn.click();
-  } catch {
-    // If pre-game is skipped in some environments, we may already be in-game.
-  }
 });
 
 When('inicio una partida contra la IA', async function () {
@@ -88,6 +79,12 @@ When('inicio una partida contra la IA', async function () {
   }
 });
 
+When('confirmo la partida', async function () {
+  await this.page
+    .getByRole('button', { name: /empezar partida/i })
+    .click();
+});
+
 When('hago clic en {string}', async function (label) {
   const primary = this.page.getByRole('button', { name: label });
   try {
@@ -95,6 +92,8 @@ When('hago clic en {string}', async function (label) {
   } catch {
     const fallbacks = new Map([
       ['Ver historial de partidas', 'Historial'],
+      ['Ver mis estadisticas', 'Mis Estadísticas'],
+      ['Ver mis estadísticas', 'Mis Estadísticas'],
     ]);
     const alt = fallbacks.get(label);
     if (!alt) throw new Error(`No se pudo hacer clic en "${label}" (y no hay fallback configurado)`);
@@ -165,15 +164,7 @@ Then('veo el texto del tablero {string}', async function (text) {
   await this.page.getByText(text, { exact: true }).waitFor();
 });
 
-Then('veo la pantalla de juego', async function () {
-  const startBtn = this.page.getByRole('button', { name: 'Empezar partida' });
-  try {
-    await startBtn.waitFor({ timeout: 15000 });
-    await startBtn.click();
-  } catch {
-    // Already in-game.
-  }
-
+Then('veo la pantalla de juego', { timeout: 60_000 }, async function () {
   await this.page.getByRole('button', { name: 'Salir' }).waitFor({ timeout: 30000 });
   const status = await this.page.getByText(/TURNO DE|LA IA ESTÁ PENSANDO|¡GANÓ/).textContent();
   assert.ok(status, 'Expected a status message in the game board');

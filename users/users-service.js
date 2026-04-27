@@ -328,7 +328,7 @@ app.post('/register', registerHandler);
 app.post('/login', loginHandler);
 
 //Nuevas para el ranking
-app.post('/game/result', gameResultHandler);  // 👈 nuevo
+app.post('/game/result', gameResultHandler);  //nuevo
 app.get('/ranking', rankingHandler);
 
 // Alias de compatibilidad con versiones previas del frontend.

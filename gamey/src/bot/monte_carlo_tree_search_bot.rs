@@ -5,9 +5,9 @@ use rand::prelude::IndexedRandom;
 /// Bot basado en Monte Carlo Tree Search (MCTS) con UCT.
 ///
 /// Estrategia:
-/// 1. Si puede ganar inmediatamente → gana.
-/// 2. Si el rival puede ganar → bloquea.
-/// 3. Si no → usa MCTS para decidir la mejor jugada.
+/// 1. Si puede ganar inmediatamente -> gana.
+/// 2. Si el rival puede ganar -> bloquea.
+/// 3. Si no -> usa MCTS para decidir la mejor jugada.
 pub struct MctsBot {
     iterations: usize,   // Número de simulaciones
     exploration: f64,    // Constante de exploración (UCT)

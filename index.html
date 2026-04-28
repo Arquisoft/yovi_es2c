@@ -542,6 +542,17 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_interpretación_de_resultados">13.6. Interpretación de resultados</a></li>
 </ul>
 </li>
+<li><a href="#section-test-report">14. Informe de Pruebas</a>
+<ul class="sectlevel2">
+<li><a href="#_tipos_de_prueba_ejemplos">14.1. Tipos de prueba (ejemplos)</a></li>
+<li><a href="#_pruebas_unitarias">14.2. Pruebas unitarias</a></li>
+<li><a href="#_pruebas_de_aceptacion_e2e">14.3. Pruebas de aceptacion (E2E)</a></li>
+<li><a href="#_resultado_de_cobertura_de_codigo">14.4. Resultado de cobertura de codigo</a></li>
+<li><a href="#_pruebas_de_carga">14.5. Pruebas de carga</a></li>
+<li><a href="#_checks_de_calidad_linting">14.6. Checks de calidad (linting)</a></li>
+<li><a href="#_casos_de_prueba_implementados_ejemplos">14.7. Casos de prueba implementados (ejemplos)</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -3826,6 +3837,249 @@ Sesion final de inicio de sesion</p>
 <div class="paragraph">
 <p>Esto valida que la arquitectura es adecuada para los niveles de carga probados, aunque se recomienda mejorar la validación de entrada para reducir errores 4xx.</p>
 </div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="section-test-report">14. Informe de Pruebas</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Este capitulo resume la estrategia de pruebas del proyecto, las categorias principales y las herramientas utilizadas.
+El objetivo es tener una vision general (que se prueba y por que) y una guia rapida para ejecutar las pruebas de forma repetible.</p>
+</div>
+<div class="sect2">
+<h3 id="_tipos_de_prueba_ejemplos">14.1. Tipos de prueba (ejemplos)</h3>
+<div class="paragraph">
+<p>En el proyecto se utilizan varias categorias de prueba. A continuacion se listan las mas relevantes, con ejemplos y el objetivo de cada una:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Unitarias:</strong> validan logica aislada (funciones, componentes) sin dependencias externas.</p>
+</li>
+<li>
+<p><strong>Integracion (ligera):</strong> validan la integracion entre modulos dentro del mismo servicio (por ejemplo endpoints Express con <code>supertest</code>, o componentes React con fetch simulado).</p>
+</li>
+<li>
+<p><strong>Aceptacion / E2E:</strong> validan flujos completos de usuario (UI + servicios) desde el navegador.</p>
+</li>
+<li>
+<p><strong>Cobertura:</strong> metricas que cuantifican el codigo ejecutado por las pruebas (principalmente unitarias/integracion).</p>
+</li>
+<li>
+<p><strong>Carga:</strong> validan rendimiento bajo concurrencia (latencia, throughput y errores) con escenarios representativos.</p>
+</li>
+<li>
+<p><strong>Checks de calidad (no son pruebas funcionales):</strong> linting/analisis estatico para mantener consistencia y reducir defectos (por ejemplo ESLint).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pruebas_unitarias">14.2. Pruebas unitarias</h3>
+<div class="paragraph">
+<p>Las pruebas unitarias verifican componentes aislados (funciones, modulos y componentes de UI) sin depender de servicios externos.
+Se ejecutan localmente y en CI para prevenir regresiones.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Webapp (frontend)</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Herramienta:</strong> Vitest + Testing Library.</p>
+</li>
+<li>
+<p><strong>Ubicacion:</strong> <code>webapp/src/<em>tests</em>/</code>.</p>
+</li>
+<li>
+<p><strong>Ejecucion:</strong> <code>cd webapp &amp;&amp; npm run test</code>.</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Users service (backend)</strong>:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Herramienta:</strong> Vitest (con <code>supertest</code> para endpoints HTTP cuando aplica).</p>
+</li>
+<li>
+<p><strong>Ubicacion:</strong> <code>users/<em>tests</em>/</code>.</p>
+</li>
+<li>
+<p><strong>Ejecucion:</strong> <code>cd users &amp;&amp; npm run test</code>.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pruebas_de_aceptacion_e2e">14.3. Pruebas de aceptacion (E2E)</h3>
+<div class="paragraph">
+<p>Las pruebas de aceptacion validan flujos completos desde la perspectiva del usuario (navegacion, autenticacion, arranque de partida, etc.).
+Estas pruebas ejercitan la integracion entre la webapp y los servicios necesarios.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Herramientas:</strong> Cucumber (<code>@cucumber/cucumber</code>) + Playwright.</p>
+</li>
+<li>
+<p><strong>Ubicacion:</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Features: <code>webapp/test/e2e/features/</code></p>
+</li>
+<li>
+<p>Steps/support: <code>webapp/test/e2e/steps/</code> y <code>webapp/test/e2e/support/</code></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Ejecucion:</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Instalar navegadores (una vez): <code>cd webapp &amp;&amp; npm run test:e2e:install-browsers</code></p>
+</li>
+<li>
+<p>Ejecutar E2E: <code>cd webapp &amp;&amp; npm run test:e2e</code></p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resultado_de_cobertura_de_codigo">14.4. Resultado de cobertura de codigo</h3>
+<div class="paragraph">
+<p>La cobertura permite cuantificar que porcentaje del codigo queda ejecutado por las pruebas (principalmente unitarias).
+Como referencia, en la ultima ejecucion se obtuvo una cobertura global del <strong>82.53%</strong>.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="./images/imagen_coverage.png" alt="Cobertura de codigo">
+</div>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Webapp:</strong> <code>cd webapp &amp;&amp; npm run test:coverage</code></p>
+</li>
+<li>
+<p><strong>Users:</strong> <code>cd users &amp;&amp; npm run test:coverage</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Los comandos anteriores generan un reporte de cobertura (por ejemplo HTML/LCOV) en la carpeta <code>coverage/</code> del modulo correspondiente.</p>
+</div>
+<div class="paragraph">
+<p>Ademas, se ha superado el <strong>Quality Gate</strong> (SonarQube) sin duplicacion de codigo detectada.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_pruebas_de_carga">14.5. Pruebas de carga</h3>
+<div class="paragraph">
+<p>Las pruebas de carga validan rendimiento y comportamiento bajo concurrencia (latencia, throughput, ratio de errores).
+Se ejecutan con Gatling y estan documentadas en el capitulo de <strong>Load Tests</strong>.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Herramienta:</strong> Gatling (Scala) integrado con Maven.</p>
+</li>
+<li>
+<p><strong>Ubicacion:</strong> <code>gatling/</code></p>
+</li>
+<li>
+<p><strong>Ejecucion:</strong> <code>cd gatling &amp;&amp; ./mvnw gatling:test</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Para el detalle de escenarios, interpretacion de metricas y evidencias (informes HTML, capturas de Grafana/Prometheus), ver <a href="#section-load-test">Load Tests</a>.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_checks_de_calidad_linting">14.6. Checks de calidad (linting)</h3>
+<div class="paragraph">
+<p>Ademas de los tests, el proyecto incluye comprobaciones de calidad que detectan problemas comunes (estilo, reglas React, etc.).</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Webapp:</strong> ESLint sobre el codigo fuente: <code>cd webapp &amp;&amp; npm run lint</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_casos_de_prueba_implementados_ejemplos">14.7. Casos de prueba implementados (ejemplos)</h3>
+<div class="paragraph">
+<p>Esta seccion recoge ejemplos concretos de pruebas existentes, a modo de referencia para la documentacion y para entender el alcance actual.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>Unit test (Webapp): validacion del formulario de registro/login</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Archivo: <code>webapp/src/<em>tests</em>/RegisterForm.test.tsx</code></p>
+</li>
+<li>
+<p>Que valida (ejemplos): usuario vacio, password demasiado corta, confirmacion de password en modo Register, y que al hacer login correcto se llama a <code>onAuthSuccess</code>.</p>
+</li>
+<li>
+<p>Herramienta: Vitest + Testing Library (con <code>fetch</code> simulado cuando aplica).</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>Integracion ligera (Users): endpoints de ranking</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Archivo: <code>users/<em>tests</em>/users-service.test.js</code></p>
+</li>
+<li>
+<p>Que valida (ejemplos): registrar un resultado de partida (<code>POST /game/result</code>) y consultar el ranking (<code>GET /ranking</code>), incluyendo validaciones de entrada y codigos HTTP.</p>
+</li>
+<li>
+<p>Herramienta: Vitest + <code>supertest</code> (contra la app Express exportada).</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p><strong>E2E (aceptacion): flujos base de autenticacion</strong></p>
+<div class="ulist">
+<ul>
+<li>
+<p>Feature: <code>webapp/test/e2e/features/register.feature</code></p>
+</li>
+<li>
+<p>Escenarios (ejemplos): "Registro exitoso con usuario nuevo", "Login despues de un registro", "Login falla con credenciales invalidas".</p>
+</li>
+<li>
+<p>Herramientas: Cucumber + Playwright.</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
 </div>
 </div>
 </div>
@@ -3833,7 +4087,7 @@ Sesion final de inicio de sesion</p>
 <div id="footer">
 <div id="footer-text">
 Version 8.2 EN<br>
-Last updated 2026-04-26 15:04:36 +0200
+Last updated 2026-04-28 14:21:27 +0200
 </div>
 </div>
 </body>

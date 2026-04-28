@@ -55,6 +55,7 @@ El proyecto esta dividido en varios modulos:
 ## Enlaces utiles
 
 * Aplicacion desplegada: [http://100.49.176.54/](http://100.49.176.54/)
+* Presentación de Yovi Arena:https://unioviedo-my.sharepoint.com/:p:/g/personal/uo302698_uniovi_es/IQDiWHXAl4s1R5yo4yLfN0fiAfQVSrHHDsVJ1FrK0bry1is?e=geyshZ
 * Documentacion: [https://arquisoft.github.io/yovi_es2c/](https://arquisoft.github.io/yovi_es2c/)
 * API docs de usuarios: [http://100.49.176.54:3000/api-docs/](http://100.49.176.54:3000/api-docs/)
 
